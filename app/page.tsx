@@ -15,7 +15,7 @@ export default function Home() {
 
       {/* Hero */}
       <section style={{ maxWidth: '720px', margin: '0 auto', padding: '6rem 2rem 4rem', textAlign: 'center' }}>
-        <div style={{ fontSize: '0.75rem', color: '#888', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '1.5rem' }}>Journal de trading IA · ES Futures</div>
+        <div style={{ fontSize: '0.75rem', color: '#888', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '1.5rem' }}>Journal de trading IA · Tous marchés</div>
         <h1 style={{ fontSize: '3rem', fontWeight: 700, lineHeight: 1.15, letterSpacing: '-1px', marginBottom: '1.5rem' }}>
           Trade avec un plan,<br />performe avec des données.
         </h1>
@@ -39,7 +39,7 @@ export default function Home() {
             { title: 'Discipline tracker', desc: "Mesure ton respect du plan trade après trade. La discipline, c'est le vrai edge." },
           ].map((f, i) => (
             <div key={i} style={{ padding: '1.5rem', border: '0.5px solid #e8e8e8', borderRadius: '10px' }}>
-              <div style={{ fontWeight: 600, fontSize: '1rem', marginBottom: '0.5rem' }}>{f.title}</div>
+              <div style={{ fontWeight: 600, fontSize: '1rem', marginBottom: '0.5rem', color: '#111' }}>{f.title}</div>
               <div style={{ fontSize: '0.875rem', color: '#666', lineHeight: 1.6 }}>{f.desc}</div>
             </div>
           ))}
@@ -69,6 +69,7 @@ export default function Home() {
               <li>✓ Plan IA complet chaque matin</li>
               <li>✓ Stats avancées & patterns</li>
               <li>✓ Discipline tracker</li>
+              <li>✓ Briefing Macro IA</li>
             </ul>
             <a href="/register" style={{ display: 'block', textAlign: 'center', marginTop: '1.5rem', padding: '0.75rem', background: '#111', color: '#fff', borderRadius: '6px', fontSize: '0.875rem', textDecoration: 'none' }}>Essayer gratuitement</a>
           </div>
