@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import Navbar from './components/Navbar'
 
 export const metadata: Metadata = {
   title: 'MyTradePlan',
@@ -13,8 +12,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr">
-      <body style={{ margin: 0, background: '#0A0E1A', minHeight: '100vh' }}>
-        <Navbar />
+      <body style={{ margin: 0, padding: 0 }}>
         {children}
       </body>
     </html>
