@@ -143,9 +143,9 @@ export default function JournalPage() {
 
       <div style={{ maxWidth: '860px', margin: '0 auto' }}>
 
-        {/* Navbar interne */}
+        {/* Navbar */}
         <div className="journal-anim" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', paddingBottom: '1.25rem', borderBottom: '0.5px solid #e8e8e8' }}>
-          <a href="/plan" style={{ fontWeight: 700, fontSize: '1rem', color: '#111', textDecoration: 'none', letterSpacing: '-0.3px' }}>MyTradePlan</a>
+          <a href="/dashboard" style={{ fontWeight: 700, fontSize: '1rem', color: '#111', textDecoration: 'none', letterSpacing: '-0.3px' }}>MyTradePlan</a>
           <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
             <a href="/plan" className="nav-link">Plan du matin</a>
             <a href="/journal" className="nav-link" style={{ color: '#111', fontWeight: 600 }}>Journal</a>
@@ -190,7 +190,7 @@ export default function JournalPage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: '12px' }}>
               <div>
                 <div style={labelStyle}>Instrument</div>
-                <input className="form-input" placeholder="ES, NQ, MES..." value={form.instrument} onChange={e => setForm({ ...form, instrument: e.target.value })} style={inputStyle} />
+                <input className="form-input" placeholder="Instrument" value={form.instrument} onChange={e => setForm({ ...form, instrument: e.target.value })} style={inputStyle} />
               </div>
               <div>
                 <div style={labelStyle}>Direction</div>
@@ -201,34 +201,34 @@ export default function JournalPage() {
               </div>
               <div>
                 <div style={labelStyle}>Résultat (R)</div>
-                <input className="form-input" type="number" step="0.1" placeholder="+2.8" value={form.result_r} onChange={e => setForm({ ...form, result_r: e.target.value })} style={{ ...inputStyle, color: parseFloat(form.result_r) >= 0 ? '#16a34a' : '#dc2626', fontWeight: 700 }} />
+                <input className="form-input" type="number" step="0.1" placeholder="0" value={form.result_r} onChange={e => setForm({ ...form, result_r: e.target.value })} style={{ ...inputStyle, color: parseFloat(form.result_r) >= 0 ? '#16a34a' : '#dc2626', fontWeight: 700 }} />
               </div>
             </div>
 
             <div style={{ marginBottom: '12px' }}>
               <div style={labelStyle}>Contexte</div>
-              <textarea className="form-input" placeholder="Gamma+ / Vanna+ / VIX down / tendance haussière..." value={form.contexte} onChange={e => setForm({ ...form, contexte: e.target.value })} rows={2} style={inputStyle} />
+              <textarea className="form-input" placeholder="Décris le contexte de marché..." value={form.contexte} onChange={e => setForm({ ...form, contexte: e.target.value })} rows={2} style={inputStyle} />
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
               <div>
                 <div style={labelStyle}>Zone</div>
-                <textarea className="form-input" placeholder="RTH LVN + RTH VAL..." value={form.zone} onChange={e => setForm({ ...form, zone: e.target.value })} rows={2} style={inputStyle} />
+                <textarea className="form-input" placeholder="Zone d'entrée..." value={form.zone} onChange={e => setForm({ ...form, zone: e.target.value })} rows={2} style={inputStyle} />
               </div>
               <div>
                 <div style={labelStyle}>Cible</div>
-                <textarea className="form-input" placeholder="Call wall à fort vanna + PDH..." value={form.cible} onChange={e => setForm({ ...form, cible: e.target.value })} rows={2} style={inputStyle} />
+                <textarea className="form-input" placeholder="Cible visée..." value={form.cible} onChange={e => setForm({ ...form, cible: e.target.value })} rows={2} style={inputStyle} />
               </div>
             </div>
 
             <div style={{ marginBottom: '12px' }}>
               <div style={labelStyle}>Confirmation</div>
-              <textarea className="form-input" placeholder="1) Profil développé 2) Vendeurs échoués 2x 3) CVD +4000..." value={form.confirmation} onChange={e => setForm({ ...form, confirmation: e.target.value })} rows={3} style={inputStyle} />
+              <textarea className="form-input" placeholder="Tes critères de confirmation..." value={form.confirmation} onChange={e => setForm({ ...form, confirmation: e.target.value })} rows={3} style={inputStyle} />
             </div>
 
             <div style={{ marginBottom: '12px' }}>
               <div style={labelStyle}>Notes / état mental</div>
-              <textarea className="form-input" placeholder="Ce que tu aurais pu mieux faire..." value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} rows={2} style={inputStyle} />
+              <textarea className="form-input" placeholder="Notes et état mental..." value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} rows={2} style={inputStyle} />
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.25rem' }}>
