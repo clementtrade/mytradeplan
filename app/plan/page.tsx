@@ -9,7 +9,6 @@ export default function PlanPage() {
   const [started, setStarted] = useState(false)
   const [profile, setProfile] = useState<any>(null)
   const [isPro, setIsPro] = useState(false)
-  const [macroAsset, setMacroAsset] = useState('')
   const [macroResult, setMacroResult] = useState('')
   const [macroLoading, setMacroLoading] = useState(false)
 
@@ -41,14 +40,13 @@ export default function PlanPage() {
   }
 
   async function getMacroBriefing() {
-    if (!macroAsset.trim()) return
     setMacroLoading(true)
     setMacroResult('')
     try {
       const res = await fetch('/api/macro-briefing', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ asset: macroAsset }),
+        body: JSON.stringify({ profile }),
       })
       const data = await res.json()
       setMacroResult(data.reply)
@@ -101,7 +99,7 @@ export default function PlanPage() {
         <div style={{ textAlign: 'center', maxWidth: '480px', width: '100%' }}>
           <div style={{ color: '#10B981', fontFamily: 'monospace', fontSize: '11px', letterSpacing: '2px', marginBottom: '1rem' }}>MYTRADEPLAN IA</div>
           <h1 style={{ color: 'white', fontSize: '26px', fontWeight: 600, marginBottom: '0.75rem' }}>Plan du matin</h1>
-          
+
           {profile && (
             <div style={{ background: '#111827', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '12px 16px', marginBottom: '1.5rem', textAlign: 'left' }}>
               <div style={{ color: 'rgba(229,231,235,0.4)', fontSize: '11px', fontFamily: 'monospace', marginBottom: '6px' }}>TON PROFIL</div>
@@ -113,8 +111,8 @@ export default function PlanPage() {
           <div style={{ background: '#111827', border: `0.5px solid ${isPro ? 'rgba(16,185,129,0.3)' : 'rgba(255,255,255,0.08)'}`, borderRadius: '12px', padding: '1.25rem', marginBottom: '1.5rem', textAlign: 'left', position: 'relative' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
               <div>
-                <div style={{ color: '#10B981', fontFamily: 'monospace', fontSize: '11px', letterSpacing: '1px' }}>BRIEFING MACRO</div>
-                <div style={{ color: 'white', fontSize: '13px', fontWeight: 500, marginTop: '2px' }}>Actualités qui impactent ton actif</div>
+                <div style={{ color: '#10B981', fontFamily: 'monospace', fontSize: '11px', letterSpacing: '1px' }}>DAILY BRIEFING MACRO</div>
+                <div style={{ color: 'white', fontSize: '13px', fontWeight: 500, marginTop: '2px' }}>Personnalisé à ton profil de trader</div>
               </div>
               {!isPro && (
                 <div style={{ background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: '6px', padding: '4px 10px', fontSize: '11px', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -125,43 +123,42 @@ export default function PlanPage() {
 
             {isPro ? (
               <div>
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '0.75rem' }}>
-                  <input
-                    value={macroAsset}
-                    onChange={e => setMacroAsset(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && getMacroBriefing()}
-                    placeholder="Ex: SP500, Gold, EURUSD..."
-                    style={{ flex: 1, background: '#0A0E1A', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: '6px', padding: '8px 12px', color: 'white', fontSize: '13px', outline: 'none' }}
-                  />
+                {!macroResult ? (
                   <button
                     onClick={getMacroBriefing}
-                    disabled={macroLoading || !macroAsset.trim()}
-                    style={{ background: '#10B981', color: 'black', border: 'none', borderRadius: '6px', padding: '8px 16px', fontWeight: 700, fontSize: '13px', cursor: 'pointer', fontFamily: 'monospace' }}
+                    disabled={macroLoading}
+                    style={{ width: '100%', background: '#10B981', color: 'black', border: 'none', borderRadius: '6px', padding: '10px 16px', fontWeight: 700, fontSize: '13px', cursor: macroLoading ? 'not-allowed' : 'pointer', fontFamily: 'monospace', opacity: macroLoading ? 0.7 : 1 }}
                   >
-                    {macroLoading ? '...' : 'Go'}
+                    {macroLoading ? '⏳ Génération en cours...' : '📊 Générer mon briefing macro →'}
                   </button>
-                </div>
-                {macroResult && (
-                  <div style={{ color: 'rgba(229,231,235,0.85)', fontSize: '13px', lineHeight: 1.7 }}
-                    dangerouslySetInnerHTML={{ __html: formatText(macroResult) }}
-                  />
+                ) : (
+                  <div>
+                    <div
+                      style={{ color: 'rgba(229,231,235,0.85)', fontSize: '13px', lineHeight: 1.7 }}
+                      dangerouslySetInnerHTML={{ __html: formatText(macroResult) }}
+                    />
+                    <button
+                      onClick={getMacroBriefing}
+                      style={{ marginTop: '0.75rem', background: 'transparent', color: '#10B981', border: '0.5px solid rgba(16,185,129,0.3)', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer', fontFamily: 'monospace' }}
+                    >
+                      Actualiser
+                    </button>
+                  </div>
                 )}
               </div>
             ) : (
-              <div style={{ filter: 'blur(3px)', pointerEvents: 'none', userSelect: 'none' }}>
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '0.75rem' }}>
-                  <div style={{ flex: 1, background: '#0A0E1A', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: '6px', padding: '8px 12px', color: 'rgba(255,255,255,0.3)', fontSize: '13px' }}>Ex: SP500, Gold, EURUSD...</div>
-                  <div style={{ background: '#10B981', color: 'black', borderRadius: '6px', padding: '8px 16px', fontWeight: 700, fontSize: '13px' }}>Go</div>
+              <div>
+                <div style={{ filter: 'blur(3px)', pointerEvents: 'none', userSelect: 'none' }}>
+                  <div style={{ width: '100%', background: '#10B981', color: 'black', borderRadius: '6px', padding: '10px 16px', fontWeight: 700, fontSize: '13px', textAlign: 'center', fontFamily: 'monospace' }}>
+                    📊 Générer mon briefing macro →
+                  </div>
+                  <div style={{ marginTop: '0.75rem', color: 'rgba(229,231,235,0.5)', fontSize: '13px', lineHeight: 1.7 }}>
+                    Fed en mode hawkish, données NFP vendredi, résistance clé sur les 4500...
+                  </div>
                 </div>
-                <div style={{ color: 'rgba(229,231,235,0.5)', fontSize: '13px', lineHeight: 1.7 }}>
-                  Fed en mode hawkish, données NFP vendredi, resistance clé sur les 4500...
+                <div style={{ marginTop: '0.75rem', textAlign: 'center' }}>
+                  <a href="/pricing" style={{ color: '#10B981', fontSize: '12px', textDecoration: 'none', fontFamily: 'monospace' }}>Passer au plan Pro →</a>
                 </div>
-              </div>
-            )}
-
-            {!isPro && (
-              <div style={{ marginTop: '0.75rem', textAlign: 'center' }}>
-                <a href="/pricing" style={{ color: '#10B981', fontSize: '12px', textDecoration: 'none', fontFamily: 'monospace' }}>Passer au plan Pro →</a>
               </div>
             )}
           </div>
