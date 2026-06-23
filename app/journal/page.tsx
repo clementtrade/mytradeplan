@@ -7,6 +7,7 @@ type Trade = {
   created_at: string
   instrument: string
   direction: string
+  setup_type: string
   contexte: string
   zone: string
   cible: string
@@ -25,6 +26,7 @@ export default function JournalPage() {
   const [form, setForm] = useState({
     instrument: '',
     direction: 'long',
+    setup_type: '',
     contexte: '',
     zone: '',
     cible: '',
@@ -56,6 +58,7 @@ export default function JournalPage() {
       user_id: user?.id,
       instrument: form.instrument,
       direction: form.direction,
+      setup_type: form.setup_type,
       contexte: form.contexte,
       zone: form.zone,
       cible: form.cible,
@@ -65,7 +68,7 @@ export default function JournalPage() {
       notes: form.notes,
     })
     if (!error) {
-      setForm({ instrument: '', direction: 'long', contexte: '', zone: '', cible: '', confirmation: '', result_r: '', followed_plan: true, notes: '' })
+      setForm({ instrument: '', direction: 'long', setup_type: '', contexte: '', zone: '', cible: '', confirmation: '', result_r: '', followed_plan: true, notes: '' })
       setShowForm(false)
       loadTrades()
     }
@@ -187,7 +190,7 @@ export default function JournalPage() {
           <div className="journal-anim" style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '1.5rem', marginBottom: '1.5rem', boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
             <div style={{ fontSize: '13px', fontWeight: 600, color: '#111', marginBottom: '1.25rem', letterSpacing: '-0.2px' }}>Nouveau trade</div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '12px', marginBottom: '12px' }}>
               <div>
                 <div style={labelStyle}>Instrument</div>
                 <input className="form-input" placeholder="Instrument" value={form.instrument} onChange={e => setForm({ ...form, instrument: e.target.value })} style={inputStyle} />
@@ -197,6 +200,17 @@ export default function JournalPage() {
                 <select className="form-input" value={form.direction} onChange={e => setForm({ ...form, direction: e.target.value })} style={inputStyle}>
                   <option value="long">Long</option>
                   <option value="short">Short</option>
+                </select>
+              </div>
+              <div>
+                <div style={labelStyle}>Type de setup</div>
+                <select className="form-input" value={form.setup_type} onChange={e => setForm({ ...form, setup_type: e.target.value })} style={inputStyle}>
+                  <option value="">Sélectionne...</option>
+                  <option value="Break & retest">Break & retest</option>
+                  <option value="Continuation">Continuation</option>
+                  <option value="Mean reversion">Mean reversion</option>
+                  <option value="Reversal">Reversal</option>
+                  <option value="Autre">Autre</option>
                 </select>
               </div>
               <div>
@@ -254,13 +268,18 @@ export default function JournalPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {trades.map(trade => (
               <div key={trade.id} className="trade-card">
-                <div onClick={() => setExpanded(expanded === trade.id ? null : trade.id)} style={{ padding: '1rem 1.25rem', display: 'grid', gridTemplateColumns: '90px 80px 1fr 1fr 110px 80px', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
+                <div onClick={() => setExpanded(expanded === trade.id ? null : trade.id)} style={{ padding: '1rem 1.25rem', display: 'grid', gridTemplateColumns: '90px 70px 80px 120px 1fr 110px 80px', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
                   <div style={{ color: '#aaa', fontSize: '12px' }}>
                     {new Date(trade.created_at).toLocaleDateString('fr-FR')}
                   </div>
                   <div style={{ color: '#111', fontWeight: 600, fontSize: '14px' }}>{trade.instrument}</div>
+                  <div style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', background: trade.direction === 'long' ? '#dcfce7' : '#fee2e2', color: trade.direction === 'long' ? '#16a34a' : '#dc2626', fontWeight: 600, textAlign: 'center' }}>
+                    {trade.direction.toUpperCase()}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#555', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {trade.setup_type || '—'}
+                  </div>
                   <div style={{ color: '#666', fontSize: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{trade.contexte}</div>
-                  <div style={{ color: '#666', fontSize: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{trade.zone}</div>
                   <div style={{ fontSize: '12px', color: trade.followed_plan ? '#16a34a' : '#d97706' }}>
                     {trade.followed_plan ? '✓ Plan suivi' : '⚠ Hors plan'}
                   </div>
@@ -271,11 +290,12 @@ export default function JournalPage() {
 
                 {expanded === trade.id && (
                   <div style={{ padding: '0 1.25rem 1.25rem', borderTop: '0.5px solid #f0f0f0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '12px' }}>
+                    <div><div style={labelStyle}>Setup</div><div style={{ color: '#444', fontSize: '13px', lineHeight: 1.6 }}>{trade.setup_type || '—'}</div></div>
                     <div><div style={labelStyle}>Contexte</div><div style={{ color: '#444', fontSize: '13px', lineHeight: 1.6 }}>{trade.contexte || '—'}</div></div>
                     <div><div style={labelStyle}>Zone</div><div style={{ color: '#444', fontSize: '13px', lineHeight: 1.6 }}>{trade.zone || '—'}</div></div>
                     <div><div style={labelStyle}>Cible</div><div style={{ color: '#444', fontSize: '13px', lineHeight: 1.6 }}>{trade.cible || '—'}</div></div>
                     <div><div style={labelStyle}>Confirmation</div><div style={{ color: '#444', fontSize: '13px', lineHeight: 1.6 }}>{trade.confirmation || '—'}</div></div>
-                    {trade.notes && <div style={{ gridColumn: '1 / -1' }}><div style={labelStyle}>Notes</div><div style={{ color: '#444', fontSize: '13px', lineHeight: 1.6 }}>{trade.notes}</div></div>}
+                    {trade.notes && <div><div style={labelStyle}>Notes</div><div style={{ color: '#444', fontSize: '13px', lineHeight: 1.6 }}>{trade.notes}</div></div>}
                   </div>
                 )}
               </div>
