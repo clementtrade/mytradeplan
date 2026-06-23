@@ -46,7 +46,7 @@ export default function Home() {
       <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 2.5rem', borderBottom: '0.5px solid #e8e8e8' }}>
         <span style={{ fontWeight: 700, fontSize: '1rem', letterSpacing: '-0.3px' }}>MyTradePlan</span>
         <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
-          <a href="#features" className="nav-link">Fonctionnalités</a>
+          <a href="/features" className="nav-link">Fonctionnalités</a>
           <a href="#pricing" className="nav-link">Pricing</a>
           <a href="/login" className="nav-link">Connexion</a>
           <a href="/register" className="btn-main" style={{ fontSize: '0.875rem', padding: '0.5rem 1.25rem' }}>Essayer gratuitement</a>
@@ -64,7 +64,7 @@ export default function Home() {
         </p>
         <div className="anim-4" style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
           <a href="/register" className="btn-main">Commencer gratuitement</a>
-          <a href="#features" className="btn-sec">Voir comment ça marche</a>
+          <a href="/features" className="btn-sec">Voir comment ça marche</a>
         </div>
       </section>
 
