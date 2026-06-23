@@ -50,7 +50,6 @@ export default function Home() {
         .badge-long { background: #dcfce7; color: #16a34a; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
         .badge-short { background: #fee2e2; color: #dc2626; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
         .step-num { width: 28px; height: 28px; border-radius: 50%; background: #111; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
-        .compat-tag { background: #f5f5f5; border: 0.5px solid #e8e8e8; border-radius: 6px; padding: 6px 14px; font-size: 12px; color: #555; font-weight: 500; }
         .bar-bg { flex: 1; height: 5px; background: #f0f0f0; border-radius: 3px; }
       `}</style>
 
@@ -110,9 +109,9 @@ export default function Home() {
         <p style={{ fontSize: '0.875rem', color: '#888', textAlign: 'center', marginBottom: '2.5rem' }}>3 étapes pour trader avec méthode</p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', maxWidth: '760px', margin: '0 auto' }}>
           {[
-            { n: '1', title: 'Crée ton profil', desc: 'Ton marché, ta méthode, tes problèmes récurrents. L\'IA mémorise tout et s\'adapte à toi.' },
-            { n: '2', title: 'Prépare ta session', desc: 'L\'IA te pose les bonnes questions chaque matin. Ton plan est structuré en moins de 5 minutes.' },
-            { n: '3', title: 'Analyse & progresse', desc: 'Journal + stats + insights IA pour identifier ton vrai edge et progresser trade après trade.' },
+            { n: '1', title: 'Crée ton profil', desc: "Ton marché, ta méthode, tes problèmes récurrents. L'IA mémorise tout et s'adapte à toi." },
+            { n: '2', title: 'Prépare ta session', desc: "L'IA te pose les bonnes questions chaque matin. Ton plan est structuré en moins de 5 minutes." },
+            { n: '3', title: 'Analyse & progresse', desc: "Journal + stats + insights IA pour identifier ton vrai edge et progresser trade après trade." },
           ].map((s, i) => (
             <div key={i} style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '10px', padding: '1.25rem' }}>
               <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
@@ -223,23 +222,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Compatible avec */}
-      <section style={{ padding: '4rem 2rem', background: '#f9f9f9', borderBottom: '0.5px solid #f0f0f0', textAlign: 'center' }}>
-        <div style={{ fontSize: '0.7rem', color: '#888', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '0.5rem' }}>Compatibilité</div>
-        <h2 style={{ fontSize: '1.75rem', fontWeight: 700, letterSpacing: '-0.5px', marginBottom: '0.5rem' }}>Compatible avec tes outils</h2>
-        <p style={{ fontSize: '0.875rem', color: '#888', marginBottom: '2rem' }}>Utilisé par des traders sur toutes les plateformes — entrée manuelle des trades</p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
-          {['TradingView', 'NinjaTrader', 'Bookmap', 'Tradovate', 'Sierra Chart', 'Thinkorswim', 'MetaTrader', '+ tout autre outil'].map((t, i) => (
-            <div key={i} className="compat-tag">{t}</div>
-          ))}
-        </div>
-      </section>
-
       {/* Pricing */}
-      <section id="pricing" style={{ maxWidth: '720px', margin: '0 auto', padding: '4rem 2rem', textAlign: 'center' }}>
+      <section id="pricing" style={{ maxWidth: '900px', margin: '0 auto', padding: '4rem 2rem', textAlign: 'center' }}>
         <h2 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.75rem', letterSpacing: '-0.5px' }}>Un tarif simple et transparent</h2>
         <p style={{ color: '#666', marginBottom: '3rem' }}>Commence gratuitement, upgrade quand tu es prêt.</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem', textAlign: 'left' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', textAlign: 'left' }}>
+
+          {/* Gratuit */}
           <div className="plan-card" style={{ border: '0.5px solid #e8e8e8' }}>
             <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '0.5rem' }}>Gratuit</div>
             <div style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '1rem' }}>0€</div>
@@ -250,6 +239,21 @@ export default function Home() {
             </ul>
             <a href="/register" style={{ display: 'block', textAlign: 'center', marginTop: '1.5rem', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '0.875rem', textDecoration: 'none', color: '#111' }}>Commencer</a>
           </div>
+
+          {/* Starter */}
+          <div className="plan-card" style={{ border: '0.5px solid #e8e8e8' }}>
+            <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '0.5rem' }}>Starter</div>
+            <div style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '1rem' }}>10€<span style={{ fontSize: '1rem', fontWeight: 400, color: '#888' }}>/mois</span></div>
+            <ul style={{ listStyle: 'none', padding: 0, fontSize: '0.875rem', color: '#555', lineHeight: 2 }}>
+              <li>✓ 10 trades / mois</li>
+              <li>✓ Plan IA complet chaque matin</li>
+              <li>✓ Stats avancées & patterns</li>
+              <li>✓ Discipline tracker</li>
+            </ul>
+            <a href="/register" style={{ display: 'block', textAlign: 'center', marginTop: '1.5rem', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '0.875rem', textDecoration: 'none', color: '#111' }}>Choisir Starter</a>
+          </div>
+
+          {/* Pro */}
           <div className="plan-card" style={{ border: '2px solid #111' }}>
             <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '0.5rem' }}>Pro <span style={{ background: '#111', color: '#fff', fontSize: '0.7rem', padding: '2px 8px', borderRadius: '4px', marginLeft: '6px' }}>Populaire</span></div>
             <div style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '1rem' }}>29€<span style={{ fontSize: '1rem', fontWeight: 400, color: '#888' }}>/mois</span></div>
@@ -262,6 +266,7 @@ export default function Home() {
             </ul>
             <a href="/register" style={{ display: 'block', textAlign: 'center', marginTop: '1.5rem', padding: '0.75rem', background: '#111', color: '#fff', borderRadius: '6px', fontSize: '0.875rem', textDecoration: 'none' }}>Essayer gratuitement</a>
           </div>
+
         </div>
       </section>
 
