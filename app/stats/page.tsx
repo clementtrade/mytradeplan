@@ -9,6 +9,7 @@ type Trade = {
   result_r: number
   followed_plan: boolean
   contexte: string
+  setup_type: string
   created_at: string
 }
 
@@ -39,9 +40,9 @@ export default function StatsPage() {
   const expectancy = trades.length > 0 ? ((winRate / 100) * avgWin - (1 - winRate / 100) * avgLoss).toFixed(2) : '0'
   const followedPlan = trades.length > 0 ? Math.round((trades.filter(t => t.followed_plan).length / trades.length) * 100) : 0
 
-  // Setups stats
+  // Setups stats — utilise setup_type
   const setupStats = trades.reduce((acc: Record<string, {wins: number, total: number, totalR: number}>, t) => {
-    const setup = t.contexte?.split(' ')[0] || 'Autre'
+    const setup = t.setup_type || 'Non défini'
     if (!acc[setup]) acc[setup] = { wins: 0, total: 0, totalR: 0 }
     acc[setup].total++
     acc[setup].totalR += t.result_r
@@ -150,17 +151,9 @@ export default function StatsPage() {
         <div className="stats-anim" style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '1.25rem', marginBottom: '1.25rem', boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}>
           <div style={{ color: '#888', fontSize: '12px', fontWeight: 500, marginBottom: '1rem' }}>Courbe de capital (R cumulé)</div>
           <svg width="100%" viewBox="0 0 600 120" style={{ overflow: 'visible' }}>
-            <defs>
-              <linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={totalR >= 0 ? '#dcfce7' : '#fee2e2'} stopOpacity="0.8"/>
-                <stop offset="100%" stopColor={totalR >= 0 ? '#dcfce7' : '#fee2e2'} stopOpacity="0"/>
-              </linearGradient>
-            </defs>
             <line x1="20" y1={getY(0)} x2="580" y2={getY(0)} stroke="#f0f0f0" strokeWidth="1" strokeDasharray="4,4"/>
             {equityCurve.length > 1 && (
-              <>
-                <polyline points={points} fill="none" stroke={totalR >= 0 ? '#16a34a' : '#dc2626'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </>
+              <polyline points={points} fill="none" stroke={totalR >= 0 ? '#16a34a' : '#dc2626'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             )}
             {equityCurve.map((p, i) => {
               const x = trades.length > 1 ? (i / (trades.length - 1)) * 560 + 20 : 20
@@ -188,7 +181,6 @@ export default function StatsPage() {
             </div>
           ))}
 
-          {/* Insight IA */}
           {bestSetup && worstSetup && bestSetup.name !== worstSetup.name && (
             <div style={{ background: '#fffbeb', border: '0.5px solid #fde68a', borderRadius: '8px', padding: '10px 12px', marginTop: '12px' }}>
               <div style={{ fontSize: '10px', fontWeight: 600, color: '#d97706', marginBottom: '3px' }}>💡 INSIGHT</div>
@@ -206,7 +198,8 @@ export default function StatsPage() {
             <div key={trade.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '0.5px solid #f5f5f5' }}>
               <span style={{ color: '#111', fontSize: '13px', fontWeight: 600, width: '60px' }}>{trade.instrument}</span>
               <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', background: trade.direction === 'long' ? '#dcfce7' : '#fee2e2', color: trade.direction === 'long' ? '#16a34a' : '#dc2626', fontWeight: 600 }}>{trade.direction.toUpperCase()}</span>
-              <span style={{ color: '#aaa', fontSize: '12px', flex: 1, margin: '0 12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{trade.contexte}</span>
+              <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', background: '#f5f5f5', color: '#555', margin: '0 8px' }}>{trade.setup_type || '—'}</span>
+              <span style={{ color: '#aaa', fontSize: '12px', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{trade.contexte}</span>
               <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '14px', color: trade.result_r >= 0 ? '#16a34a' : '#dc2626' }}>{trade.result_r >= 0 ? '+' : ''}{trade.result_r}R</span>
             </div>
           ))}
