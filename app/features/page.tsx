@@ -22,6 +22,7 @@ export default function FeaturesPage() {
         }
         .btn-main:hover { box-shadow: 0 6px 22px rgba(0,0,0,0.25); transform: translateY(-1px); }
         .feat-section { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; padding: 6rem 3rem; border-bottom: 0.5px solid #f0f0f0; max-width: 1100px; margin: 0 auto; }
+        .feat-section-bg { background: #f9f9f9; border-bottom: 0.5px solid #f0f0f0; }
         .feat-label { font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem; }
         .feat-h2 { font-size: 2.25rem; font-weight: 700; color: #111; letter-spacing: -1px; line-height: 1.15; margin-bottom: 1.25rem; }
         .feat-desc { font-size: 1rem; color: #666; line-height: 1.8; margin-bottom: 1.5rem; }
@@ -91,8 +92,8 @@ export default function FeaturesPage() {
       </div>
 
       {/* Feature 2 — Journal */}
-      <div className="feat-section" style={{ background: '#f9f9f9', maxWidth: '100%', padding: '6rem 3rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5rem', alignItems: 'center', maxWidth: '1100px', margin: '0 auto' }}>
+      <div className="feat-section-bg">
+        <div className="feat-section">
           <div className="mockup-card float-2">
             <div style={{ fontSize: '11px', color: '#aaa', marginBottom: '12px', paddingBottom: '10px', borderBottom: '0.5px solid #f0f0f0', fontWeight: 500 }}>Derniers trades</div>
             <div className="trade-row"><span className="badge-l">LONG</span><span style={{ color: '#555', flex: 1, margin: '0 12px', fontSize: '13px' }}>Break & retest</span><span style={{ color: '#16a34a', fontWeight: 700, fontFamily: 'monospace', fontSize: '14px' }}>+2.1R</span></div>
@@ -155,8 +156,8 @@ export default function FeaturesPage() {
       </div>
 
       {/* Feature 4 — Briefing Macro */}
-      <div style={{ background: '#f9f9f9', padding: '6rem 3rem', borderTop: '0.5px solid #f0f0f0' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5rem', alignItems: 'center', maxWidth: '1100px', margin: '0 auto' }}>
+      <div className="feat-section-bg">
+        <div className="feat-section" style={{ borderBottom: 'none' }}>
           <div style={{ background: '#0A0E1A', borderRadius: '16px', padding: '1.75rem', boxShadow: '0 8px 40px rgba(0,0,0,0.15)' }} className="float-4">
             <div style={{ color: '#10B981', fontSize: '10px', fontFamily: 'monospace', letterSpacing: '1.5px', marginBottom: '14px' }}>DAILY BRIEFING MACRO · FUTURES US</div>
             <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '11px', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>🌍 Contexte macro</div>
