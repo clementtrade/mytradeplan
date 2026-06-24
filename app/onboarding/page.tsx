@@ -44,14 +44,14 @@ const QUESTIONS = [
     id: 'tools',
     type: 'text',
     question: 'Quels outils et données tu regardes chaque matin avant de trader ?',
-    placeholder: 'Ex: GEX/DEX, Volume Profile, Bookmap, niveaux options, VIX...',
+    placeholder: 'Note tes outils ici...',
     hint: 'Sois précis — c\'est ce que l\'IA utilisera pour te poser les bonnes questions chaque matin.'
   },
   {
     id: 'framework_matin',
     type: 'text',
     question: 'Dans quel ordre tu analyses ces données ?',
-    placeholder: 'Ex: D\'abord le GEX pour le sentiment, puis Volume Profile pour les niveaux, puis Bookmap en session...',
+    placeholder: 'Note ton process ici...',
     hint: 'Décris ton processus du début à la fin, même en quelques mots.'
   },
   {
@@ -92,15 +92,10 @@ export default function OnboardingPage() {
   const q = QUESTIONS[current]
   const progress = Math.round((current / QUESTIONS.length) * 100)
 
-  function handleSelect(label: string) {
-    setSelected(label)
-  }
-
   const canContinue = q.type === 'choice' ? !!selected : textValue.trim().length > 5
 
   async function handleNext() {
     if (!canContinue) return
-
     const value = q.type === 'choice' ? selected! : textValue.trim()
     const newAnswers = { ...answers, [q.id]: value }
     setAnswers(newAnswers)
@@ -116,7 +111,6 @@ export default function OnboardingPage() {
           body: JSON.stringify(newAnswers),
         })
         const data = await res.json()
-
         const { data: { user } } = await supabase.auth.getUser()
         if (user) {
           await supabase.from('profiles').upsert({
@@ -133,7 +127,6 @@ export default function OnboardingPage() {
             message: data.message,
           })
         }
-
         setProfile(data)
       } catch {
         setProfile({ error: 'Erreur de génération' })
@@ -146,10 +139,12 @@ export default function OnboardingPage() {
 
   if (loading) {
     return (
-      <main style={{ minHeight: '100vh', background: '#0A0E1A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <main style={{ minHeight: '100vh', background: '#f9f9f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif' }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ color: '#10B981', fontFamily: 'monospace', fontSize: '14px', marginBottom: '1rem' }}>MyTradePlan IA</div>
-          <div style={{ color: 'rgba(229,231,235,0.5)', fontSize: '14px' }}>Création de ton profil en cours...</div>
+          <div style={{ width: '40px', height: '40px', border: '2px solid #e8e8e8', borderTop: '2px solid #111', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 1rem' }} />
+          <div style={{ fontSize: '15px', fontWeight: 600, color: '#111', marginBottom: '6px' }}>Création de ton profil...</div>
+          <div style={{ fontSize: '13px', color: '#aaa' }}>L'IA analyse tes réponses</div>
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
       </main>
     )
@@ -157,42 +152,59 @@ export default function OnboardingPage() {
 
   if (profile) {
     return (
-      <main style={{ minHeight: '100vh', background: '#0A0E1A', padding: '2rem' }}>
-        <div style={{ maxWidth: '500px', margin: '3rem auto', background: '#111827', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '2rem' }}>
-          <div style={{ color: '#10B981', fontFamily: 'monospace', fontSize: '11px', letterSpacing: '2px', marginBottom: '1rem' }}>PROFIL CRÉÉ ✓</div>
-          <h2 style={{ color: 'white', fontSize: '20px', marginBottom: '1.5rem' }}>Ton profil trader</h2>
+      <main style={{ minHeight: '100vh', background: '#f9f9f9', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', fontFamily: 'Inter, sans-serif' }}>
+        <style>{`
+          @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+          .profile-anim { animation: fadeUp 0.5s ease both; }
+          .btn-go {
+            width: 100%; background: #111; color: #fff; border: none; border-radius: 8px;
+            padding: 14px; font-weight: 600; font-size: 15px; cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+            transition: box-shadow 0.2s, transform 0.2s; font-family: inherit;
+          }
+          .btn-go:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.22); transform: translateY(-1px); }
+        `}</style>
+        <div className="profile-anim" style={{ maxWidth: '480px', width: '100%' }}>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div style={{ background: '#0A0E1A', borderRadius: '8px', padding: '12px 16px' }}>
-              <div style={{ color: 'rgba(229,231,235,0.4)', fontSize: '11px', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Type de trader</div>
-              <div style={{ color: 'white', fontSize: '14px', fontWeight: 500 }}>{profile.type}</div>
+          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+            <div style={{ width: '48px', height: '48px', background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', fontSize: '20px' }}>✓</div>
+            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#111', letterSpacing: '-0.5px', marginBottom: '0.4rem' }}>Profil créé !</h1>
+            <p style={{ fontSize: '14px', color: '#888' }}>Voici ce que l'IA a retenu sur toi.</p>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '1.5rem' }}>
+            <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '10px', padding: '14px 16px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+              <div style={{ color: '#aaa', fontSize: '11px', fontWeight: 500, marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Type de trader</div>
+              <div style={{ color: '#111', fontSize: '14px', fontWeight: 500 }}>{profile.type}</div>
             </div>
-            <div style={{ background: '#0A0E1A', borderRadius: '8px', padding: '12px 16px' }}>
-              <div style={{ color: 'rgba(229,231,235,0.4)', fontSize: '11px', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Tes outils du matin</div>
-              <div style={{ color: 'white', fontSize: '14px', lineHeight: 1.6 }}>{answers.tools}</div>
+
+            <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '10px', padding: '14px 16px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+              <div style={{ color: '#aaa', fontSize: '11px', fontWeight: 500, marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Tes outils du matin</div>
+              <div style={{ color: '#111', fontSize: '14px', lineHeight: 1.6 }}>{answers.tools}</div>
             </div>
-            <div style={{ background: '#0A0E1A', borderRadius: '8px', padding: '12px 16px' }}>
-              <div style={{ color: 'rgba(229,231,235,0.4)', fontSize: '11px', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Ton process du matin</div>
-              <div style={{ color: 'white', fontSize: '14px', lineHeight: 1.6 }}>{answers.framework_matin}</div>
+
+            <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '10px', padding: '14px 16px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+              <div style={{ color: '#aaa', fontSize: '11px', fontWeight: 500, marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Ton process du matin</div>
+              <div style={{ color: '#111', fontSize: '14px', lineHeight: 1.6 }}>{answers.framework_matin}</div>
             </div>
-            <div style={{ background: '#0A0E1A', borderRadius: '8px', padding: '12px 16px' }}>
-              <div style={{ color: 'rgba(229,231,235,0.4)', fontSize: '11px', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Setup principal</div>
-              <div style={{ color: 'white', fontSize: '14px' }}>{profile.setup_type}</div>
+
+            <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '10px', padding: '14px 16px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+              <div style={{ color: '#aaa', fontSize: '11px', fontWeight: 500, marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Setup principal</div>
+              <div style={{ color: '#111', fontSize: '14px' }}>{profile.setup_type}</div>
             </div>
-            <div style={{ background: 'rgba(245,158,11,0.08)', border: '0.5px solid rgba(245,158,11,0.2)', borderRadius: '8px', padding: '12px 16px' }}>
-              <div style={{ color: '#F59E0B', fontSize: '11px', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Point à travailler</div>
-              <div style={{ color: 'white', fontSize: '14px' }}>{profile.point_a_travailler}</div>
+
+            <div style={{ background: '#fffbeb', border: '0.5px solid #fde68a', borderRadius: '10px', padding: '14px 16px' }}>
+              <div style={{ color: '#d97706', fontSize: '11px', fontWeight: 500, marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Point à travailler</div>
+              <div style={{ color: '#111', fontSize: '14px' }}>{profile.point_a_travailler}</div>
             </div>
-            <div style={{ background: 'rgba(16,185,129,0.08)', border: '0.5px solid rgba(16,185,129,0.2)', borderRadius: '8px', padding: '12px 16px' }}>
-              <div style={{ color: '#10B981', fontSize: '11px', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Message de ton IA</div>
-              <div style={{ color: 'white', fontSize: '14px', fontStyle: 'italic' }}>"{profile.message}"</div>
+
+            <div style={{ background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '10px', padding: '14px 16px' }}>
+              <div style={{ color: '#16a34a', fontSize: '11px', fontWeight: 500, marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Message de l'IA</div>
+              <div style={{ color: '#111', fontSize: '14px', lineHeight: 1.6, fontStyle: 'italic' }}>"{profile.message}"</div>
             </div>
           </div>
 
-          <button
-            onClick={() => router.push('/plan')}
-            style={{ marginTop: '1.5rem', width: '100%', background: '#10B981', color: 'black', border: 'none', borderRadius: '8px', padding: '12px', fontFamily: 'monospace', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }}
-          >
+          <button className="btn-go" onClick={() => router.push('/plan')}>
             Commencer mon plan du matin →
           </button>
         </div>
@@ -201,92 +213,114 @@ export default function OnboardingPage() {
   }
 
   return (
-    <main style={{ minHeight: '100vh', background: '#0A0E1A', padding: '2rem' }}>
-      <div style={{ maxWidth: '500px', margin: '3rem auto' }}>
+    <main style={{ minHeight: '100vh', background: '#f9f9f9', display: 'flex', flexDirection: 'column', fontFamily: 'Inter, sans-serif' }}>
+      <style>{`
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+        .q-anim { animation: fadeUp 0.4s ease both; }
+        .choice-btn {
+          display: flex; align-items: center; gap: 14px;
+          padding: 14px 16px; border-radius: 10px; cursor: pointer;
+          text-align: left; width: 100%; transition: all 0.15s;
+          background: #fff; border: 0.5px solid #e8e8e8;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .choice-btn:hover { border-color: #111; box-shadow: 0 4px 14px rgba(0,0,0,0.08); }
+        .choice-btn.selected { border: 1.5px solid #111; background: #f9f9f9; box-shadow: 0 4px 14px rgba(0,0,0,0.08); }
+        .btn-next {
+          width: 100%; padding: 14px; border-radius: 8px; border: none;
+          font-weight: 600; font-size: 15px; transition: all 0.2s; font-family: inherit;
+          box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+        }
+        .textarea-input {
+          width: 100%; border-radius: 10px; padding: 14px 16px;
+          color: #111; font-size: 14px; outline: none; font-family: inherit;
+          resize: none; line-height: 1.6; transition: border-color 0.15s, box-shadow 0.15s;
+          box-sizing: border-box; background: #fff;
+        }
+        .textarea-input:focus { border-color: #111 !important; box-shadow: 0 0 0 3px rgba(0,0,0,0.06); }
+      `}</style>
 
-        <div style={{ marginBottom: '2rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'rgba(229,231,235,0.4)', fontFamily: 'monospace', marginBottom: '8px' }}>
-            <span>Question {current + 1} sur {QUESTIONS.length}</span>
-            <span>{progress}%</span>
-          </div>
-          <div style={{ height: '3px', background: 'rgba(255,255,255,0.08)', borderRadius: '2px' }}>
-            <div style={{ height: '3px', background: '#10B981', borderRadius: '2px', width: `${progress}%`, transition: 'width 0.4s ease' }} />
-          </div>
-        </div>
+      {/* Navbar */}
+      <nav style={{ background: '#fff', borderBottom: '0.5px solid #e8e8e8', padding: '1rem 2rem' }}>
+        <span style={{ fontWeight: 700, fontSize: '1rem', color: '#111', letterSpacing: '-0.3px' }}>MyTradePlan</span>
+      </nav>
 
-        <div style={{ background: '#111827', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '1.5rem', marginBottom: '1rem' }}>
-          <div style={{ fontSize: '11px', color: '#10B981', fontFamily: 'monospace', letterSpacing: '1px', marginBottom: '8px' }}>MYTRADEPLAN IA</div>
-          <div style={{ fontSize: '16px', fontWeight: 500, color: 'white', marginBottom: q.type === 'text' ? '0.5rem' : '0' }}>{q.question}</div>
-          {q.type === 'text' && (
-            <div style={{ fontSize: '12px', color: 'rgba(229,231,235,0.4)', lineHeight: 1.5 }}>{(q as any).hint}</div>
-          )}
-        </div>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+        <div className="q-anim" style={{ maxWidth: '480px', width: '100%' }}>
 
-        {q.type === 'choice' ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '1.5rem' }}>
-            {(q as any).choices.map((c: any) => (
-              <button
-                key={c.label}
-                onClick={() => handleSelect(c.label)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '12px',
-                  padding: '12px 16px', borderRadius: '8px', cursor: 'pointer',
-                  border: selected === c.label ? '1px solid #10B981' : '0.5px solid rgba(255,255,255,0.08)',
-                  background: selected === c.label ? 'rgba(16,185,129,0.1)' : '#111827',
-                  textAlign: 'left', width: '100%', transition: 'all 0.15s',
-                }}
-              >
-                <span style={{ fontSize: '20px' }}>{c.icon}</span>
-                <span>
-                  <div style={{ color: selected === c.label ? '#10B981' : 'white', fontWeight: 500, fontSize: '14px' }}>{c.label}</div>
-                  <div style={{ color: 'rgba(229,231,235,0.4)', fontSize: '12px' }}>{c.sub}</div>
-                </span>
-              </button>
-            ))}
-          </div>
-        ) : (
-          <div style={{ marginBottom: '1.5rem' }}>
-            <textarea
-              value={textValue}
-              onChange={e => setTextValue(e.target.value)}
-              placeholder={(q as any).placeholder}
-              rows={4}
-              style={{
-                width: '100%',
-                background: '#111827',
-                border: textValue.trim().length > 5 ? '1px solid #10B981' : '0.5px solid rgba(255,255,255,0.1)',
-                borderRadius: '8px',
-                padding: '12px 16px',
-                color: 'white',
-                fontSize: '14px',
-                outline: 'none',
-                fontFamily: 'inherit',
-                resize: 'none',
-                lineHeight: 1.6,
-                transition: 'border-color 0.15s',
-                boxSizing: 'border-box',
-              }}
-            />
-            <div style={{ fontSize: '11px', color: 'rgba(229,231,235,0.3)', marginTop: '6px', fontFamily: 'monospace' }}>
-              {textValue.trim().length} caractères
+          {/* Progress */}
+          <div style={{ marginBottom: '2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#aaa', marginBottom: '8px' }}>
+              <span>Question {current + 1} sur {QUESTIONS.length}</span>
+              <span>{progress}%</span>
+            </div>
+            <div style={{ height: '3px', background: '#e8e8e8', borderRadius: '2px' }}>
+              <div style={{ height: '3px', background: '#111', borderRadius: '2px', width: `${progress}%`, transition: 'width 0.4s ease' }} />
             </div>
           </div>
-        )}
 
-        <button
-          onClick={handleNext}
-          disabled={!canContinue}
-          style={{
-            width: '100%', padding: '12px', borderRadius: '8px', border: 'none',
-            background: canContinue ? '#10B981' : 'rgba(16,185,129,0.2)',
-            color: canContinue ? 'black' : 'rgba(255,255,255,0.3)',
-            fontFamily: 'monospace', fontWeight: 700, fontSize: '14px',
-            cursor: canContinue ? 'pointer' : 'not-allowed', transition: 'all 0.2s',
-          }}
-        >
-          {current + 1 === QUESTIONS.length ? 'Créer mon profil →' : 'Continuer →'}
-        </button>
+          {/* Question */}
+          <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '1.5rem', marginBottom: '1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+            <div style={{ fontSize: '11px', color: '#aaa', fontWeight: 500, letterSpacing: '1px', marginBottom: '8px', textTransform: 'uppercase' }}>MyTradePlan IA</div>
+            <div style={{ fontSize: '17px', fontWeight: 600, color: '#111', marginBottom: q.type === 'text' ? '0.5rem' : '0', letterSpacing: '-0.2px' }}>{q.question}</div>
+            {q.type === 'text' && (
+              <div style={{ fontSize: '13px', color: '#aaa', lineHeight: 1.5, marginTop: '4px' }}>{(q as any).hint}</div>
+            )}
+          </div>
 
+          {/* Choix ou texte */}
+          {q.type === 'choice' ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '1.5rem' }}>
+              {(q as any).choices.map((c: any) => (
+                <button
+                  key={c.label}
+                  onClick={() => setSelected(c.label)}
+                  className={`choice-btn${selected === c.label ? ' selected' : ''}`}
+                >
+                  <span style={{ fontSize: '22px', flexShrink: 0 }}>{c.icon}</span>
+                  <span>
+                    <div style={{ color: '#111', fontWeight: 500, fontSize: '14px', marginBottom: '2px' }}>{c.label}</div>
+                    <div style={{ color: '#aaa', fontSize: '12px' }}>{c.sub}</div>
+                  </span>
+                  {selected === c.label && (
+                    <div style={{ marginLeft: 'auto', width: '20px', height: '20px', borderRadius: '50%', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <span style={{ color: '#fff', fontSize: '11px', fontWeight: 700 }}>✓</span>
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div style={{ marginBottom: '1.5rem' }}>
+              <textarea
+                className="textarea-input"
+                value={textValue}
+                onChange={e => setTextValue(e.target.value)}
+                placeholder={(q as any).placeholder}
+                rows={4}
+                style={{ border: textValue.trim().length > 5 ? '1.5px solid #111' : '0.5px solid #e0e0e0' }}
+              />
+              <div style={{ fontSize: '11px', color: '#ccc', marginTop: '6px', textAlign: 'right' }}>
+                {textValue.trim().length} caractères
+              </div>
+            </div>
+          )}
+
+          {/* Bouton continuer */}
+          <button
+            onClick={handleNext}
+            disabled={!canContinue}
+            className="btn-next"
+            style={{
+              background: canContinue ? '#111' : '#f0f0f0',
+              color: canContinue ? '#fff' : '#aaa',
+              cursor: canContinue ? 'pointer' : 'not-allowed',
+            }}
+          >
+            {current + 1 === QUESTIONS.length ? 'Créer mon profil →' : 'Continuer →'}
+          </button>
+
+        </div>
       </div>
     </main>
   )
