@@ -4,25 +4,25 @@ export default function Home() {
       <style>{`
         @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+        @keyframes float2 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
         .anim-1 { animation: fadeUp 0.7s ease both; }
         .anim-2 { animation: fadeUp 0.7s 0.15s ease both; }
         .anim-3 { animation: fadeUp 0.7s 0.3s ease both; }
         .anim-4 { animation: fadeUp 0.7s 0.45s ease both; }
         .anim-5 { animation: fadeUp 0.7s 0.6s ease both; }
         .btn-main {
-          background: #111; color: #fff; font-size: 0.9rem; font-weight: 500;
-          padding: 0.75rem 1.75rem; border-radius: 6px; text-decoration: none;
+          background: #111; color: #fff; font-size: 0.9rem; font-weight: 600;
+          padding: 0.75rem 1.75rem; border-radius: 8px; text-decoration: none;
           box-shadow: 0 4px 14px rgba(0,0,0,0.15);
           transition: box-shadow 0.2s, transform 0.2s; display: inline-block;
         }
         .btn-main:hover { box-shadow: 0 6px 22px rgba(0,0,0,0.25); transform: translateY(-1px); }
         .btn-sec {
           background: transparent; color: #111; font-size: 0.9rem;
-          padding: 0.75rem 1.75rem; border-radius: 6px; text-decoration: none;
-          border: 1px solid #ddd; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-          transition: box-shadow 0.2s, transform 0.2s; display: inline-block;
+          padding: 0.75rem 1.75rem; border-radius: 8px; text-decoration: none;
+          border: 0.5px solid #ddd; transition: border-color 0.2s; display: inline-block;
         }
-        .btn-sec:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.1); transform: translateY(-1px); }
+        .btn-sec:hover { border-color: #111; }
         .feature-card {
           padding: 1.5rem; border: 0.5px solid #e8e8e8; border-radius: 10px;
           background: #fff; box-shadow: 0 2px 12px rgba(0,0,0,0.05);
@@ -31,11 +31,11 @@ export default function Home() {
         .feature-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.1); transform: translateY(-2px); }
         .nav-link { font-size: 0.875rem; color: #666; text-decoration: none; transition: color 0.15s; }
         .nav-link:hover { color: #111; }
-        .plan-card { padding: 2rem; border-radius: 10px; transition: box-shadow 0.2s, transform 0.2s; box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
+        .plan-card { padding: 2rem; border-radius: 12px; transition: box-shadow 0.2s, transform 0.2s; box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
         .plan-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.1); transform: translateY(-2px); }
-        .mockup-float { animation: float 4s ease-in-out infinite; }
-        .mockup-float-2 { animation: float 4s 0.5s ease-in-out infinite; }
-        .mockup-float-3 { animation: float 4s 1s ease-in-out infinite; }
+        .mockup-float { animation: float 5s ease-in-out infinite; }
+        .mockup-float-2 { animation: float 5s 0.5s ease-in-out infinite; }
+        .mockup-float-3 { animation: float 5s 1s ease-in-out infinite; }
         .feat-section { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; max-width: 900px; margin: 0 auto; }
         .feat-tag { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 0.75rem; }
         .feat-title { font-size: 1.4rem; font-weight: 700; color: #111; letter-spacing: -0.3px; margin-bottom: 0.75rem; line-height: 1.25; }
@@ -51,10 +51,15 @@ export default function Home() {
         .badge-short { background: #fee2e2; color: #dc2626; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
         .step-num { width: 28px; height: 28px; border-radius: 50%; background: #111; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
         .bar-bg { flex: 1; height: 5px; background: #f0f0f0; border-radius: 3px; }
+        .feat-check { width: 20px; height: 20px; border-radius: 50%; background: #111; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+        .plan-feature-on { font-size: 13px; color: #444; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+        .plan-feature-off { font-size: 13px; color: #ccc; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; text-decoration: line-through; }
+        .plan-check { width: 16px; height: 16px; border-radius: 50%; background: #111; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 9px; flex-shrink: 0; }
+        .plan-cross { width: 16px; height: 16px; border-radius: 50%; background: #f0f0f0; color: #ccc; display: flex; align-items: center; justify-content: center; font-size: 9px; flex-shrink: 0; }
       `}</style>
 
       {/* Navbar */}
-      <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 2.5rem', borderBottom: '0.5px solid #e8e8e8' }}>
+      <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 2.5rem', borderBottom: '0.5px solid #e8e8e8', position: 'sticky', top: 0, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)', zIndex: 10 }}>
         <span style={{ fontWeight: 700, fontSize: '1rem', letterSpacing: '-0.3px' }}>MyTradePlan</span>
         <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
           <a href="/features" className="nav-link">Fonctionnalités</a>
@@ -64,28 +69,148 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Hero */}
-      <section style={{ maxWidth: '720px', margin: '0 auto', padding: '6rem 2rem 4rem', textAlign: 'center' }}>
-        <div className="anim-1" style={{ fontSize: '0.75rem', color: '#888', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '1.5rem' }}>Journal de trading IA · Tous marchés</div>
-        <h1 className="anim-2" style={{ fontSize: '3rem', fontWeight: 700, lineHeight: 1.15, letterSpacing: '-1px', marginBottom: '1.5rem' }}>
-          Trade avec un plan,<br />performe avec des données.
-        </h1>
-        <p className="anim-3" style={{ fontSize: '1.125rem', color: '#555', lineHeight: 1.7, maxWidth: '520px', margin: '0 auto 2.5rem' }}>
-          MyTradePlan te guide chaque matin avec un plan pré-marché IA personnalisé, et analyse tes trades pour identifier ton edge réel.
-        </p>
-        <div className="anim-4" style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginBottom: '2rem' }}>
-          <a href="/register" className="btn-main">Commencer gratuitement</a>
-          <a href="/features" className="btn-sec">Voir comment ça marche</a>
+      {/* HERO — 2 colonnes */}
+      <section style={{ maxWidth: '1100px', margin: '0 auto', padding: '5rem 2.5rem 4rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem', alignItems: 'center' }}>
+
+        {/* Texte gauche */}
+        <div>
+          {/* Bannière */}
+          <div className="anim-1" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '20px', padding: '5px 14px', marginBottom: '1.5rem' }}>
+            <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#16a34a' }}></div>
+            <span style={{ fontSize: '12px', color: '#16a34a', fontWeight: 500 }}>Plan pré-marché IA · Tous marchés</span>
+          </div>
+
+          <h1 className="anim-2" style={{ fontSize: '2.75rem', fontWeight: 700, lineHeight: 1.1, letterSpacing: '-1.5px', marginBottom: '1.25rem' }}>
+            Trade avec un plan.<br />
+            <span style={{ color: '#666' }}>Performe avec des données.</span>
+          </h1>
+
+          <p className="anim-3" style={{ fontSize: '1rem', color: '#666', lineHeight: 1.7, marginBottom: '1.75rem', maxWidth: '400px' }}>
+            MyTradePlan te guide chaque matin avec un plan pré-marché IA personnalisé, et analyse tes trades pour identifier ton edge réel.
+          </p>
+
+          {/* Points valeur */}
+          <div className="anim-4" style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '1.75rem' }}>
+            {["L'IA prépare ton plan, toi tu trades", "Trouve ton vrai edge par setup", "Transforme tes erreurs en edge"].map((p, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', color: '#444' }}>
+                <div className="feat-check">✓</div>
+                {p}
+              </div>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <div className="anim-5" style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <a href="/register" className="btn-main">Commencer gratuitement →</a>
+            <a href="/features" className="btn-sec">Voir comment ça marche</a>
+          </div>
+
+          {/* Social proof */}
+          <div className="anim-5" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#16a34a' }}></div>
+              <span style={{ fontSize: '12px', color: '#888' }}>Gratuit pour commencer</span>
+            </div>
+            <div style={{ width: '1px', height: '14px', background: '#e8e8e8' }}></div>
+            <span style={{ fontSize: '12px', color: '#888' }}>Sans carte bancaire</span>
+          </div>
         </div>
-        <div className="anim-5" style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          {["L'IA prépare ton plan, toi tu trades", "Trouve ton vrai edge", "Transforme tes erreurs en edge"].map((b, i) => (
-            <div key={i} style={{ background: '#f5f5f5', border: '0.5px solid #e8e8e8', borderRadius: '20px', padding: '6px 14px', fontSize: '12px', color: '#444', fontWeight: 500 }}>{b}</div>
-          ))}
+
+        {/* Mockup droite */}
+        <div style={{ position: 'relative', paddingTop: '1.5rem', paddingBottom: '1.5rem' }}>
+
+          {/* Card principale — chat */}
+          <div className="mockup-float" style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '16px', padding: '1.25rem', boxShadow: '0 12px 48px rgba(0,0,0,0.1)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', paddingBottom: '10px', borderBottom: '0.5px solid #f0f0f0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: '#fff', fontWeight: 600 }}>M</div>
+                <div>
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: '#111' }}>MyTradePlan IA</div>
+                  <div style={{ fontSize: '10px', color: '#aaa' }}>Plan du matin · Aujourd'hui</div>
+                </div>
+              </div>
+              <div style={{ background: '#f0fdf4', color: '#16a34a', fontSize: '10px', padding: '3px 8px', borderRadius: '4px', fontWeight: 500 }}>En session</div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '10px' }}>
+              <div style={{ background: '#f5f5f5', borderRadius: '4px 10px 10px 10px', padding: '9px 12px', fontSize: '12px', color: '#333', maxWidth: '85%' }}>
+                GEX positif ou négatif ce matin ?
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <div style={{ background: '#111', borderRadius: '10px 4px 10px 10px', padding: '9px 12px', fontSize: '12px', color: '#fff', maxWidth: '75%' }}>
+                  Négatif, Gamma négatif.
+                </div>
+              </div>
+              <div style={{ background: '#f5f5f5', borderRadius: '4px 10px 10px 10px', padding: '9px 12px', fontSize: '12px', color: '#333', maxWidth: '85%' }}>
+                Forme du Volume Profile — D, B ou P shape ?
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <div style={{ background: '#111', borderRadius: '10px 4px 10px 10px', padding: '9px 12px', fontSize: '12px', color: '#fff', maxWidth: '75%' }}>
+                  B shape, sous la VAL.
+                </div>
+              </div>
+              <div style={{ background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '4px 10px 10px 10px', padding: '9px 12px', fontSize: '12px', maxWidth: '90%' }}>
+                <div style={{ color: '#16a34a', fontSize: '10px', fontWeight: 600, marginBottom: '3px' }}>Plan structuré ✓</div>
+                <span style={{ color: '#444' }}>Short seulement · Break & retest vers puts inférieurs · Pas de mean reversion aujourd'hui.</span>
+              </div>
+            </div>
+
+            <div style={{ background: '#f9f9f9', borderRadius: '8px', padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '12px', color: '#aaa' }}>Réponds ici...</span>
+              <div style={{ background: '#111', borderRadius: '6px', padding: '5px 12px', fontSize: '11px', color: '#fff' }}>→</div>
+            </div>
+          </div>
+
+          {/* Mini card stats — bas gauche */}
+          <div style={{ position: 'absolute', bottom: '-8px', left: '-24px', background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '10px 16px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', display: 'flex', gap: '16px', animation: 'float2 5s 0.5s ease-in-out infinite' }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '16px', fontWeight: 700, fontFamily: 'monospace', color: '#111' }}>71%</div>
+              <div style={{ fontSize: '10px', color: '#aaa' }}>Win rate</div>
+            </div>
+            <div style={{ width: '0.5px', background: '#e8e8e8' }}></div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '16px', fontWeight: 700, fontFamily: 'monospace', color: '#16a34a' }}>+1.8R</div>
+              <div style={{ fontSize: '10px', color: '#aaa' }}>R moyen</div>
+            </div>
+            <div style={{ width: '0.5px', background: '#e8e8e8' }}></div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '16px', fontWeight: 700, fontFamily: 'monospace', color: '#111' }}>84%</div>
+              <div style={{ fontSize: '10px', color: '#aaa' }}>Discipline</div>
+            </div>
+          </div>
+
+          {/* Mini card setup — haut droite */}
+          <div style={{ position: 'absolute', top: '0px', right: '-20px', background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '10px', padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', animation: 'float2 5s 1s ease-in-out infinite' }}>
+            <div style={{ fontSize: '10px', color: '#aaa', marginBottom: '3px' }}>Meilleur setup</div>
+            <div style={{ fontSize: '13px', fontWeight: 600, color: '#111' }}>Break & retest</div>
+            <div style={{ fontSize: '11px', color: '#16a34a', fontWeight: 500 }}>78% win rate</div>
+          </div>
+
         </div>
       </section>
 
+      {/* BANDE STATS */}
+      <div style={{ background: '#f9f9f9', borderTop: '0.5px solid #e8e8e8', borderBottom: '0.5px solid #e8e8e8', padding: '1.5rem 2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '4rem', alignItems: 'center', maxWidth: '700px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#111', letterSpacing: '-0.5px' }}>5 min</div>
+            <div style={{ fontSize: '12px', color: '#888', marginTop: '2px' }}>pour préparer ta session</div>
+          </div>
+          <div style={{ width: '0.5px', height: '32px', background: '#e8e8e8' }}></div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#111', letterSpacing: '-0.5px' }}>100%</div>
+            <div style={{ fontSize: '12px', color: '#888', marginTop: '2px' }}>personnalisé à ton profil</div>
+          </div>
+          <div style={{ width: '0.5px', height: '32px', background: '#e8e8e8' }}></div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#111', letterSpacing: '-0.5px' }}>Tous marchés</div>
+            <div style={{ fontSize: '12px', color: '#888', marginTop: '2px' }}>Futures, Forex, Crypto...</div>
+          </div>
+        </div>
+      </div>
+
       {/* Features 4 cards */}
-      <section id="features" style={{ maxWidth: '960px', margin: '0 auto', padding: '0 2rem 4rem' }}>
+      <section id="features" style={{ maxWidth: '960px', margin: '0 auto', padding: '4rem 2rem' }}>
         <h2 style={{ fontSize: '1.75rem', fontWeight: 700, textAlign: 'center', marginBottom: '3rem', letterSpacing: '-0.5px' }}>Tout ce qu'il faut pour mieux trader</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem' }}>
           {[
@@ -224,50 +349,62 @@ export default function Home() {
 
       {/* Pricing */}
       <section id="pricing" style={{ maxWidth: '900px', margin: '0 auto', padding: '4rem 2rem', textAlign: 'center' }}>
-        <h2 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.75rem', letterSpacing: '-0.5px' }}>Un tarif simple et transparent</h2>
+        <div style={{ fontSize: '0.7rem', color: '#888', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '0.5rem' }}>Tarifs</div>
+        <h2 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.75rem', letterSpacing: '-0.5px' }}>Simple et transparent</h2>
         <p style={{ color: '#666', marginBottom: '3rem' }}>Commence gratuitement, upgrade quand tu es prêt.</p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', textAlign: 'left' }}>
 
           {/* Gratuit */}
           <div className="plan-card" style={{ border: '0.5px solid #e8e8e8' }}>
-            <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '0.5rem' }}>Gratuit</div>
-            <div style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '1rem' }}>0€</div>
-            <ul style={{ listStyle: 'none', padding: 0, fontSize: '0.875rem', color: '#555', lineHeight: 2 }}>
-              <li>✓ 5 trades / mois</li>
-              <li>✓ Plan pré-marché basique</li>
-              <li>✓ Stats essentielles</li>
-            </ul>
-            <a href="/register" style={{ display: 'block', textAlign: 'center', marginTop: '1.5rem', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '0.875rem', textDecoration: 'none', color: '#111' }}>Commencer</a>
+            <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '4px' }}>Gratuit</div>
+            <div style={{ fontSize: '12px', color: '#888', marginBottom: '1rem' }}>Pour découvrir MyTradePlan</div>
+            <div style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.25rem' }}>0€</div>
+            <div style={{ fontSize: '12px', color: '#aaa', marginBottom: '1.25rem' }}>Pour toujours</div>
+            <div style={{ borderTop: '0.5px solid #f0f0f0', paddingTop: '1rem', marginBottom: '1rem' }}>
+              <div className="plan-feature-on"><div className="plan-check">✓</div>5 trades / mois</div>
+              <div className="plan-feature-on"><div className="plan-check">✓</div>5 plans du matin / mois</div>
+              <div className="plan-feature-on"><div className="plan-check">✓</div>Stats essentielles</div>
+              <div className="plan-feature-off"><div className="plan-cross">✗</div>Stats avancées</div>
+              <div className="plan-feature-off"><div className="plan-cross">✗</div>Briefing Macro IA</div>
+            </div>
+            <a href="/register" style={{ display: 'block', textAlign: 'center', padding: '0.75rem', border: '0.5px solid #ddd', borderRadius: '8px', fontSize: '0.875rem', textDecoration: 'none', color: '#111', fontWeight: 500 }}>Commencer</a>
           </div>
 
           {/* Starter */}
           <div className="plan-card" style={{ border: '0.5px solid #e8e8e8' }}>
-            <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '0.5rem' }}>Starter</div>
-            <div style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '1rem' }}>10€<span style={{ fontSize: '1rem', fontWeight: 400, color: '#888' }}>/mois</span></div>
-            <ul style={{ listStyle: 'none', padding: 0, fontSize: '0.875rem', color: '#555', lineHeight: 2 }}>
-              <li>✓ 10 trades / mois</li>
-              <li>✓ Plan IA complet chaque matin</li>
-              <li>✓ Stats avancées & patterns</li>
-              <li>✓ Discipline tracker</li>
-            </ul>
-            <a href="/register" style={{ display: 'block', textAlign: 'center', marginTop: '1.5rem', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '6px', fontSize: '0.875rem', textDecoration: 'none', color: '#111' }}>Choisir Starter</a>
+            <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '4px' }}>Starter</div>
+            <div style={{ fontSize: '12px', color: '#888', marginBottom: '1rem' }}>Pour trader avec méthode</div>
+            <div style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.25rem' }}>19€99<span style={{ fontSize: '1rem', fontWeight: 400, color: '#888' }}>/mois</span></div>
+            <div style={{ fontSize: '12px', color: '#aaa', marginBottom: '1.25rem' }}>Facturé mensuellement</div>
+            <div style={{ borderTop: '0.5px solid #f0f0f0', paddingTop: '1rem', marginBottom: '1rem' }}>
+              <div className="plan-feature-on"><div className="plan-check">✓</div>Trades illimités</div>
+              <div className="plan-feature-on"><div className="plan-check">✓</div>Plans illimités</div>
+              <div className="plan-feature-on"><div className="plan-check">✓</div>Stats avancées & patterns</div>
+              <div className="plan-feature-on"><div className="plan-check">✓</div>Discipline tracker</div>
+              <div className="plan-feature-off"><div className="plan-cross">✗</div>Briefing Macro IA</div>
+            </div>
+            <a href="/register" style={{ display: 'block', textAlign: 'center', padding: '0.75rem', border: '0.5px solid #ddd', borderRadius: '8px', fontSize: '0.875rem', textDecoration: 'none', color: '#111', fontWeight: 500 }}>Choisir Starter</a>
           </div>
 
           {/* Pro */}
-          <div className="plan-card" style={{ border: '2px solid #111' }}>
-            <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '0.5rem' }}>Pro <span style={{ background: '#111', color: '#fff', fontSize: '0.7rem', padding: '2px 8px', borderRadius: '4px', marginLeft: '6px' }}>Populaire</span></div>
-            <div style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '1rem' }}>29€<span style={{ fontSize: '1rem', fontWeight: 400, color: '#888' }}>/mois</span></div>
-            <ul style={{ listStyle: 'none', padding: 0, fontSize: '0.875rem', color: '#555', lineHeight: 2 }}>
-              <li>✓ Trades illimités</li>
-              <li>✓ Plan IA complet chaque matin</li>
-              <li>✓ Stats avancées & patterns</li>
-              <li>✓ Discipline tracker</li>
-              <li>✓ Briefing Macro IA</li>
-            </ul>
-            <a href="/register" style={{ display: 'block', textAlign: 'center', marginTop: '1.5rem', padding: '0.75rem', background: '#111', color: '#fff', borderRadius: '6px', fontSize: '0.875rem', textDecoration: 'none' }}>Essayer gratuitement</a>
+          <div className="plan-card" style={{ border: '2px solid #111', position: 'relative' }}>
+            <div style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', background: '#111', color: '#fff', fontSize: '11px', fontWeight: 600, padding: '4px 14px', borderRadius: '20px', whiteSpace: 'nowrap' }}>⭐ Populaire</div>
+            <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '4px' }}>Pro</div>
+            <div style={{ fontSize: '12px', color: '#888', marginBottom: '1rem' }}>Pour le trader sérieux</div>
+            <div style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.25rem' }}>29€<span style={{ fontSize: '1rem', fontWeight: 400, color: '#888' }}>/mois</span></div>
+            <div style={{ fontSize: '12px', color: '#aaa', marginBottom: '1.25rem' }}>Gratuit pour commencer · sans CB</div>
+            <div style={{ borderTop: '0.5px solid #f0f0f0', paddingTop: '1rem', marginBottom: '1rem' }}>
+              <div className="plan-feature-on"><div className="plan-check">✓</div>Trades illimités</div>
+              <div className="plan-feature-on"><div className="plan-check">✓</div>Plans illimités</div>
+              <div className="plan-feature-on"><div className="plan-check">✓</div>Stats avancées & patterns</div>
+              <div className="plan-feature-on"><div className="plan-check">✓</div>Discipline tracker</div>
+              <div className="plan-feature-on"><div className="plan-check">✓</div><strong>Briefing Macro IA</strong></div>
+            </div>
+            <a href="/register" style={{ display: 'block', textAlign: 'center', padding: '0.75rem', background: '#111', color: '#fff', borderRadius: '8px', fontSize: '0.875rem', textDecoration: 'none', fontWeight: 600 }}>Essayer gratuitement →</a>
           </div>
 
         </div>
+        <div style={{ marginTop: '1.5rem', fontSize: '12px', color: '#aaa' }}>Pas de carte bancaire requise · Annule à tout moment</div>
       </section>
 
       {/* CTA Final */}
