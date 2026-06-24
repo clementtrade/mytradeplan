@@ -71,25 +71,18 @@ export default function Home() {
 
       {/* HERO — 2 colonnes */}
       <section style={{ maxWidth: '1100px', margin: '0 auto', padding: '5rem 2.5rem 4rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem', alignItems: 'center' }}>
-
-        {/* Texte gauche */}
         <div>
-          {/* Bannière */}
           <div className="anim-1" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '20px', padding: '5px 14px', marginBottom: '1.5rem' }}>
             <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#16a34a' }}></div>
             <span style={{ fontSize: '12px', color: '#16a34a', fontWeight: 500 }}>Plan pré-marché IA · Tous marchés</span>
           </div>
-
           <h1 className="anim-2" style={{ fontSize: '2.75rem', fontWeight: 700, lineHeight: 1.1, letterSpacing: '-1.5px', marginBottom: '1.25rem' }}>
             Trade avec un plan.<br />
             <span style={{ color: '#666' }}>Performe avec des données.</span>
           </h1>
-
           <p className="anim-3" style={{ fontSize: '1rem', color: '#666', lineHeight: 1.7, marginBottom: '1.75rem', maxWidth: '400px' }}>
             MyTradePlan te guide chaque matin avec un plan pré-marché IA personnalisé, et analyse tes trades pour identifier ton edge réel.
           </p>
-
-          {/* Points valeur */}
           <div className="anim-4" style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '1.75rem' }}>
             {["L'IA prépare ton plan, toi tu trades", "Trouve ton vrai edge par setup", "Transforme tes erreurs en edge"].map((p, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', color: '#444' }}>
@@ -98,14 +91,10 @@ export default function Home() {
               </div>
             ))}
           </div>
-
-          {/* CTA */}
           <div className="anim-5" style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '1.5rem' }}>
             <a href="/register" className="btn-main">Commencer gratuitement →</a>
             <a href="/features" className="btn-sec">Voir comment ça marche</a>
           </div>
-
-          {/* Social proof */}
           <div className="anim-5" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#16a34a' }}></div>
@@ -116,10 +105,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Mockup droite */}
         <div style={{ position: 'relative', paddingTop: '1.5rem', paddingBottom: '1.5rem' }}>
-
-          {/* Card principale — chat */}
           <div className="mockup-float" style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '16px', padding: '1.25rem', boxShadow: '0 12px 48px rgba(0,0,0,0.1)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', paddingBottom: '10px', borderBottom: '0.5px solid #f0f0f0' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -131,61 +117,39 @@ export default function Home() {
               </div>
               <div style={{ background: '#f0fdf4', color: '#16a34a', fontSize: '10px', padding: '3px 8px', borderRadius: '4px', fontWeight: 500 }}>En session</div>
             </div>
-
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '10px' }}>
-              <div style={{ background: '#f5f5f5', borderRadius: '4px 10px 10px 10px', padding: '9px 12px', fontSize: '12px', color: '#333', maxWidth: '85%' }}>
-                GEX positif ou négatif ce matin ?
-              </div>
+              <div style={{ background: '#f5f5f5', borderRadius: '4px 10px 10px 10px', padding: '9px 12px', fontSize: '12px', color: '#333', maxWidth: '85%' }}>GEX positif ou négatif ce matin ?</div>
               <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <div style={{ background: '#111', borderRadius: '10px 4px 10px 10px', padding: '9px 12px', fontSize: '12px', color: '#fff', maxWidth: '75%' }}>
-                  Négatif, Gamma négatif.
-                </div>
+                <div style={{ background: '#111', borderRadius: '10px 4px 10px 10px', padding: '9px 12px', fontSize: '12px', color: '#fff', maxWidth: '75%' }}>Négatif, Gamma négatif.</div>
               </div>
-              <div style={{ background: '#f5f5f5', borderRadius: '4px 10px 10px 10px', padding: '9px 12px', fontSize: '12px', color: '#333', maxWidth: '85%' }}>
-                Forme du Volume Profile — D, B ou P shape ?
-              </div>
+              <div style={{ background: '#f5f5f5', borderRadius: '4px 10px 10px 10px', padding: '9px 12px', fontSize: '12px', color: '#333', maxWidth: '85%' }}>Forme du Volume Profile — D, B ou P shape ?</div>
               <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <div style={{ background: '#111', borderRadius: '10px 4px 10px 10px', padding: '9px 12px', fontSize: '12px', color: '#fff', maxWidth: '75%' }}>
-                  B shape, sous la VAL.
-                </div>
+                <div style={{ background: '#111', borderRadius: '10px 4px 10px 10px', padding: '9px 12px', fontSize: '12px', color: '#fff', maxWidth: '75%' }}>B shape, sous la VAL.</div>
               </div>
               <div style={{ background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '4px 10px 10px 10px', padding: '9px 12px', fontSize: '12px', maxWidth: '90%' }}>
                 <div style={{ color: '#16a34a', fontSize: '10px', fontWeight: 600, marginBottom: '3px' }}>Plan structuré ✓</div>
                 <span style={{ color: '#444' }}>Short seulement · Break & retest vers puts inférieurs · Pas de mean reversion aujourd'hui.</span>
               </div>
             </div>
-
             <div style={{ background: '#f9f9f9', borderRadius: '8px', padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: '12px', color: '#aaa' }}>Réponds ici...</span>
               <div style={{ background: '#111', borderRadius: '6px', padding: '5px 12px', fontSize: '11px', color: '#fff' }}>→</div>
             </div>
           </div>
 
-          {/* Mini card stats — bas gauche */}
           <div style={{ position: 'absolute', bottom: '-8px', left: '-24px', background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '10px 16px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', display: 'flex', gap: '16px', animation: 'float2 5s 0.5s ease-in-out infinite' }}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '16px', fontWeight: 700, fontFamily: 'monospace', color: '#111' }}>71%</div>
-              <div style={{ fontSize: '10px', color: '#aaa' }}>Win rate</div>
-            </div>
+            <div style={{ textAlign: 'center' }}><div style={{ fontSize: '16px', fontWeight: 700, fontFamily: 'monospace', color: '#111' }}>71%</div><div style={{ fontSize: '10px', color: '#aaa' }}>Win rate</div></div>
             <div style={{ width: '0.5px', background: '#e8e8e8' }}></div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '16px', fontWeight: 700, fontFamily: 'monospace', color: '#16a34a' }}>+1.8R</div>
-              <div style={{ fontSize: '10px', color: '#aaa' }}>R moyen</div>
-            </div>
+            <div style={{ textAlign: 'center' }}><div style={{ fontSize: '16px', fontWeight: 700, fontFamily: 'monospace', color: '#16a34a' }}>+1.8R</div><div style={{ fontSize: '10px', color: '#aaa' }}>R moyen</div></div>
             <div style={{ width: '0.5px', background: '#e8e8e8' }}></div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '16px', fontWeight: 700, fontFamily: 'monospace', color: '#111' }}>84%</div>
-              <div style={{ fontSize: '10px', color: '#aaa' }}>Discipline</div>
-            </div>
+            <div style={{ textAlign: 'center' }}><div style={{ fontSize: '16px', fontWeight: 700, fontFamily: 'monospace', color: '#111' }}>84%</div><div style={{ fontSize: '10px', color: '#aaa' }}>Discipline</div></div>
           </div>
 
-          {/* Mini card setup — haut droite */}
           <div style={{ position: 'absolute', top: '0px', right: '-20px', background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '10px', padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', animation: 'float2 5s 1s ease-in-out infinite' }}>
             <div style={{ fontSize: '10px', color: '#aaa', marginBottom: '3px' }}>Meilleur setup</div>
             <div style={{ fontSize: '13px', fontWeight: 600, color: '#111' }}>Break & retest</div>
             <div style={{ fontSize: '11px', color: '#16a34a', fontWeight: 500 }}>78% win rate</div>
           </div>
-
         </div>
       </section>
 
@@ -348,11 +312,11 @@ export default function Home() {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" style={{ maxWidth: '900px', margin: '0 auto', padding: '4rem 2rem', textAlign: 'center' }}>
+      <section id="pricing" style={{ maxWidth: '700px', margin: '0 auto', padding: '4rem 2rem', textAlign: 'center' }}>
         <div style={{ fontSize: '0.7rem', color: '#888', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '0.5rem' }}>Tarifs</div>
         <h2 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.75rem', letterSpacing: '-0.5px' }}>Simple et transparent</h2>
         <p style={{ color: '#666', marginBottom: '3rem' }}>Commence gratuitement, upgrade quand tu es prêt.</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', textAlign: 'left' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', textAlign: 'left' }}>
 
           {/* Gratuit */}
           <div className="plan-card" style={{ border: '0.5px solid #e8e8e8' }}>
@@ -370,29 +334,13 @@ export default function Home() {
             <a href="/register" style={{ display: 'block', textAlign: 'center', padding: '0.75rem', border: '0.5px solid #ddd', borderRadius: '8px', fontSize: '0.875rem', textDecoration: 'none', color: '#111', fontWeight: 500 }}>Commencer</a>
           </div>
 
-          {/* Starter */}
-          <div className="plan-card" style={{ border: '0.5px solid #e8e8e8' }}>
-            <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '4px' }}>Starter</div>
-            <div style={{ fontSize: '12px', color: '#888', marginBottom: '1rem' }}>Pour trader avec méthode</div>
-            <div style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.25rem' }}>19€99<span style={{ fontSize: '1rem', fontWeight: 400, color: '#888' }}>/mois</span></div>
-            <div style={{ fontSize: '12px', color: '#aaa', marginBottom: '1.25rem' }}>Facturé mensuellement</div>
-            <div style={{ borderTop: '0.5px solid #f0f0f0', paddingTop: '1rem', marginBottom: '1rem' }}>
-              <div className="plan-feature-on"><div className="plan-check">✓</div>Trades illimités</div>
-              <div className="plan-feature-on"><div className="plan-check">✓</div>Plans illimités</div>
-              <div className="plan-feature-on"><div className="plan-check">✓</div>Stats avancées & patterns</div>
-              <div className="plan-feature-on"><div className="plan-check">✓</div>Discipline tracker</div>
-              <div className="plan-feature-off"><div className="plan-cross">✗</div>Briefing Macro IA</div>
-            </div>
-            <a href="/register" style={{ display: 'block', textAlign: 'center', padding: '0.75rem', border: '0.5px solid #ddd', borderRadius: '8px', fontSize: '0.875rem', textDecoration: 'none', color: '#111', fontWeight: 500 }}>Choisir Starter</a>
-          </div>
-
           {/* Pro */}
           <div className="plan-card" style={{ border: '2px solid #111', position: 'relative' }}>
             <div style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', background: '#111', color: '#fff', fontSize: '11px', fontWeight: 600, padding: '4px 14px', borderRadius: '20px', whiteSpace: 'nowrap' }}>⭐ Populaire</div>
             <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '4px' }}>Pro</div>
             <div style={{ fontSize: '12px', color: '#888', marginBottom: '1rem' }}>Pour le trader sérieux</div>
             <div style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.25rem' }}>29€<span style={{ fontSize: '1rem', fontWeight: 400, color: '#888' }}>/mois</span></div>
-            <div style={{ fontSize: '12px', color: '#aaa', marginBottom: '1.25rem' }}>Gratuit pour commencer · sans CB</div>
+            <div style={{ fontSize: '12px', color: '#aaa', marginBottom: '1.25rem' }}>7 jours gratuits · sans carte bancaire</div>
             <div style={{ borderTop: '0.5px solid #f0f0f0', paddingTop: '1rem', marginBottom: '1rem' }}>
               <div className="plan-feature-on"><div className="plan-check">✓</div>Trades illimités</div>
               <div className="plan-feature-on"><div className="plan-check">✓</div>Plans illimités</div>
@@ -400,7 +348,7 @@ export default function Home() {
               <div className="plan-feature-on"><div className="plan-check">✓</div>Discipline tracker</div>
               <div className="plan-feature-on"><div className="plan-check">✓</div><strong>Briefing Macro IA</strong></div>
             </div>
-            <a href="/register" style={{ display: 'block', textAlign: 'center', padding: '0.75rem', background: '#111', color: '#fff', borderRadius: '8px', fontSize: '0.875rem', textDecoration: 'none', fontWeight: 600 }}>Essayer gratuitement →</a>
+            <a href="/register" style={{ display: 'block', textAlign: 'center', padding: '0.75rem', background: '#111', color: '#fff', borderRadius: '8px', fontSize: '0.875rem', textDecoration: 'none', fontWeight: 600 }}>Essayer 7 jours gratuitement →</a>
           </div>
 
         </div>
