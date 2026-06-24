@@ -38,7 +38,7 @@ export default function PlanPage() {
   function formatText(text: string) {
     return text
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/━+/g, '<hr style="border:none;border-top:0.5px solid rgba(255,255,255,0.15);margin:8px 0;">')
+      .replace(/━+/g, '<hr style="border:none;border-top:0.5px solid #e8e8e8;margin:10px 0;">')
       .split('\n')
       .map((line, i) => `<div key=${i} style="min-height:4px">${line || '&nbsp;'}</div>`)
       .join('')
@@ -98,115 +98,171 @@ export default function PlanPage() {
     setLoading(false)
   }
 
+  // PAGE D'ACCUEIL AVANT LE PLAN
   if (!started) {
     return (
-      <main style={{ minHeight: '100vh', background: '#0A0E1A', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem' }}>
-        <div style={{ textAlign: 'center', maxWidth: '480px', width: '100%' }}>
-          <div style={{ color: '#10B981', fontFamily: 'monospace', fontSize: '11px', letterSpacing: '2px', marginBottom: '1rem' }}>MYTRADEPLAN IA</div>
-          <h1 style={{ color: 'white', fontSize: '26px', fontWeight: 600, marginBottom: '0.75rem' }}>Plan du matin</h1>
+      <main style={{ minHeight: '100vh', background: '#f9f9f9', display: 'flex', flexDirection: 'column', fontFamily: 'Inter, sans-serif' }}>
+        <style>{`
+          @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+          .plan-anim { animation: fadeUp 0.5s ease both; }
+          .btn-start {
+            width: 100%; background: #111; color: #fff; border: none; border-radius: 8px;
+            padding: 14px; font-weight: 600; font-size: 15px; cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+            transition: box-shadow 0.2s, transform 0.2s; margin-bottom: 1.25rem;
+            font-family: inherit;
+          }
+          .btn-start:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.22); transform: translateY(-1px); }
+        `}</style>
 
-          {profile && (
-            <div style={{ background: '#111827', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '12px 16px', marginBottom: '1.5rem', textAlign: 'left' }}>
-              <div style={{ color: 'rgba(229,231,235,0.4)', fontSize: '11px', fontFamily: 'monospace', marginBottom: '6px' }}>TON PROFIL</div>
-              <div style={{ color: 'white', fontSize: '13px' }}>{profile.market} · {profile.tf} · {profile.approach}</div>
+        {/* Navbar */}
+        <nav style={{ background: '#fff', borderBottom: '0.5px solid #e8e8e8', padding: '1rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <a href="/dashboard" style={{ fontWeight: 700, fontSize: '1rem', color: '#111', textDecoration: 'none', letterSpacing: '-0.3px' }}>MyTradePlan</a>
+          <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+            <a href="/plan" style={{ color: '#111', fontWeight: 600, fontSize: '14px', textDecoration: 'none' }}>Plan du matin</a>
+            <a href="/journal" style={{ color: '#666', fontSize: '14px', textDecoration: 'none' }}>Journal</a>
+            <a href="/stats" style={{ color: '#666', fontSize: '14px', textDecoration: 'none' }}>Stats</a>
+          </div>
+        </nav>
+
+        {/* Contenu centré */}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+          <div className="plan-anim" style={{ maxWidth: '440px', width: '100%' }}>
+
+            <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
+              <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '0.5rem' }}>Plan du matin</div>
+              <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#111', letterSpacing: '-0.5px', marginBottom: '0.5rem' }}>Prêt pour la session ?</h1>
+              <p style={{ fontSize: '14px', color: '#888', lineHeight: 1.6 }}>L'IA va te poser quelques questions sur le contexte du jour pour construire ton plan.</p>
             </div>
-          )}
 
-          {/* Bouton commencer EN HAUT */}
-          <button
-            onClick={startPlan}
-            style={{ width: '100%', background: '#10B981', color: 'black', border: 'none', borderRadius: '8px', padding: '14px 32px', fontFamily: 'monospace', fontWeight: 700, fontSize: '15px', cursor: 'pointer', marginBottom: '1.5rem', letterSpacing: '0.5px' }}
-          >
-            Commencer mon plan →
-          </button>
-
-          {/* Macro Briefing EN DESSOUS */}
-          <div style={{ background: '#111827', border: `0.5px solid ${isPro ? 'rgba(16,185,129,0.3)' : 'rgba(255,255,255,0.08)'}`, borderRadius: '12px', padding: '1.25rem', textAlign: 'left', position: 'relative' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-              <div>
-                <div style={{ color: '#10B981', fontFamily: 'monospace', fontSize: '11px', letterSpacing: '1px' }}>DAILY BRIEFING MACRO</div>
-                <div style={{ color: 'white', fontSize: '13px', fontWeight: 500, marginTop: '2px' }}>Personnalisé à ton profil de trader</div>
+            {profile && (
+              <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '10px', padding: '12px 16px', marginBottom: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                <div style={{ color: '#aaa', fontSize: '11px', fontWeight: 500, marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Ton profil</div>
+                <div style={{ color: '#111', fontSize: '13px', fontWeight: 500 }}>{profile.market} · {profile.tf} · {profile.approach}</div>
               </div>
-              {!isPro && (
-                <div style={{ background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: '6px', padding: '4px 10px', fontSize: '11px', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  🔒 Pro
+            )}
+
+            <button className="btn-start" onClick={startPlan}>
+              Commencer mon plan →
+            </button>
+
+            {/* Briefing Macro */}
+            <div style={{ background: '#fff', border: `0.5px solid ${isPro ? '#d1fae5' : '#e8e8e8'}`, borderRadius: '10px', padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
+                <div>
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: '#111', marginBottom: '2px' }}>Daily Briefing Macro</div>
+                  <div style={{ fontSize: '12px', color: '#888' }}>Personnalisé à ton profil</div>
+                </div>
+                {!isPro && (
+                  <div style={{ background: '#f5f5f5', border: '0.5px solid #e0e0e0', borderRadius: '6px', padding: '3px 10px', fontSize: '11px', color: '#888' }}>
+                    🔒 Pro
+                  </div>
+                )}
+              </div>
+
+              {isPro ? (
+                <div>
+                  {!macroResult ? (
+                    <button
+                      onClick={getMacroBriefing}
+                      disabled={macroLoading}
+                      style={{ width: '100%', background: '#111', color: '#fff', border: 'none', borderRadius: '7px', padding: '10px', fontWeight: 600, fontSize: '13px', cursor: macroLoading ? 'not-allowed' : 'pointer', opacity: macroLoading ? 0.6 : 1, fontFamily: 'inherit' }}
+                    >
+                      {macroLoading ? 'Génération en cours...' : '📊 Générer mon briefing macro →'}
+                    </button>
+                  ) : (
+                    <div>
+                      <div style={{ color: '#444', fontSize: '13px', lineHeight: 1.7 }}
+                        dangerouslySetInnerHTML={{ __html: formatText(macroResult) }}
+                      />
+                      <button
+                        onClick={getMacroBriefing}
+                        style={{ marginTop: '0.75rem', background: 'transparent', color: '#111', border: '0.5px solid #ddd', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit' }}
+                      >
+                        Actualiser
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <div style={{ filter: 'blur(3px)', pointerEvents: 'none', userSelect: 'none' }}>
+                    <div style={{ width: '100%', background: '#111', color: '#fff', borderRadius: '7px', padding: '10px', fontWeight: 600, fontSize: '13px', textAlign: 'center' }}>
+                      📊 Générer mon briefing macro →
+                    </div>
+                    <div style={{ marginTop: '0.75rem', color: '#aaa', fontSize: '13px', lineHeight: 1.7 }}>
+                      Fed en mode hawkish, données NFP vendredi...
+                    </div>
+                  </div>
+                  <div style={{ marginTop: '0.75rem', textAlign: 'center' }}>
+                    <a href="/pricing" style={{ color: '#111', fontSize: '12px', textDecoration: 'none', fontWeight: 600 }}>Passer au plan Pro →</a>
+                  </div>
                 </div>
               )}
             </div>
 
-            {isPro ? (
-              <div>
-                {!macroResult ? (
-                  <button
-                    onClick={getMacroBriefing}
-                    disabled={macroLoading}
-                    style={{ width: '100%', background: '#10B981', color: 'black', border: 'none', borderRadius: '6px', padding: '10px 16px', fontWeight: 700, fontSize: '13px', cursor: macroLoading ? 'not-allowed' : 'pointer', fontFamily: 'monospace', opacity: macroLoading ? 0.7 : 1 }}
-                  >
-                    {macroLoading ? '⏳ Génération en cours...' : '📊 Générer mon briefing macro →'}
-                  </button>
-                ) : (
-                  <div>
-                    <div style={{ color: 'rgba(229,231,235,0.85)', fontSize: '13px', lineHeight: 1.7 }}
-                      dangerouslySetInnerHTML={{ __html: formatText(macroResult) }}
-                    />
-                    <button
-                      onClick={getMacroBriefing}
-                      style={{ marginTop: '0.75rem', background: 'transparent', color: '#10B981', border: '0.5px solid rgba(16,185,129,0.3)', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', cursor: 'pointer', fontFamily: 'monospace' }}
-                    >
-                      Actualiser
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div>
-                <div style={{ filter: 'blur(3px)', pointerEvents: 'none', userSelect: 'none' }}>
-                  <div style={{ width: '100%', background: '#10B981', color: 'black', borderRadius: '6px', padding: '10px 16px', fontWeight: 700, fontSize: '13px', textAlign: 'center', fontFamily: 'monospace' }}>
-                    📊 Générer mon briefing macro →
-                  </div>
-                  <div style={{ marginTop: '0.75rem', color: 'rgba(229,231,235,0.5)', fontSize: '13px', lineHeight: 1.7 }}>
-                    Fed en mode hawkish, données NFP vendredi, résistance clé sur les 4500...
-                  </div>
-                </div>
-                <div style={{ marginTop: '0.75rem', textAlign: 'center' }}>
-                  <a href="/pricing" style={{ color: '#10B981', fontSize: '12px', textDecoration: 'none', fontFamily: 'monospace' }}>Passer au plan Pro →</a>
-                </div>
-              </div>
-            )}
           </div>
-
         </div>
       </main>
     )
   }
 
+  // PAGE DE CHAT
   return (
-    <main style={{ minHeight: '100vh', background: '#0A0E1A', display: 'flex', flexDirection: 'column', fontFamily: 'Inter, sans-serif' }}>
+    <main style={{ minHeight: '100vh', background: '#f9f9f9', display: 'flex', flexDirection: 'column', fontFamily: 'Inter, sans-serif' }}>
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .msg-anim { animation: fadeIn 0.3s ease both; }
+        @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+        .dot { animation: pulse 1.2s ease-in-out infinite; }
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+        .chat-input {
+          flex: 1; background: transparent; border: none; color: #111;
+          font-size: 14px; outline: none; font-family: inherit; padding: 6px 8px;
+        }
+        .chat-input::placeholder { color: #aaa; }
+        .nav-link-plan { color: #666; text-decoration: none; font-size: 14px; transition: color 0.15s; }
+        .nav-link-plan:hover { color: #111; }
+      `}</style>
 
-      {/* Header */}
-      <div style={{ padding: '1rem 1.5rem', borderBottom: '0.5px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ color: '#10B981', fontFamily: 'monospace', fontSize: '11px', letterSpacing: '2px' }}>MYTRADEPLAN IA</div>
-        <a href="/dashboard" style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px', textDecoration: 'none' }}>← Dashboard</a>
-      </div>
+      {/* Navbar */}
+      <nav style={{ background: '#fff', borderBottom: '0.5px solid #e8e8e8', padding: '1rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+        <a href="/dashboard" style={{ fontWeight: 700, fontSize: '1rem', color: '#111', textDecoration: 'none', letterSpacing: '-0.3px' }}>MyTradePlan</a>
+        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+          <span style={{ color: '#111', fontWeight: 600, fontSize: '14px' }}>Plan du matin</span>
+          <a href="/journal" className="nav-link-plan">Journal</a>
+          <a href="/stats" className="nav-link-plan">Stats</a>
+          {profile && (
+            <div style={{ background: '#f0fdf4', color: '#16a34a', fontSize: '11px', padding: '3px 10px', borderRadius: '4px', fontWeight: 500 }}>
+              En session
+            </div>
+          )}
+        </div>
+      </nav>
 
-      {/* Zone messages — scrollable */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem 1rem' }}>
-        <div style={{ maxWidth: '640px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      {/* Zone messages */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '2rem 1rem' }}>
+        <div style={{ maxWidth: '620px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
           {messages.map((m, i) => (
-            <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
+            <div key={i} className="msg-anim" style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
+              {m.role === 'ai' && (
+                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: '#fff', fontWeight: 600, flexShrink: 0, marginRight: '8px', marginTop: '2px' }}>M</div>
+              )}
               <div style={{
-                maxWidth: '82%',
+                maxWidth: '78%',
                 padding: '12px 16px',
-                borderRadius: m.role === 'user' ? '14px 4px 14px 14px' : '4px 14px 14px 14px',
-                background: m.role === 'user' ? '#10B981' : '#111827',
-                border: m.role === 'ai' ? '0.5px solid rgba(255,255,255,0.08)' : 'none',
-                color: m.role === 'user' ? 'black' : 'white',
+                borderRadius: m.role === 'user' ? '12px 4px 12px 12px' : '4px 12px 12px 12px',
+                background: m.role === 'user' ? '#111' : '#fff',
+                border: m.role === 'ai' ? '0.5px solid #e8e8e8' : 'none',
+                color: m.role === 'user' ? '#fff' : '#111',
                 fontSize: '14px',
                 lineHeight: 1.7,
+                boxShadow: m.role === 'ai' ? '0 2px 8px rgba(0,0,0,0.04)' : 'none',
               }}>
                 {m.role === 'ai' && (
-                  <div style={{ color: '#10B981', fontFamily: 'monospace', fontSize: '10px', letterSpacing: '1px', marginBottom: '8px' }}>MYTRADEPLAN IA</div>
+                  <div style={{ color: '#aaa', fontSize: '10px', fontWeight: 500, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>MyTradePlan IA</div>
                 )}
                 {m.role === 'ai'
                   ? <div dangerouslySetInnerHTML={{ __html: formatText(m.text) }} />
@@ -217,13 +273,13 @@ export default function PlanPage() {
           ))}
 
           {loading && (
-            <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-              <div style={{ background: '#111827', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '4px 14px 14px 14px', padding: '12px 16px' }}>
-                <div style={{ color: '#10B981', fontFamily: 'monospace', fontSize: '10px', letterSpacing: '1px', marginBottom: '6px' }}>MYTRADEPLAN IA</div>
-                <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                  {[0,1,2].map(i => (
-                    <div key={i} style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'rgba(229,231,235,0.4)' }} />
-                  ))}
+            <div className="msg-anim" style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'flex-start', gap: '8px' }}>
+              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: '#fff', fontWeight: 600, flexShrink: 0 }}>M</div>
+              <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '4px 12px 12px 12px', padding: '14px 16px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
+                  <div className="dot" style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#aaa' }} />
+                  <div className="dot" style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#aaa' }} />
+                  <div className="dot" style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#aaa' }} />
                 </div>
               </div>
             </div>
@@ -233,28 +289,28 @@ export default function PlanPage() {
         </div>
       </div>
 
-      {/* Input — collé sous les messages, pas en bas d'écran */}
-      <div style={{ padding: '0.75rem 1rem 1.25rem', background: '#0A0E1A' }}>
-        <div style={{ maxWidth: '640px', margin: '0 auto', background: '#111827', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: '12px', display: 'flex', gap: '8px', padding: '8px' }}>
+      {/* Input */}
+      <div style={{ padding: '0.75rem 1rem 1.25rem', background: '#f9f9f9', flexShrink: 0 }}>
+        <div style={{ maxWidth: '620px', margin: '0 auto', background: '#fff', border: '0.5px solid #e0e0e0', borderRadius: '12px', display: 'flex', gap: '8px', padding: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
           <input
+            className="chat-input"
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && sendMessage()}
             placeholder="Réponds ici..."
             disabled={loading}
-            style={{ flex: 1, background: 'transparent', border: 'none', color: 'white', fontSize: '14px', outline: 'none', fontFamily: 'inherit', padding: '6px 8px' }}
           />
           <button
             onClick={sendMessage}
             disabled={loading || !input.trim()}
             style={{
-              background: input.trim() && !loading ? '#10B981' : 'rgba(16,185,129,0.15)',
-              color: input.trim() && !loading ? 'black' : 'rgba(255,255,255,0.2)',
+              background: input.trim() && !loading ? '#111' : '#f0f0f0',
+              color: input.trim() && !loading ? '#fff' : '#aaa',
               border: 'none', borderRadius: '8px',
               padding: '8px 18px',
-              fontFamily: 'monospace', fontWeight: 700, fontSize: '13px',
+              fontWeight: 700, fontSize: '14px',
               cursor: input.trim() && !loading ? 'pointer' : 'not-allowed',
-              transition: 'all 0.15s',
+              transition: 'all 0.15s', flexShrink: 0,
             }}
           >
             →
