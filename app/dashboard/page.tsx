@@ -1,6 +1,6 @@
 'use client'
 
-import Sidebar from '@/components/Sidebar'
+import Sidebar from '../components/Sidebar'
 import Link from 'next/link'
 
 const trades = [
@@ -80,24 +80,19 @@ export default function DashboardPage() {
           border-radius: 8px; cursor: pointer; text-decoration: none; transition: opacity 0.15s;
         }
         .btn-add-trade:hover { opacity: 0.85; }
-
         .body { padding: 20px 28px; display: flex; flex-direction: column; gap: 16px; }
-
         .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
         .kpi-card { background: #f9f9f9; border-radius: 10px; padding: 12px 14px; }
         .kpi-label { font-size: 11px; color: #aaa; margin-bottom: 4px; }
         .kpi-val { font-size: 20px; font-weight: 700; color: #111; font-variant-numeric: tabular-nums; letter-spacing: -0.5px; }
         .kpi-val.green { color: #16a34a; }
         .kpi-sub { font-size: 10px; color: #bbb; margin-top: 2px; }
-
         .grid-2 { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 14px; }
-
         .panel { background: #fff; border: 0.5px solid #e8e8e8; border-radius: 12px; padding: 14px 16px; }
         .panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
         .panel-title { font-size: 12px; font-weight: 600; color: #111; }
         .panel-link { font-size: 11px; color: #aaa; text-decoration: none; transition: color 0.15s; }
         .panel-link:hover { color: #111; }
-
         .trade-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 0.5px solid #f5f5f5; }
         .trade-row:last-child { border-bottom: none; padding-bottom: 0; }
         .badge { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; }
@@ -110,13 +105,11 @@ export default function DashboardPage() {
         .trade-plan { font-size: 10px; font-weight: 500; min-width: 46px; text-align: right; }
         .trade-plan.yes { color: #16a34a; }
         .trade-plan.no  { color: #dc2626; }
-
         .equity-header {
           display: flex; justify-content: space-between; font-size: 10px; color: #aaa;
           margin-bottom: 5px; margin-top: 12px; padding-top: 12px; border-top: 0.5px solid #f0f0f0;
         }
         .equity-total { color: #16a34a; font-weight: 600; }
-
         .setup-row { margin-bottom: 10px; }
         .setup-row:last-child { margin-bottom: 0; }
         .setup-head { display: flex; justify-content: space-between; margin-bottom: 4px; }
@@ -128,13 +121,11 @@ export default function DashboardPage() {
         .bar-fill  { height: 100%; border-radius: 3px; }
         .bar-green { background: #16a34a; }
         .bar-red   { background: #dc2626; }
-
         .insight {
           background: #fffbeb; border: 0.5px solid #fde68a; border-radius: 8px;
           padding: 8px 10px; font-size: 11px; color: #92400e;
           display: flex; align-items: flex-start; gap: 6px; margin-top: 12px;
         }
-
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
         .cal-head  { font-size: 10px; color: #aaa; text-align: center; padding-bottom: 6px; }
         .cal-day   { aspect-ratio: 1; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #ccc; }
@@ -176,13 +167,12 @@ export default function DashboardPage() {
 
         <div className="body">
 
-          {/* KPIs */}
           <div className="kpi-row">
             {[
-              { label: 'Win rate',     val: '71%',   green: true,  sub: 'sur 38 trades'   },
-              { label: 'R moyen',      val: '+1.8R',  green: true,  sub: 'trades gagnants' },
-              { label: 'Profit factor',val: '2.4',    green: false, sub: 'ce mois'          },
-              { label: 'Discipline',   val: '84%',   green: true,  sub: 'plan respecté'   },
+              { label: 'Win rate',      val: '71%',   green: true,  sub: 'sur 38 trades'   },
+              { label: 'R moyen',       val: '+1.8R', green: true,  sub: 'trades gagnants' },
+              { label: 'Profit factor', val: '2.4',   green: false, sub: 'ce mois'         },
+              { label: 'Discipline',    val: '84%',   green: true,  sub: 'plan respecté'   },
             ].map((k) => (
               <div key={k.label} className="kpi-card">
                 <div className="kpi-label">{k.label}</div>
@@ -192,7 +182,6 @@ export default function DashboardPage() {
             ))}
           </div>
 
-          {/* Journal + Setups */}
           <div className="grid-2">
             <div className="panel">
               <div className="panel-head">
@@ -244,7 +233,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Calendrier */}
           <div className="panel">
             <div className="panel-head">
               <span className="panel-title">Calendrier — juin 2025</span>
@@ -270,7 +258,7 @@ export default function DashboardPage() {
               {calCells.map((cell, i) => {
                 if (cell.day === null) return <div key={i} className="cal-day empty" />
                 let cls = 'cal-day'
-                if (cell.isToday)          cls += ' today'
+                if (cell.isToday)               cls += ' today'
                 else if (cell.result === true)  cls += ' win'
                 else if (cell.result === false) cls += ' loss'
                 else                            cls += ' no-trade'
