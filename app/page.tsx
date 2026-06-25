@@ -70,8 +70,8 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* HERO — 2 colonnes */}
-      <section style={{ maxWidth: '1100px', margin: '0 auto', padding: '5rem 2.5rem 4rem', display: 'grid', gridTemplateColumns: '1fr 1.15fr', gap: '4rem', alignItems: 'center' }}>
+      {/* HERO */}
+      <section style={{ maxWidth: '1100px', margin: '0 auto', padding: '5rem 2.5rem 4rem', display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '4rem', alignItems: 'center' }}>
 
         {/* Texte gauche */}
         <div>
@@ -108,89 +108,106 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Mockups droite — côte à côte avec rotation */}
-        <div style={{ display: 'flex', gap: '16px', alignItems: 'center', padding: '2rem 0.5rem' }}>
+        {/* Mockups droite — pleine hauteur côte à côte */}
+        <div style={{ display: 'flex', gap: '14px', alignItems: 'stretch', padding: '2.5rem 0.5rem', minHeight: '480px' }}>
 
-          {/* MOCKUP PLAN — rotation gauche */}
-          <div style={{ flex: 1, background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '18px', padding: '1.25rem', boxShadow: '0 16px 56px rgba(0,0,0,0.12)', animation: 'floatL 5s ease-in-out infinite' }}>
+          {/* MOCKUP PLAN */}
+          <div style={{ flex: 1, background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '20px', padding: '1.25rem', boxShadow: '0 20px 60px rgba(0,0,0,0.12)', animation: 'floatL 5s ease-in-out infinite', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', paddingBottom: '10px', borderBottom: '0.5px solid #f0f0f0' }}>
-              <div style={{ width: '26px', height: '26px', borderRadius: '50%', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: '#fff', fontWeight: 600, flexShrink: 0 }}>M</div>
+              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: '#fff', fontWeight: 600, flexShrink: 0 }}>M</div>
               <div>
-                <div style={{ fontSize: '11px', fontWeight: 600, color: '#111' }}>MyTradePlan IA</div>
-                <div style={{ fontSize: '9px', color: '#aaa' }}>Plan du matin</div>
+                <div style={{ fontSize: '12px', fontWeight: 600, color: '#111' }}>MyTradePlan IA</div>
+                <div style={{ fontSize: '10px', color: '#aaa' }}>Plan du matin · Aujourd'hui</div>
               </div>
-              <div style={{ marginLeft: 'auto', background: '#f0fdf4', color: '#16a34a', fontSize: '9px', padding: '2px 8px', borderRadius: '4px', fontWeight: 500 }}>En session</div>
+              <div style={{ marginLeft: 'auto', background: '#f0fdf4', color: '#16a34a', fontSize: '10px', padding: '3px 8px', borderRadius: '4px', fontWeight: 500 }}>En session</div>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', marginBottom: '10px' }}>
-              <div style={{ background: '#f5f5f5', borderRadius: '3px 10px 10px 10px', padding: '8px 11px', fontSize: '11px', color: '#333', maxWidth: '88%' }}>GEX positif ou négatif ce matin ?</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '10px', flex: 1 }}>
+              <div style={{ background: '#f5f5f5', borderRadius: '3px 10px 10px 10px', padding: '9px 12px', fontSize: '12px', color: '#333', maxWidth: '88%' }}>GEX positif ou négatif ce matin ?</div>
               <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <div style={{ background: '#111', borderRadius: '10px 3px 10px 10px', padding: '8px 11px', fontSize: '11px', color: '#fff', maxWidth: '78%' }}>Négatif, Gamma négatif.</div>
+                <div style={{ background: '#111', borderRadius: '10px 3px 10px 10px', padding: '9px 12px', fontSize: '12px', color: '#fff', maxWidth: '78%' }}>Négatif, Gamma négatif.</div>
               </div>
-              <div style={{ background: '#f5f5f5', borderRadius: '3px 10px 10px 10px', padding: '8px 11px', fontSize: '11px', color: '#333', maxWidth: '88%' }}>D, B ou P shape ?</div>
+              <div style={{ background: '#f5f5f5', borderRadius: '3px 10px 10px 10px', padding: '9px 12px', fontSize: '12px', color: '#333', maxWidth: '88%' }}>Forme du Volume Profile — D, B ou P shape ?</div>
               <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <div style={{ background: '#111', borderRadius: '10px 3px 10px 10px', padding: '8px 11px', fontSize: '11px', color: '#fff', maxWidth: '78%' }}>B shape, sous la VAL.</div>
+                <div style={{ background: '#111', borderRadius: '10px 3px 10px 10px', padding: '9px 12px', fontSize: '12px', color: '#fff', maxWidth: '78%' }}>B shape, sous la VAL.</div>
               </div>
-              <div style={{ background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '3px 10px 10px 10px', padding: '8px 11px', fontSize: '11px', maxWidth: '92%' }}>
-                <div style={{ color: '#16a34a', fontSize: '9px', fontWeight: 600, marginBottom: '3px' }}>Plan structuré ✓</div>
-                <span style={{ color: '#444' }}>Short · Break & retest vers puts inférieurs.</span>
+              <div style={{ background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '3px 10px 10px 10px', padding: '9px 12px', fontSize: '12px', maxWidth: '92%' }}>
+                <div style={{ color: '#16a34a', fontSize: '10px', fontWeight: 600, marginBottom: '3px' }}>Plan structuré ✓</div>
+                <span style={{ color: '#444' }}>Short seulement · Break & retest vers puts inférieurs · Pas de mean reversion aujourd'hui.</span>
               </div>
             </div>
-            <div style={{ background: '#f9f9f9', borderRadius: '8px', padding: '8px 11px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '11px', color: '#aaa' }}>Réponds ici...</span>
-              <div style={{ background: '#111', borderRadius: '6px', padding: '5px 12px', fontSize: '11px', color: '#fff' }}>→</div>
+            <div style={{ background: '#f9f9f9', borderRadius: '10px', padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
+              <span style={{ fontSize: '12px', color: '#aaa' }}>Réponds ici...</span>
+              <div style={{ background: '#111', borderRadius: '7px', padding: '6px 14px', fontSize: '12px', color: '#fff' }}>→</div>
             </div>
           </div>
 
-          {/* MOCKUP STATS — rotation droite */}
-          <div style={{ flex: 1, background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '18px', padding: '1.25rem', boxShadow: '0 16px 56px rgba(0,0,0,0.1)', animation: 'floatR 5s 0.6s ease-in-out infinite' }}>
-            <div style={{ fontSize: '12px', fontWeight: 600, color: '#111', marginBottom: '10px', paddingBottom: '9px', borderBottom: '0.5px solid #f0f0f0' }}>Stats & Performance</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginBottom: '10px' }}>
-              <div style={{ background: '#f9f9f9', borderRadius: '8px', padding: '9px', textAlign: 'center' }}>
-                <div style={{ fontSize: '17px', fontWeight: 700, color: '#16a34a', fontFamily: 'monospace' }}>71%</div>
-                <div style={{ fontSize: '9px', color: '#aaa', marginTop: '1px' }}>Win rate</div>
+          {/* MOCKUP STATS */}
+          <div style={{ flex: 1, background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '20px', padding: '1.25rem', boxShadow: '0 20px 60px rgba(0,0,0,0.1)', animation: 'floatR 5s 0.6s ease-in-out infinite', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ fontSize: '13px', fontWeight: 600, color: '#111', marginBottom: '12px', paddingBottom: '10px', borderBottom: '0.5px solid #f0f0f0' }}>Stats & Performance</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+              <div style={{ background: '#f9f9f9', borderRadius: '10px', padding: '12px', textAlign: 'center' }}>
+                <div style={{ fontSize: '20px', fontWeight: 700, color: '#16a34a', fontFamily: 'monospace' }}>71%</div>
+                <div style={{ fontSize: '10px', color: '#aaa', marginTop: '2px' }}>Win rate</div>
               </div>
-              <div style={{ background: '#f9f9f9', borderRadius: '8px', padding: '9px', textAlign: 'center' }}>
-                <div style={{ fontSize: '17px', fontWeight: 700, color: '#16a34a', fontFamily: 'monospace' }}>+1.8R</div>
-                <div style={{ fontSize: '9px', color: '#aaa', marginTop: '1px' }}>R moyen</div>
+              <div style={{ background: '#f9f9f9', borderRadius: '10px', padding: '12px', textAlign: 'center' }}>
+                <div style={{ fontSize: '20px', fontWeight: 700, color: '#16a34a', fontFamily: 'monospace' }}>+1.8R</div>
+                <div style={{ fontSize: '10px', color: '#aaa', marginTop: '2px' }}>R moyen</div>
               </div>
-              <div style={{ background: '#f9f9f9', borderRadius: '8px', padding: '9px', textAlign: 'center' }}>
-                <div style={{ fontSize: '17px', fontWeight: 700, color: '#111', fontFamily: 'monospace' }}>2.4</div>
-                <div style={{ fontSize: '9px', color: '#aaa', marginTop: '1px' }}>Profit Factor</div>
+              <div style={{ background: '#f9f9f9', borderRadius: '10px', padding: '12px', textAlign: 'center' }}>
+                <div style={{ fontSize: '20px', fontWeight: 700, color: '#111', fontFamily: 'monospace' }}>2.4</div>
+                <div style={{ fontSize: '10px', color: '#aaa', marginTop: '2px' }}>Profit Factor</div>
               </div>
-              <div style={{ background: '#f9f9f9', borderRadius: '8px', padding: '9px', textAlign: 'center' }}>
-                <div style={{ fontSize: '17px', fontWeight: 700, color: '#16a34a', fontFamily: 'monospace' }}>84%</div>
-                <div style={{ fontSize: '9px', color: '#aaa', marginTop: '1px' }}>Discipline</div>
+              <div style={{ background: '#f9f9f9', borderRadius: '10px', padding: '12px', textAlign: 'center' }}>
+                <div style={{ fontSize: '20px', fontWeight: 700, color: '#16a34a', fontFamily: 'monospace' }}>84%</div>
+                <div style={{ fontSize: '10px', color: '#aaa', marginTop: '2px' }}>Discipline</div>
               </div>
             </div>
-            <div style={{ fontSize: '9px', color: '#aaa', fontWeight: 500, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Capital cumulé</div>
-            <svg viewBox="0 0 200 50" style={{ width: '100%', height: '50px' }}>
+            <div style={{ fontSize: '10px', color: '#aaa', fontWeight: 500, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Capital cumulé</div>
+            <svg viewBox="0 0 220 65" style={{ width: '100%', height: '65px', marginBottom: '12px' }}>
               <defs>
-                <linearGradient id="gSt" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#16a34a" stopOpacity="0.12"/>
+                <linearGradient id="gSt2" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#16a34a" stopOpacity="0.15"/>
                   <stop offset="100%" stopColor="#16a34a" stopOpacity="0"/>
                 </linearGradient>
               </defs>
-              <path d="M5,40 L30,34 L55,26 L70,30 L95,20 L115,14 L140,9 L170,5 L195,2 L195,48 L5,48 Z" fill="url(#gSt)"/>
-              <path d="M5,40 L30,34 L55,26 L70,30 L95,20 L115,14 L140,9 L170,5 L195,2" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <circle cx="195" cy="2" r="3.5" fill="#16a34a"/>
-              <rect x="162" y="-3" width="34" height="13" rx="4" fill="#16a34a"/>
-              <text x="166" y="7" fontSize="7.5" fill="white" fontWeight="600">+8.7R</text>
+              <path d="M5,52 L30,46 L55,36 L75,40 L100,28 L120,20 L145,13 L175,7 L210,3 L210,62 L5,62 Z" fill="url(#gSt2)"/>
+              <path d="M5,52 L30,46 L55,36 L75,40 L100,28 L120,20 L145,13 L175,7 L210,3" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <circle cx="210" cy="3" r="4" fill="#16a34a"/>
+              <rect x="175" y="-3" width="38" height="14" rx="5" fill="#16a34a"/>
+              <text x="179" y="8" fontSize="8" fill="white" fontWeight="600">+8.7R</text>
             </svg>
-            <div style={{ marginTop: '10px', borderTop: '0.5px solid #f5f5f5', paddingTop: '10px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                <span style={{ fontSize: '11px', fontWeight: 600, color: '#111' }}>Break & retest</span>
-                <span style={{ fontSize: '10px', color: '#16a34a', fontWeight: 700, fontFamily: 'monospace' }}>78%</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: '10px', color: '#aaa', fontWeight: 500, marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Performance par setup</div>
+              <div style={{ marginBottom: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: '#111' }}>Break & retest</span>
+                  <span style={{ fontSize: '11px', color: '#16a34a', fontWeight: 700, fontFamily: 'monospace' }}>+2.4R · 78%</span>
+                </div>
+                <div style={{ height: '6px', background: '#f0f0f0', borderRadius: '3px' }}>
+                  <div style={{ width: '78%', height: '100%', background: '#16a34a', borderRadius: '3px' }}></div>
+                </div>
               </div>
-              <div style={{ height: '5px', background: '#f0f0f0', borderRadius: '3px', marginBottom: '8px' }}>
-                <div style={{ width: '78%', height: '100%', background: '#16a34a', borderRadius: '3px' }}></div>
+              <div style={{ marginBottom: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: '#111' }}>Continuation</span>
+                  <span style={{ fontSize: '11px', color: '#16a34a', fontWeight: 700, fontFamily: 'monospace' }}>+1.8R · 65%</span>
+                </div>
+                <div style={{ height: '6px', background: '#f0f0f0', borderRadius: '3px' }}>
+                  <div style={{ width: '65%', height: '100%', background: '#16a34a', borderRadius: '3px' }}></div>
+                </div>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                <span style={{ fontSize: '11px', fontWeight: 600, color: '#111' }}>Continuation</span>
-                <span style={{ fontSize: '10px', color: '#16a34a', fontWeight: 700, fontFamily: 'monospace' }}>65%</span>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: '#111' }}>Mean reversion</span>
+                  <span style={{ fontSize: '11px', color: '#dc2626', fontWeight: 700, fontFamily: 'monospace' }}>-0.4R · 35%</span>
+                </div>
+                <div style={{ height: '6px', background: '#f0f0f0', borderRadius: '3px' }}>
+                  <div style={{ width: '35%', height: '100%', background: '#dc2626', borderRadius: '3px' }}></div>
+                </div>
               </div>
-              <div style={{ height: '5px', background: '#f0f0f0', borderRadius: '3px' }}>
-                <div style={{ width: '65%', height: '100%', background: '#16a34a', borderRadius: '3px' }}></div>
-              </div>
+            </div>
+            <div style={{ background: '#fffbeb', border: '0.5px solid #fde68a', borderRadius: '8px', padding: '8px 10px', marginTop: '12px', fontSize: '11px', color: '#92400e' }}>
+              <strong>💡 Insight</strong> — Ton edge est sur Break & retest. Concentre-toi dessus.
             </div>
           </div>
 
