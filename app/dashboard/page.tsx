@@ -1,6 +1,6 @@
 'use client'
 
-import Sidebar from '@/app/components/Sidebar'
+import Sidebar from '../components/Sidebar'
 import Link from 'next/link'
 
 const trades = [
