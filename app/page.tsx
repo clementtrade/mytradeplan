@@ -72,8 +72,6 @@ export default function Home() {
 
       {/* HERO */}
       <section style={{ maxWidth: '1100px', margin: '0 auto', padding: '5rem 2.5rem 4rem', display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '4rem', alignItems: 'center' }}>
-
-        {/* Texte gauche */}
         <div>
           <div className="anim-1" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '20px', padding: '5px 14px', marginBottom: '1.5rem' }}>
             <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#16a34a' }}></div>
@@ -210,7 +208,6 @@ export default function Home() {
               <strong>💡 Insight</strong> — Ton edge est sur Break & retest. Concentre-toi dessus.
             </div>
           </div>
-
         </div>
       </section>
 
