@@ -88,23 +88,6 @@ export default function StatsPage() {
     return `${x},${getY(p.r)}`
   }).join(' ')
 
-  const rrRatio = avgLoss > 0 ? parseFloat((avgWin / avgLoss).toFixed(2)) : 1
-  const breakEvenWR = Math.round((1 / (1 + rrRatio)) * 100)
-  const distanceBreakEven = winRate - breakEvenWR
-
-  // Courbe break even — 200 points de RR 0.05 à 10
-  const breakEvenPoints = Array.from({ length: 200 }, (_, i) => {
-    const rr = 0.05 + i * (9.95 / 199)
-    const wr = 1 / (1 + rr)
-    const x = 55 + (rr - 1) * 61
-    const y = 195 - wr * 185
-    return { x, y }
-  }).filter(p => p.x >= 55 && p.x <= 605)
-
-  const breakEvenPts = breakEvenPoints.map(p => `${p.x},${p.y}`).join(' ')
-  const breakEvenArea = breakEvenPoints.map(p => `${p.x},${p.y}`).join(' ') + ` 605,195 55,195`
-
-  // Calendar
   const calYear = calMonth.getFullYear()
   const calMonthIdx = calMonth.getMonth()
   const firstDay = new Date(calYear, calMonthIdx, 1).getDay()
@@ -267,7 +250,7 @@ export default function StatsPage() {
         </div>
 
         {/* Trading Calendar */}
-        <div className="sa chart-wrap" style={{ marginBottom: '1.25rem' }}>
+        <div className="sa chart-wrap">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
             <div>
               <div style={{ fontSize: '15px', fontWeight: 700, color: '#111', marginBottom: '2px' }}>Trading Calendar</div>
@@ -339,83 +322,6 @@ export default function StatsPage() {
               <div style={{ fontSize: '11px', color: '#aaa', marginTop: '2px' }}>Win rate mensuel</div>
             </div>
           </div>
-        </div>
-
-        {/* WR vs RR Break Even */}
-        <div className="sa chart-wrap">
-          <div style={{ fontSize: '15px', fontWeight: 700, color: '#111', marginBottom: '2px' }}>Win Rate vs Risk:Reward — Break Even Analysis</div>
-          <div style={{ fontSize: '11px', color: '#aaa', marginBottom: '1rem' }}>
-            La courbe rouge montre le WR minimum requis pour être rentable — ton point bleu montre où tu te situes
-          </div>
-          <svg viewBox="0 0 620 240" style={{ width: '100%', height: '240px' }}>
-            <defs>
-              <linearGradient id="gGreen" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#16a34a" stopOpacity="0.07"/>
-                <stop offset="100%" stopColor="#16a34a" stopOpacity="0"/>
-              </linearGradient>
-              <linearGradient id="gRed2" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#dc2626" stopOpacity="0.06"/>
-                <stop offset="100%" stopColor="#dc2626" stopOpacity="0"/>
-              </linearGradient>
-            </defs>
-
-            {/* Axes */}
-            <line x1="55" y1="10" x2="55" y2="195" stroke="#e0e0e0" strokeWidth="1.5"/>
-            <line x1="55" y1="195" x2="605" y2="195" stroke="#e0e0e0" strokeWidth="1.5"/>
-
-            {/* Grille H */}
-            {[10,34,58,82,106,130,154,178].map(y => (
-              <line key={y} x1="55" y1={y} x2="605" y2={y} stroke="#f5f5f5" strokeWidth="1"/>
-            ))}
-
-            {/* Labels Y — 0% à 100% */}
-            {([['100%',10],['87%',34],['75%',58],['62%',82],['50%',106],['37%',130],['25%',154],['12%',178],['0%',195]] as [string,number][]).map(([label, y]) => (
-              <text key={y} x="6" y={y+3} fontSize="9" fill="#aaa">{label}</text>
-            ))}
-
-            {/* Labels X */}
-            {[1,2,3,4,5,6,7,8,9,10].map(rr => (
-              <text key={rr} x={55+(rr-1)*61-6} y="210" fontSize="9" fill="#aaa">1:{rr}</text>
-            ))}
-            <text x="250" y="228" fontSize="10" fill="#aaa" fontStyle="italic">Risk:Reward ratio</text>
-
-            {/* Zone verte (sous courbe = rentable) */}
-            <polygon points={breakEvenArea} fill="url(#gGreen)"/>
-
-            {/* Courbe break even — épaisse, lisse, de 0% à 100% */}
-            <polyline points={breakEvenPts} fill="none" stroke="#dc2626" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-
-            {/* Labels zones — corrigés */}
-            <text x="380" y="170" fontSize="11" fill="#dc2626" opacity="0.8" fontWeight="500">Zone non rentable</text>
-            <text x="380" y="92" fontSize="11" fill="#16a34a" opacity="0.8" fontWeight="500">Zone rentable ✓</text>
-
-            {/* TON POINT */}
-            {(() => {
-              const myRR = Math.min(rrRatio, 10)
-              const px = 55 + (myRR - 1) * 61
-              const py = Math.max(12, 195 - (winRate / 100) * 185)
-              const beY = 195 - (1 / (1 + myRR)) * 185
-              const isAbove = py < beY
-              const labelX = px + 14 > 490 ? px - 125 : px + 14
-              return (
-                <>
-                  <line x1={px} y1={Math.min(py + 10, beY - 1)} x2={px} y2={Math.max(beY - 6, py + 11)} stroke="#3b82f6" strokeWidth="2" strokeDasharray="5,3" opacity="0.6"/>
-                  <circle cx={px} cy={beY} r="6" fill="#fff" stroke="#dc2626" strokeWidth="2.5"/>
-                  <circle cx={px} cy={py} r="10" fill="#3b82f6" stroke="#fff" strokeWidth="3"/>
-                  <rect x={labelX} y={py-10} width={115} height={20} rx="5" fill="#3b82f6"/>
-                  <text x={labelX+4} y={py+4} fontSize="9" fill="white" fontWeight="700">WR {winRate}% / RR 1:{myRR}</text>
-                  <rect x={labelX} y={beY-10} width={120} height={20} rx="5" fill="#fff0f0" stroke="#fca5a5" strokeWidth="0.5"/>
-                  <text x={labelX+4} y={beY+4} fontSize="9" fill="#dc2626" fontWeight="600">Break even: WR {breakEvenWR}%</text>
-                  {isAbove && distanceBreakEven > 0 && (
-                    <>
-                      <rect x={px > 200 ? px-100 : px+14} y={(py+beY)/2-10} width={95} height={20} rx="4" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="0.5"/>
-                      <text x={px > 200 ? px-96 : px+18} y={(py+beY)/2+4} fontSize="9" fill="#3b82f6" fontWeight="600">+{distanceBreakEven}% au-dessus ✓</text>
-                    </>
-                  )}
-                </>
-              )
-            })()}
-          </svg>
         </div>
 
       </div>
