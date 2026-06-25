@@ -32,7 +32,6 @@ export default function StatsPage() {
     load()
   }, [])
 
-  // Filtrage par période
   const filteredTrades = trades.filter(t => {
     if (filter === 'tout') return true
     const date = new Date(t.created_at)
@@ -48,7 +47,6 @@ export default function StatsPage() {
     return true
   })
 
-  // Stats calculées sur trades filtrés
   const wins = filteredTrades.filter(t => t.result_r > 0)
   const losses = filteredTrades.filter(t => t.result_r <= 0)
   const winRate = filteredTrades.length > 0 ? Math.round((wins.length / filteredTrades.length) * 100) : 0
@@ -59,7 +57,6 @@ export default function StatsPage() {
   const followedPlan = filteredTrades.length > 0 ? Math.round((filteredTrades.filter(t => t.followed_plan).length / filteredTrades.length) * 100) : 0
   const avgR = filteredTrades.length > 0 ? parseFloat((totalR / filteredTrades.length).toFixed(2)) : 0
 
-  // Setup stats
   const setupStats = filteredTrades.reduce((acc: Record<string, { wins: number, total: number, totalR: number }>, t) => {
     const setup = t.setup_type || 'Non défini'
     if (!acc[setup]) acc[setup] = { wins: 0, total: 0, totalR: 0 }
@@ -77,7 +74,6 @@ export default function StatsPage() {
   const bestSetup = setupList[0]
   const worstSetup = setupList[setupList.length - 1]
 
-  // Equity curve
   const equityCurve = filteredTrades.reduce((acc: { x: number, r: number }[], t, i) => {
     const prev = acc[i - 1]?.r ?? 0
     return [...acc, { x: i + 1, r: parseFloat((prev + t.result_r).toFixed(2)) }]
@@ -92,12 +88,23 @@ export default function StatsPage() {
     return `${x},${getY(p.r)}`
   }).join(' ')
 
-  // Break even WR pour le RR moyen
   const rrRatio = avgLoss > 0 ? parseFloat((avgWin / avgLoss).toFixed(2)) : 1
   const breakEvenWR = Math.round((1 / (1 + rrRatio)) * 100)
   const distanceBreakEven = winRate - breakEvenWR
 
-  // Trading Calendar
+  // Courbe break even — 200 points de RR 0.05 à 10
+  const breakEvenPoints = Array.from({ length: 200 }, (_, i) => {
+    const rr = 0.05 + i * (9.95 / 199)
+    const wr = 1 / (1 + rr)
+    const x = 55 + (rr - 1) * 61
+    const y = 195 - wr * 185
+    return { x, y }
+  }).filter(p => p.x >= 55 && p.x <= 605)
+
+  const breakEvenPts = breakEvenPoints.map(p => `${p.x},${p.y}`).join(' ')
+  const breakEvenArea = breakEvenPoints.map(p => `${p.x},${p.y}`).join(' ') + ` 605,195 55,195`
+
+  // Calendar
   const calYear = calMonth.getFullYear()
   const calMonthIdx = calMonth.getMonth()
   const firstDay = new Date(calYear, calMonthIdx, 1).getDay()
@@ -114,13 +121,10 @@ export default function StatsPage() {
   })
 
   const monthNames = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre']
-
-  // Résumé calendrier
   const calTrades = Object.values(tradesByDay)
   const calWinDays = calTrades.filter(r => r > 0).length
   const calTotalR = parseFloat(calTrades.reduce((s, r) => s + r, 0).toFixed(2))
   const calWR = calTrades.length > 0 ? Math.round((calWinDays / calTrades.length) * 100) : 0
-
   const today = new Date()
 
   if (loading) return (
@@ -276,7 +280,6 @@ export default function StatsPage() {
             </div>
           </div>
 
-          {/* Nav mois */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
             <span style={{ fontSize: '15px', fontWeight: 700, color: '#111', letterSpacing: '-0.3px' }}>{monthNames[calMonthIdx]} {calYear}</span>
             <div style={{ display: 'flex', gap: '6px' }}>
@@ -285,14 +288,12 @@ export default function StatsPage() {
             </div>
           </div>
 
-          {/* Headers jours */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '6px', marginBottom: '6px' }}>
             {['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'].map((d, i) => (
               <div key={d} style={{ textAlign: 'center', fontSize: '11px', fontWeight: 600, color: i >= 5 ? '#ddd' : '#aaa', padding: '4px' }}>{d}</div>
             ))}
           </div>
 
-          {/* Jours */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '6px' }}>
             {Array(startOffset).fill(null).map((_, i) => (
               <div key={`e${i}`} className="cal-day cal-empty"></div>
@@ -304,13 +305,11 @@ export default function StatsPage() {
               const isFuture = new Date(calYear, calMonthIdx, day) > today
               const isToday = day === today.getDate() && calMonthIdx === today.getMonth() && calYear === today.getFullYear()
               const isWeekend = (() => { const d = new Date(calYear, calMonthIdx, day).getDay(); return d === 0 || d === 6 })()
-
               let cls = 'cal-day '
               if (isFuture || isWeekend) cls += 'cal-future'
               else if (r !== undefined) cls += r > 0 ? 'cal-win' : 'cal-loss'
               else cls += 'cal-neutral'
               if (isToday) cls += ' cal-today'
-
               return (
                 <div key={day} className={cls} style={{ opacity: isWeekend ? 0.3 : 1 }}>
                   {day}
@@ -322,7 +321,6 @@ export default function StatsPage() {
             })}
           </div>
 
-          {/* Résumé mensuel */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '10px', marginTop: '1.25rem', paddingTop: '1rem', borderTop: '0.5px solid #f0f0f0' }}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '18px', fontWeight: 700, color: calTotalR >= 0 ? '#16a34a' : '#dc2626', fontFamily: 'monospace' }}>{calTotalR >= 0 ? '+' : ''}{calTotalR}R</div>
@@ -371,8 +369,8 @@ export default function StatsPage() {
             ))}
 
             {/* Labels Y — 0% à 100% */}
-            {[['100%',10],['87%',34],['75%',58],['62%',82],['50%',106],['37%',130],['25%',154],['12%',178],['0%',195]].map(([label, y]) => (
-              <text key={y as number} x="6" y={(y as number)+3} fontSize="9" fill="#aaa">{label}</text>
+            {([['100%',10],['87%',34],['75%',58],['62%',82],['50%',106],['37%',130],['25%',154],['12%',178],['0%',195]] as [string,number][]).map(([label, y]) => (
+              <text key={y} x="6" y={y+3} fontSize="9" fill="#aaa">{label}</text>
             ))}
 
             {/* Labels X */}
@@ -381,50 +379,37 @@ export default function StatsPage() {
             ))}
             <text x="250" y="228" fontSize="10" fill="#aaa" fontStyle="italic">Risk:Reward ratio</text>
 
-            {/* Courbe break even: WR = 1/(1+RR), x=55+(rr-1)*61, y=195-(wr/100)*185 */}
-            {(() => {
-              const pts = Array.from({length: 10}, (_, i) => {
-                const rr = i + 1
-                const wr = 1 / (1 + rr)
-                const x = 55 + i * 61
-                const y = 195 - wr * 185
-                return `${x},${y}`
-              }).join(' ')
-              const area = `55,${195 - (1/2)*185} ` + Array.from({length:9}, (_,i) => {
-                const rr = i+2; const wr = 1/(1+rr); const x = 55+i*61+61; const y = 195-wr*185; return `${x},${y}`
-              }).join(' ') + ` 605,195 55,195`
-              return (
-                <>
-                  <polygon points={area} fill="url(#gGreen)"/>
-                  <polyline points={pts} fill="none" stroke="#dc2626" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-                </>
-              )
-            })()}
+            {/* Zone verte (sous courbe = rentable) */}
+            <polygon points={breakEvenArea} fill="url(#gGreen)"/>
 
-            {/* Labels zones */}
-            <text x="420" y="35" fontSize="11" fill="#dc2626" opacity="0.7" fontWeight="500">Zone non rentable</text>
-            <text x="420" y="190" fontSize="11" fill="#16a34a" opacity="0.7" fontWeight="500">Zone rentable ✓</text>
+            {/* Courbe break even — épaisse, lisse, de 0% à 100% */}
+            <polyline points={breakEvenPts} fill="none" stroke="#dc2626" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
 
-            {/* TON POINT — basé sur vraies données */}
+            {/* Labels zones — corrigés */}
+            <text x="380" y="170" fontSize="11" fill="#dc2626" opacity="0.8" fontWeight="500">Zone non rentable</text>
+            <text x="380" y="92" fontSize="11" fill="#16a34a" opacity="0.8" fontWeight="500">Zone rentable ✓</text>
+
+            {/* TON POINT */}
             {(() => {
-              const myRR = rrRatio <= 10 ? rrRatio : 10
+              const myRR = Math.min(rrRatio, 10)
               const px = 55 + (myRR - 1) * 61
-              const py = Math.max(10, 195 - (winRate / 100) * 185)
+              const py = Math.max(12, 195 - (winRate / 100) * 185)
               const beY = 195 - (1 / (1 + myRR)) * 185
               const isAbove = py < beY
+              const labelX = px + 14 > 490 ? px - 125 : px + 14
               return (
                 <>
-                  <line x1={px} y1={py + 10} x2={px} y2={beY - 6} stroke="#3b82f6" strokeWidth="2" strokeDasharray="5,3" opacity="0.6"/>
+                  <line x1={px} y1={Math.min(py + 10, beY - 1)} x2={px} y2={Math.max(beY - 6, py + 11)} stroke="#3b82f6" strokeWidth="2" strokeDasharray="5,3" opacity="0.6"/>
                   <circle cx={px} cy={beY} r="6" fill="#fff" stroke="#dc2626" strokeWidth="2.5"/>
                   <circle cx={px} cy={py} r="10" fill="#3b82f6" stroke="#fff" strokeWidth="3"/>
-                  <rect x={px+14} y={py-10} width={110} height={20} rx="5" fill="#3b82f6"/>
-                  <text x={px+18} y={py+4} fontSize="9" fill="white" fontWeight="700">WR {winRate}% / RR 1:{myRR}</text>
-                  <rect x={px+14} y={beY-10} width={115} height={20} rx="5" fill="#fff0f0" stroke="#fca5a5" strokeWidth="0.5"/>
-                  <text x={px+18} y={beY+4} fontSize="9" fill="#dc2626" fontWeight="600">Break even: WR {breakEvenWR}%</text>
-                  {isAbove && (
+                  <rect x={labelX} y={py-10} width={115} height={20} rx="5" fill="#3b82f6"/>
+                  <text x={labelX+4} y={py+4} fontSize="9" fill="white" fontWeight="700">WR {winRate}% / RR 1:{myRR}</text>
+                  <rect x={labelX} y={beY-10} width={120} height={20} rx="5" fill="#fff0f0" stroke="#fca5a5" strokeWidth="0.5"/>
+                  <text x={labelX+4} y={beY+4} fontSize="9" fill="#dc2626" fontWeight="600">Break even: WR {breakEvenWR}%</text>
+                  {isAbove && distanceBreakEven > 0 && (
                     <>
-                      <rect x={px-80} y={py-10} width={90} height={20} rx="4" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="0.5"/>
-                      <text x={px-76} y={py+4} fontSize="9" fill="#3b82f6" fontWeight="600">+{distanceBreakEven}% au-dessus ✓</text>
+                      <rect x={px > 200 ? px-100 : px+14} y={(py+beY)/2-10} width={95} height={20} rx="4" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="0.5"/>
+                      <text x={px > 200 ? px-96 : px+18} y={(py+beY)/2+4} fontSize="9" fill="#3b82f6" fontWeight="600">+{distanceBreakEven}% au-dessus ✓</text>
                     </>
                   )}
                 </>
