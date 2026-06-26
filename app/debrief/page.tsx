@@ -165,50 +165,66 @@ export default function DebriefPage() {
               <span style={{ fontSize: '20px', fontWeight: 700, color: '#111', letterSpacing: '-0.5px' }}>Débrief Macro IA</span>
               <span style={{ fontSize: '13px', color: '#aaa' }}>{dateFormatted}</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {macroLoaded && !macroLoading && (
-                speaking ? (
-                  <button onClick={stopSpeech} className="speak-btn" style={{ background: '#fee2e2', color: '#dc2626' }}>
-                    <span className="speaking">⏹</span> Stop
+            {profile?.is_pro && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {macroLoaded && !macroLoading && (
+                  speaking ? (
+                    <button onClick={stopSpeech} className="speak-btn" style={{ background: '#fee2e2', color: '#dc2626' }}>
+                      <span className="speaking">⏹</span> Stop
+                    </button>
+                  ) : (
+                    <button onClick={speak} className="speak-btn" style={{ background: '#f5f5f5', color: '#111' }}>
+                      🔊 Écouter
+                    </button>
+                  )
+                )}
+                {macroLoaded && (
+                  <button onClick={getMacroBriefing} disabled={macroLoading} style={{ background: 'none', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '6px 14px', fontSize: '12px', color: '#888', cursor: 'pointer' }}>
+                    ↺ Rafraîchir
                   </button>
-                ) : (
-                  <button onClick={speak} className="speak-btn" style={{ background: '#f5f5f5', color: '#111' }}>
-                    🔊 Écouter
-                  </button>
-                )
-              )}
-              {macroLoaded && (
-                <button onClick={getMacroBriefing} disabled={macroLoading} style={{ background: 'none', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '6px 14px', fontSize: '12px', color: '#888', cursor: 'pointer' }}>
-                  ↺ Rafraîchir
-                </button>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* CONTENU */}
-          <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '14px', padding: '1.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-              <div>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: '#111' }}>Briefing du jour</div>
-                <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>Généré par IA selon ton profil trader</div>
+          {!profile?.is_pro ? (
+            <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '14px', padding: '3rem', textAlign: 'center' }}>
+              <div style={{ fontSize: '32px', marginBottom: '12px' }}>🔒</div>
+              <div style={{ fontSize: '16px', fontWeight: 700, color: '#111', marginBottom: '8px' }}>Fonctionnalité Pro</div>
+              <div style={{ fontSize: '13px', color: '#888', marginBottom: '24px', lineHeight: 1.6 }}>
+                Le Débrief Macro IA est réservé aux membres Pro.<br/>
+                Accède au briefing quotidien personnalisé selon ton profil trader.
               </div>
-              {speaking && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#16a34a', fontWeight: 600 }}>
-                  <span className="speaking">🔊</span> Lecture en cours...
+              <a href="/pricing" style={{ background: '#111', color: '#fff', borderRadius: '8px', padding: '10px 24px', fontSize: '13px', fontWeight: 600, textDecoration: 'none' }}>
+                Passer au Pro →
+              </a>
+            </div>
+          ) : (
+            <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '14px', padding: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#111' }}>Briefing du jour</div>
+                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>Généré par IA selon ton profil trader</div>
                 </div>
+                {speaking && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#16a34a', fontWeight: 600 }}>
+                    <span className="speaking">🔊</span> Lecture en cours...
+                  </div>
+                )}
+              </div>
+
+              {!macroLoaded ? (
+                <button className="macro-btn" onClick={getMacroBriefing} disabled={macroLoading}>
+                  {macroLoading ? <>⏳ Génération en cours...</> : <>◈ Générer le débrief macro du jour</>}
+                </button>
+              ) : macroLoading ? (
+                <div style={{ color: '#aaa', fontSize: '13px', padding: '1rem 0' }}>⏳ Génération en cours...</div>
+              ) : (
+                <div style={{ fontSize: '13px', color: '#333', lineHeight: 1.8 }} dangerouslySetInnerHTML={{ __html: formatMacro(macroText) }}/>
               )}
             </div>
-
-            {!macroLoaded ? (
-              <button className="macro-btn" onClick={getMacroBriefing} disabled={macroLoading}>
-                {macroLoading ? <>⏳ Génération en cours...</> : <>◈ Générer le débrief macro du jour</>}
-              </button>
-            ) : macroLoading ? (
-              <div style={{ color: '#aaa', fontSize: '13px', padding: '1rem 0' }}>⏳ Génération en cours...</div>
-            ) : (
-              <div style={{ fontSize: '13px', color: '#333', lineHeight: 1.8 }} dangerouslySetInnerHTML={{ __html: formatMacro(macroText) }}/>
-            )}
-          </div>
+          )}
 
         </div>
       </main>
