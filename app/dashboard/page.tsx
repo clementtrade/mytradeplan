@@ -14,6 +14,15 @@ type Trade = {
   notes: string
 }
 
+type DayModal = {
+  day: number
+  date: string
+  trades: Trade[]
+  totalR: number
+  insight: string
+  insightLoading: boolean
+}
+
 export default function DashboardPage() {
   const [trades, setTrades] = useState<Trade[]>([])
   const [loading, setLoading] = useState(true)
@@ -24,6 +33,7 @@ export default function DashboardPage() {
   const [macroText, setMacroText] = useState('')
   const [macroLoading, setMacroLoading] = useState(false)
   const [macroLoaded, setMacroLoaded] = useState(false)
+  const [dayModal, setDayModal] = useState<DayModal | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -45,6 +55,29 @@ export default function DashboardPage() {
     }
     load()
   }, [])
+
+  async function openDayModal(day: number, dayTrades: Trade[]) {
+    const totalR = parseFloat(dayTrades.reduce((s, t) => s + t.result_r, 0).toFixed(2))
+    const dateStr = `${day} ${monthNames[calMonthIdx]} ${calYear}`
+
+    if (!profile?.is_pro) {
+      setDayModal({ day, date: dateStr, trades: dayTrades, totalR, insight: 'PRO_LOCKED', insightLoading: false })
+      return
+    }
+
+    setDayModal({ day, date: dateStr, trades: dayTrades, totalR, insight: '', insightLoading: true })
+    try {
+      const res = await fetch('/api/day-insight', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ trades: dayTrades, profile, date: dateStr }),
+      })
+      const data = await res.json()
+      setDayModal(prev => prev ? { ...prev, insight: data.insight, insightLoading: false } : null)
+    } catch {
+      setDayModal(prev => prev ? { ...prev, insight: 'Erreur de génération. Réessaie.', insightLoading: false } : null)
+    }
+  }
 
   async function getMacroBriefing() {
     setMacroLoading(true)
@@ -118,19 +151,22 @@ export default function DashboardPage() {
   const firstDay = new Date(calYear, calMonthIdx, 1).getDay()
   const daysInMonth = new Date(calYear, calMonthIdx + 1, 0).getDate()
   const startOffset = firstDay === 0 ? 6 : firstDay - 1
-  const tradesByDay: Record<string, number> = {}
+
+  const tradesByDay: Record<string, Trade[]> = {}
   trades.forEach(t => {
     const d = new Date(t.created_at)
     if (d.getFullYear() === calYear && d.getMonth() === calMonthIdx) {
       const key = d.getDate().toString()
-      tradesByDay[key] = (tradesByDay[key] || 0) + t.result_r
+      if (!tradesByDay[key]) tradesByDay[key] = []
+      tradesByDay[key].push(t)
     }
   })
+
   const monthNames = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre']
   const today = new Date()
   const calTrades = Object.values(tradesByDay)
-  const calWinDays = calTrades.filter(r => r > 0).length
-  const calTotalR = parseFloat(calTrades.reduce((s, r) => s + r, 0).toFixed(1))
+  const calWinDays = calTrades.filter(ts => ts.reduce((s, t) => s + t.result_r, 0) > 0).length
+  const calTotalR = parseFloat(Object.values(tradesByDay).flat().reduce((s, t) => s + t.result_r, 0).toFixed(1))
   const calWR = calTrades.length > 0 ? Math.round((calWinDays / calTrades.length) * 100) : 0
 
   const sidebarW = sidebarExpanded ? 200 : 52
@@ -145,6 +181,7 @@ export default function DashboardPage() {
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes dotPulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
         .sa { animation: fadeUp 0.4s ease both; }
         .sa1 { animation-delay: 0.04s; } .sa2 { animation-delay: 0.08s; }
         .sa3 { animation-delay: 0.12s; } .sa4 { animation-delay: 0.16s; }
@@ -183,17 +220,104 @@ export default function DashboardPage() {
         .macro-btn { display: flex; align-items: center; justify-content: center; gap: 8px; background: #111; color: #fff; border: none; border-radius: 10px; padding: 10px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; width: 100%; }
         .macro-btn:hover { background: #333; }
         .macro-btn:disabled { background: #555; cursor: wait; }
-        .cal-day { aspect-ratio: 1; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; transition: transform 0.15s; cursor: default; }
-        .cal-day:hover { transform: scale(1.06); z-index: 2; position: relative; }
-        .cal-win { background: #c8f0d8; color: #15803d; }
-        .cal-loss { background: #fdd0d0; color: #dc2626; }
+        .cal-day { aspect-ratio: 1; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; transition: all 0.15s; cursor: default; }
+        .cal-win { background: #c8f0d8; color: #15803d; cursor: pointer; }
+        .cal-win:hover { transform: scale(1.08); box-shadow: 0 4px 12px rgba(22,163,74,0.2); }
+        .cal-loss { background: #fdd0d0; color: #dc2626; cursor: pointer; }
+        .cal-loss:hover { transform: scale(1.08); box-shadow: 0 4px 12px rgba(220,38,38,0.2); }
         .cal-neutral { background: #f5f5f5; color: #ccc; }
         .cal-empty { background: transparent; }
         .cal-future { background: #f5f5f5; color: #ddd; }
         .cal-today { outline: 2px solid #888; outline-offset: -2px; }
         .cal-r { font-size: 9px; margin-top: 2px; opacity: 0.75; }
         .cal-weekend { opacity: 0.3; }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; z-index: 200; }
+        .modal-box { background: #fff; border: 0.5px solid #e8e8e8; border-radius: 16px; padding: 1.5rem; width: 520px; max-width: 92vw; max-height: 85vh; overflow-y: auto; }
+        .modal-trade-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 0.5px solid #f2f2f2; }
+        .modal-trade-row:last-child { border-bottom: none; }
+        .section-lbl { font-size: 10px; font-weight: 600; color: #bbb; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; }
+        .aidot { width: 6px; height: 6px; border-radius: 50%; background: #aaa; animation: dotPulse 1.2s ease-in-out infinite; display: inline-block; margin: 0 2px; }
+        .aidot:nth-child(2) { animation-delay: 0.2s; }
+        .aidot:nth-child(3) { animation-delay: 0.4s; }
       `}</style>
+
+      {/* MODAL */}
+      {dayModal && (
+        <div className="modal-overlay" onClick={() => setDayModal(null)}>
+          <div className="modal-box" onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+              <div>
+                <div style={{ fontSize: '16px', fontWeight: 700, color: '#111' }}>{dayModal.date}</div>
+                <div style={{ fontSize: '12px', color: '#bbb', marginTop: '2px' }}>
+                  {dayModal.trades.length} trade{dayModal.trades.length > 1 ? 's' : ''} · {dayModal.totalR >= 0 ? '+' : ''}{dayModal.totalR}R
+                </div>
+              </div>
+              <button onClick={() => setDayModal(null)} style={{ background: '#f5f5f5', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '5px 12px', fontSize: '12px', color: '#666', cursor: 'pointer' }}>
+                ✕ Fermer
+              </button>
+            </div>
+
+            <div style={{ marginBottom: '1rem' }}>
+              <div className="section-lbl">Trades du jour</div>
+              {dayModal.trades.map(t => (
+                <div key={t.id} className="modal-trade-row">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span className={`badge badge-${t.direction === 'long' ? 'long' : 'short'}`}>{t.direction}</span>
+                    <div>
+                      <div style={{ fontSize: '12.5px', fontWeight: 600, color: '#111' }}>{t.setup_type || t.instrument}</div>
+                      <div style={{ fontSize: '10px', color: '#bbb' }}>{t.instrument}</div>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 700, fontFamily: 'monospace', color: t.result_r > 0 ? '#16a34a' : '#dc2626' }}>
+                      {t.result_r > 0 ? '+' : ''}{t.result_r}R
+                    </div>
+                    <div style={{ fontSize: '10px', color: t.followed_plan ? '#16a34a' : '#d97706' }}>
+                      {t.followed_plan ? '✓ plan' : '✗ plan'}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {dayModal.insight === 'PRO_LOCKED' ? (
+              <div style={{ background: '#f9f9f9', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '1.25rem', textAlign: 'center' }}>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: '#111', marginBottom: '6px' }}>🔒 Fonctionnalité Pro</div>
+                <div style={{ fontSize: '12px', color: '#888', marginBottom: '12px' }}>L'IA Insight est réservée aux membres Pro.</div>
+                <a href="/pricing" style={{ background: '#111', color: '#fff', borderRadius: '8px', padding: '8px 18px', fontSize: '12px', fontWeight: 600, textDecoration: 'none' }}>Passer au Pro →</a>
+              </div>
+            ) : (
+              <div style={{ background: '#f9f9f9', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '1rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <div className="section-lbl" style={{ marginBottom: 0 }}>IA Insight</div>
+                  <div style={{ fontSize: '10px', color: '#bbb' }}>{profile?.approach} · {profile?.market}</div>
+                </div>
+                {dayModal.insightLoading ? (
+                  <div style={{ padding: '0.5rem 0' }}>
+                    <span className="aidot"></span>
+                    <span className="aidot"></span>
+                    <span className="aidot"></span>
+                  </div>
+                ) : (
+                  <>
+                    <div style={{ fontSize: '12.5px', color: '#333', lineHeight: 1.7 }}>{dayModal.insight}</div>
+                    <div style={{ borderTop: '0.5px solid #e8e8e8', marginTop: '10px', paddingTop: '10px' }}>
+                      {(() => {
+                        const disc = Math.round((dayModal.trades.filter(t => t.followed_plan).length / dayModal.trades.length) * 100)
+                        return (
+                          <div style={{ fontSize: '11.5px', fontWeight: 600, color: disc >= 80 ? '#16a34a' : '#d97706' }}>
+                            Discipline : {disc}% · {disc >= 80 ? 'Bonne session.' : 'À améliorer.'}
+                          </div>
+                        )
+                      })()}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* SIDEBAR */}
       <div
@@ -428,7 +552,8 @@ export default function DashboardPage() {
                     {Array(daysInMonth).fill(null).map((_, i) => {
                       const day = i + 1
                       const key = day.toString()
-                      const r = tradesByDay[key]
+                      const dayTrades = tradesByDay[key]
+                      const r = dayTrades ? dayTrades.reduce((s, t) => s + t.result_r, 0) : undefined
                       const isFuture = new Date(calYear, calMonthIdx, day) > today
                       const isToday = day === today.getDate() && calMonthIdx === today.getMonth() && calYear === today.getFullYear()
                       const isWeekend = (() => { const d = new Date(calYear, calMonthIdx, day).getDay(); return d === 0 || d === 6 })()
@@ -439,7 +564,11 @@ export default function DashboardPage() {
                       if (isToday) cls += ' cal-today'
                       if (isWeekend) cls += ' cal-weekend'
                       return (
-                        <div key={day} className={cls}>
+                        <div
+                          key={day}
+                          className={cls}
+                          onClick={() => dayTrades && !isWeekend && !isFuture ? openDayModal(day, dayTrades) : undefined}
+                        >
                           {day}
                           {r !== undefined && !isWeekend && !isFuture && (
                             <span className="cal-r">{r >= 0 ? '+' : ''}{r.toFixed(1)}R</span>
