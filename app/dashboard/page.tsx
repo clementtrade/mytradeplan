@@ -282,8 +282,9 @@ export default function DashboardPage() {
 
             {dayModal.insight === 'PRO_LOCKED' ? (
               <div style={{ background: '#f9f9f9', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '1.25rem', textAlign: 'center' }}>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: '#111', marginBottom: '6px' }}>🔒 Fonctionnalité Pro</div>
-                <div style={{ fontSize: '12px', color: '#888', marginBottom: '12px' }}>L'IA Insight est réservée aux membres Pro.</div>
+                <div style={{ fontSize: '20px', marginBottom: '8px' }}>🔒</div>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: '#111', marginBottom: '4px' }}>Fonctionnalité Pro</div>
+                <div style={{ fontSize: '12px', color: '#888', marginBottom: '14px' }}>L'IA Insight est réservée aux membres Pro.</div>
                 <a href="/pricing" style={{ background: '#111', color: '#fff', borderRadius: '8px', padding: '8px 18px', fontSize: '12px', fontWeight: 600, textDecoration: 'none' }}>Passer au Pro →</a>
               </div>
             ) : (
@@ -386,7 +387,7 @@ export default function DashboardPage() {
               </a>
             </div>
 
-            {/* KPI CARDS — toujours visibles */}
+            {/* KPI CARDS */}
             <div className="sa sa2" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '12px', marginBottom: '1.5rem' }}>
               <div className="kpi-card">
                 <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px', fontWeight: 500 }}>Win rate</div>
@@ -511,20 +512,27 @@ export default function DashboardPage() {
               </>
             )}
 
-            {/* DÉBRIEF MACRO IA — toujours visible */}
+            {/* DÉBRIEF MACRO IA */}
             <div className="sa sa5 mid-card" style={{ marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                 <div>
                   <div style={{ fontSize: '13px', fontWeight: 700, color: '#111' }}>Débrief Macro IA</div>
                   <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>Briefing du jour généré par IA selon ton profil</div>
                 </div>
-                {macroLoaded && (
+                {macroLoaded && profile?.is_pro && (
                   <button onClick={getMacroBriefing} disabled={macroLoading} style={{ background: 'none', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '5px 12px', fontSize: '11.5px', color: '#888', cursor: 'pointer' }}>
                     ↺ Rafraîchir
                   </button>
                 )}
               </div>
-              {!macroLoaded ? (
+              {!profile?.is_pro ? (
+                <div style={{ background: '#f9f9f9', border: '0.5px solid #e8e8e8', borderRadius: '10px', padding: '1.25rem', textAlign: 'center' }}>
+                  <div style={{ fontSize: '20px', marginBottom: '8px' }}>🔒</div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#111', marginBottom: '4px' }}>Fonctionnalité Pro</div>
+                  <div style={{ fontSize: '12px', color: '#888', marginBottom: '14px' }}>Le débrief macro IA est réservé aux membres Pro.</div>
+                  <a href="/pricing" style={{ background: '#111', color: '#fff', borderRadius: '8px', padding: '8px 18px', fontSize: '12px', fontWeight: 600, textDecoration: 'none' }}>Passer au Pro →</a>
+                </div>
+              ) : !macroLoaded ? (
                 <button className="macro-btn" onClick={getMacroBriefing} disabled={macroLoading}>
                   {macroLoading ? <>⏳ Génération en cours...</> : <>◈ Générer le débrief macro du jour</>}
                 </button>
@@ -535,7 +543,7 @@ export default function DashboardPage() {
               )}
             </div>
 
-            {/* CALENDRIER — toujours visible */}
+            {/* CALENDRIER */}
             <div className="sa sa6 mid-card">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
                 <span style={{ fontSize: '15px', fontWeight: 700, color: '#111', letterSpacing: '-0.3px' }}>Calendrier · {monthNames[calMonthIdx]} {calYear}</span>
