@@ -12,6 +12,7 @@ export default function PlanPage() {
   const [macroResult, setMacroResult] = useState('')
   const [macroLoading, setMacroLoading] = useState(false)
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
+  const [speaking, setSpeaking] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -37,6 +38,30 @@ export default function PlanPage() {
       .split('\n')
       .map((line, i) => `<div key=${i} style="min-height:4px">${line || '&nbsp;'}</div>`)
       .join('')
+  }
+
+  function getLastAiMessage() {
+    const aiMessages = messages.filter(m => m.role === 'ai')
+    return aiMessages.length > 0 ? aiMessages[aiMessages.length - 1].text : ''
+  }
+
+  function speak() {
+    const text = getLastAiMessage()
+    if (!text) return
+    stopSpeech()
+    const clean = text.replace(/\*\*(.*?)\*\*/g, '$1').replace(/━+/g, '').replace(/#{1,3} /g, '')
+    const utterance = new SpeechSynthesisUtterance(clean)
+    utterance.lang = 'fr-FR'
+    utterance.rate = 1
+    utterance.onend = () => setSpeaking(false)
+    utterance.onerror = () => setSpeaking(false)
+    window.speechSynthesis.speak(utterance)
+    setSpeaking(true)
+  }
+
+  function stopSpeech() {
+    window.speechSynthesis.cancel()
+    setSpeaking(false)
   }
 
   async function getMacroBriefing() {
@@ -70,6 +95,7 @@ export default function PlanPage() {
 
   async function sendMessage() {
     if (!input.trim() || loading) return
+    stopSpeech()
     const newMessages = [...messages, { role: 'user', text: input }]
     setMessages(newMessages); setInput(''); setLoading(true)
     try {
@@ -112,6 +138,9 @@ export default function PlanPage() {
     .nav-lbl { font-size: 12.5px; font-weight: 500; margin-left: 8px; opacity: 0; transition: opacity 0.1s 0.07s; white-space: nowrap; }
     .sidebar.exp .nav-lbl { opacity: 1; }
     .nav-item.active .nav-lbl { color: #fff; }
+    .speak-btn { display: flex; align-items: center; gap: 6px; border: none; border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+    @keyframes speakpulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+    .speaking { animation: speakpulse 1.5s ease-in-out infinite; }
   `
 
   const Sidebar = (
@@ -242,12 +271,29 @@ export default function PlanPage() {
       `}</style>
       {Sidebar}
       <main style={{ marginLeft: sidebarW, flex: 1, minWidth: 0, transition: 'margin-left 0.2s cubic-bezier(0.4,0,0.2,1)', display: 'flex', flexDirection: 'column' }}>
+
+        {/* HEADER */}
         <div style={{ height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2rem', borderBottom: '0.5px solid #e8e8e8', background: '#fff', flexShrink: 0 }}>
           <span style={{ fontSize: '15px', fontWeight: 700, color: '#111', letterSpacing: '-0.3px' }}>Plan du matin</span>
-          {profile && (
-            <div style={{ background: '#f0fdf4', color: '#16a34a', fontSize: '11px', padding: '3px 10px', borderRadius: '20px', fontWeight: 600, border: '0.5px solid #86efac' }}>En session</div>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {messages.some(m => m.role === 'ai') && !loading && (
+              speaking ? (
+                <button onClick={stopSpeech} className="speak-btn" style={{ background: '#fee2e2', color: '#dc2626' }}>
+                  <span className="speaking">⏹</span> Stop
+                </button>
+              ) : (
+                <button onClick={speak} className="speak-btn" style={{ background: '#f5f5f5', color: '#111' }}>
+                  🔊 Écouter
+                </button>
+              )
+            )}
+            {profile && (
+              <div style={{ background: '#f0fdf4', color: '#16a34a', fontSize: '11px', padding: '3px 10px', borderRadius: '20px', fontWeight: 600, border: '0.5px solid #86efac' }}>En session</div>
+            )}
+          </div>
         </div>
+
+        {/* MESSAGES */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '2rem 1rem' }}>
           <div style={{ maxWidth: '620px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '14px' }}>
             {messages.map((m, i) => (
@@ -256,7 +302,9 @@ export default function PlanPage() {
                   <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: '#fff', fontWeight: 600, flexShrink: 0, marginRight: '8px', marginTop: '2px' }}>M</div>
                 )}
                 <div style={{ maxWidth: '78%', padding: '12px 16px', borderRadius: m.role === 'user' ? '12px 4px 12px 12px' : '4px 12px 12px 12px', background: m.role === 'user' ? '#111' : '#fff', border: m.role === 'ai' ? '0.5px solid #e8e8e8' : 'none', color: m.role === 'user' ? '#fff' : '#111', fontSize: '14px', lineHeight: 1.7, boxShadow: m.role === 'ai' ? '0 2px 8px rgba(0,0,0,0.04)' : 'none' }}>
-                  {m.role === 'ai' && <div style={{ color: '#aaa', fontSize: '10px', fontWeight: 500, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>MyTradePlan IA</div>}
+                  {m.role === 'ai' && (
+                    <div style={{ color: '#aaa', fontSize: '10px', fontWeight: 500, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>MyTradePlan IA</div>
+                  )}
                   {m.role === 'ai' ? <div dangerouslySetInnerHTML={{ __html: formatText(m.text) }}/> : <div>{m.text}</div>}
                 </div>
               </div>
@@ -276,12 +324,15 @@ export default function PlanPage() {
             <div ref={messagesEndRef}/>
           </div>
         </div>
+
+        {/* INPUT */}
         <div style={{ padding: '0.75rem 1rem 1.25rem', background: '#f9f9f9', flexShrink: 0 }}>
           <div style={{ maxWidth: '620px', margin: '0 auto', background: '#fff', border: '0.5px solid #e0e0e0', borderRadius: '12px', display: 'flex', gap: '8px', padding: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
             <input className="chat-input" value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendMessage()} placeholder="Réponds ici..." disabled={loading}/>
             <button onClick={sendMessage} disabled={loading || !input.trim()} style={{ background: input.trim() && !loading ? '#111' : '#f0f0f0', color: input.trim() && !loading ? '#fff' : '#aaa', border: 'none', borderRadius: '8px', padding: '8px 18px', fontWeight: 700, fontSize: '14px', cursor: input.trim() && !loading ? 'pointer' : 'not-allowed', transition: 'all 0.15s', flexShrink: 0 }}>→</button>
           </div>
         </div>
+
       </main>
     </div>
   )
