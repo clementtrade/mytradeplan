@@ -29,22 +29,18 @@ export default function DashboardPage() {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { window.location.href = '/login'; return }
-
       const { data: tradesData } = await supabase
         .from('trades').select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
       if (tradesData) setTrades(tradesData)
-
       const { data: profileData } = await supabase
         .from('profiles').select('*').eq('id', user.id).single()
       if (profileData) setProfile(profileData)
-
       const today = new Date().toISOString().split('T')[0]
       const { data: planData } = await supabase
         .from('morning_plans').select('id').eq('user_id', user.id).gte('created_at', today).limit(1)
       if (planData && planData.length > 0) setPlanReady(true)
-
       setLoading(false)
     }
     load()
@@ -85,7 +81,6 @@ export default function DashboardPage() {
   const profitFactor = avgLoss > 0 ? parseFloat((avgWin / avgLoss).toFixed(1)) : 0
   const followedPlan = trades.length > 0 ? Math.round((trades.filter(t => t.followed_plan).length / trades.length) * 100) : 0
   const avgR = trades.length > 0 ? parseFloat((trades.reduce((s, t) => s + t.result_r, 0) / trades.length).toFixed(1)) : 0
-
   const recentTrades = trades.slice(0, 4)
 
   const setupStats = trades.reduce((acc: Record<string, { wins: number; total: number; totalR: number }>, t) => {
@@ -164,24 +159,27 @@ export default function DashboardPage() {
         }
         .sb-logo { height: 52px; min-height: 52px; display: flex; align-items: center; padding: 0 14px; border-bottom: 0.5px solid #e8e8e8; white-space: nowrap; }
         .sb-dot { width: 24px; height: 24px; min-width: 24px; background: #111; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 800; }
-        .sb-label { font-size: 13px; font-weight: 700; color: #111; margin-left: 10px; letter-spacing: -0.3px; opacity: 0; transition: opacity 0.1s 0.07s; white-space: nowrap; }
-        .sidebar.exp .sb-label { opacity: 1; }
+        .sb-brand { font-size: 13px; font-weight: 700; color: #111; margin-left: 10px; letter-spacing: -0.3px; opacity: 0; transition: opacity 0.1s 0.07s; white-space: nowrap; }
+        .sidebar.exp .sb-brand { opacity: 1; }
 
-        .profile-btn { display: flex; align-items: center; margin: 10px 6px 4px; padding: 8px; border-radius: 10px; background: #f5f5f5; border: 0.5px solid #e8e8e8; cursor: pointer; text-decoration: none; white-space: nowrap; overflow: hidden; transition: background 0.15s; }
-        .profile-btn:hover { background: #efefef; }
-        .profile-avatar { width: 28px; height: 28px; min-width: 28px; background: #111; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
-        .profile-info { margin-left: 9px; opacity: 0; transition: opacity 0.1s 0.07s; }
+        .profile-btn { display: flex; align-items: center; margin: 10px 6px 4px; padding: 8px; border-radius: 10px; background: #f5f5f5; border: 0.5px solid #e8e8e8; cursor: pointer; text-decoration: none; overflow: hidden; }
+        .profile-avatar { width: 28px; height: 28px; min-width: 28px; background: #111; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 700; }
+        .profile-info { margin-left: 9px; opacity: 0; transition: opacity 0.1s 0.07s; white-space: nowrap; }
         .sidebar.exp .profile-info { opacity: 1; }
         .profile-name { font-size: 12px; font-weight: 700; color: #111; }
         .profile-role { font-size: 10px; color: #aaa; margin-top: 1px; }
-        .sb-divider { height: 0.5px; background: #e8e8e8; margin: 6px 12px; }
 
-        .nav-item { display: flex; align-items: center; height: 38px; padding: 0 14px; margin: 1px 6px; border-radius: 8px; cursor: pointer; text-decoration: none; color: #aaa; transition: background 0.15s, color 0.15s; white-space: nowrap; overflow: hidden; }
+        .sb-divider { height: 0.5px; background: #e8e8e8; margin: 6px 12px; }
+        .sb-section { font-size: 10px; font-weight: 600; color: #ccc; text-transform: uppercase; letter-spacing: 0.8px; padding: 4px 20px 2px; white-space: nowrap; opacity: 0; transition: opacity 0.1s 0.07s; }
+        .sidebar.exp .sb-section { opacity: 1; }
+
+        .nav-item { display: flex; align-items: center; height: 38px; padding: 0 14px; margin: 1px 6px; border-radius: 8px; cursor: pointer; text-decoration: none; color: #888; overflow: hidden; transition: background 0.15s, color 0.15s; }
         .nav-item:hover { background: #f5f5f5; color: #111; }
-        .nav-item.active { background: #f0f0f0; color: #111; }
-        .nav-icon { font-size: 15px; min-width: 24px; display: flex; align-items: center; justify-content: center; }
-        .nav-lbl { font-size: 12.5px; font-weight: 500; margin-left: 8px; opacity: 0; transition: opacity 0.1s 0.07s; }
+        .nav-item.active { background: #111; color: #fff; }
+        .nav-icon { font-size: 14px; min-width: 24px; display: flex; align-items: center; justify-content: center; }
+        .nav-lbl { font-size: 12.5px; font-weight: 500; margin-left: 8px; opacity: 0; transition: opacity 0.1s 0.07s; white-space: nowrap; }
         .sidebar.exp .nav-lbl { opacity: 1; }
+        .nav-item.active .nav-lbl { color: #fff; }
 
         .kpi-card { background: #1a1a1a; border-radius: 14px; padding: 1.25rem 1.4rem; transition: transform 0.15s; }
         .kpi-card:hover { transform: translateY(-2px); }
@@ -220,7 +218,7 @@ export default function DashboardPage() {
       >
         <div className="sb-logo">
           <div className="sb-dot">M</div>
-          <span className="sb-label">MyTradePlan</span>
+          <span className="sb-brand">MyTradePlan</span>
         </div>
 
         <a href="/settings" className="profile-btn">
@@ -232,8 +230,9 @@ export default function DashboardPage() {
         </a>
 
         <div className="sb-divider"></div>
+        <div className="sb-section">Session</div>
 
-        <nav style={{ flex: 1, paddingTop: '4px' }}>
+        <nav style={{ paddingTop: '2px' }}>
           <a href="/dashboard" className="nav-item active">
             <span className="nav-icon">▦</span>
             <span className="nav-lbl">Dashboard</span>
@@ -242,14 +241,16 @@ export default function DashboardPage() {
             <span className="nav-icon">☀</span>
             <span className="nav-lbl">Plan du matin</span>
           </a>
-          <a href="/stats" className="nav-item">
-            <span className="nav-icon">📊</span>
-            <span className="nav-lbl">Statistiques</span>
+          <a href="/debrief" className="nav-item">
+            <span className="nav-icon">◈</span>
+            <span className="nav-lbl">Débrief Macro IA</span>
           </a>
-          <a href="/journal" className="nav-item">
-            <span className="nav-icon">📒</span>
-            <span className="nav-lbl">Journal</span>
-          </a>
+        </nav>
+
+        <div className="sb-divider"></div>
+        <div className="sb-section">Compte</div>
+
+        <nav style={{ paddingTop: '2px' }}>
           <a href="/settings" className="nav-item">
             <span className="nav-icon">⚙</span>
             <span className="nav-lbl">Paramètres</span>
