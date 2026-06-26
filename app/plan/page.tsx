@@ -101,6 +101,31 @@ export default function PlanPage() {
     ? profile.full_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
     : 'CL'
 
+  const sidebarCSS = `
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    .sidebar { position: fixed; left: 0; top: 0; height: 100vh; background: #fff; border-right: 0.5px solid #e8e8e8; display: flex; flex-direction: column; transition: width 0.2s cubic-bezier(0.4,0,0.2,1); overflow: hidden; z-index: 100; }
+    .sb-logo { height: 52px; min-height: 52px; display: flex; align-items: center; padding: 0 14px; border-bottom: 0.5px solid #e8e8e8; white-space: nowrap; }
+    .sb-dot { width: 24px; height: 24px; min-width: 24px; background: #111; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 800; }
+    .sb-brand { font-size: 13px; font-weight: 700; color: #111; margin-left: 10px; letter-spacing: -0.3px; opacity: 0; transition: opacity 0.1s 0.07s; white-space: nowrap; }
+    .sidebar.exp .sb-brand { opacity: 1; }
+    .profile-btn { display: flex; align-items: center; margin: 10px 6px 4px; padding: 8px; border-radius: 10px; background: #f5f5f5; border: 0.5px solid #e8e8e8; cursor: pointer; text-decoration: none; overflow: hidden; }
+    .profile-avatar { width: 28px; height: 28px; min-width: 28px; background: #111; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 700; }
+    .profile-info { margin-left: 9px; opacity: 0; transition: opacity 0.1s 0.07s; white-space: nowrap; }
+    .sidebar.exp .profile-info { opacity: 1; }
+    .profile-name { font-size: 12px; font-weight: 700; color: #111; }
+    .profile-role { font-size: 10px; color: #aaa; margin-top: 1px; }
+    .sb-divider { height: 0.5px; background: #e8e8e8; margin: 6px 12px; }
+    .sb-section { font-size: 10px; font-weight: 600; color: #ccc; text-transform: uppercase; letter-spacing: 0.8px; padding: 4px 20px 2px; white-space: nowrap; opacity: 0; transition: opacity 0.1s 0.07s; }
+    .sidebar.exp .sb-section { opacity: 1; }
+    .nav-item { display: flex; align-items: center; height: 38px; padding: 0 14px; margin: 1px 6px; border-radius: 8px; cursor: pointer; text-decoration: none; color: #888; overflow: hidden; transition: background 0.15s, color 0.15s; }
+    .nav-item:hover { background: #f5f5f5; color: #111; }
+    .nav-item.active { background: #111; color: #fff; }
+    .nav-icon { font-size: 14px; min-width: 24px; display: flex; align-items: center; justify-content: center; }
+    .nav-lbl { font-size: 12.5px; font-weight: 500; margin-left: 8px; opacity: 0; transition: opacity 0.1s 0.07s; white-space: nowrap; }
+    .sidebar.exp .nav-lbl { opacity: 1; }
+    .nav-item.active .nav-lbl { color: #fff; }
+  `
+
   const Sidebar = (
     <div
       className={`sidebar${sidebarExpanded ? ' exp' : ''}`}
@@ -134,6 +159,10 @@ export default function PlanPage() {
           <span className="nav-icon">◈</span>
           <span className="nav-lbl">Débrief Macro IA</span>
         </a>
+        <a href="/journal" className="nav-item">
+          <span className="nav-icon">📒</span>
+          <span className="nav-lbl">Journal</span>
+        </a>
       </nav>
       <div className="sb-divider"></div>
       <div className="sb-section">Compte</div>
@@ -146,32 +175,6 @@ export default function PlanPage() {
     </div>
   )
 
-  const sidebarCSS = `
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    .sidebar { position: fixed; left: 0; top: 0; height: 100vh; background: #fff; border-right: 0.5px solid #e8e8e8; display: flex; flex-direction: column; transition: width 0.2s cubic-bezier(0.4,0,0.2,1); overflow: hidden; z-index: 100; }
-    .sb-logo { height: 52px; min-height: 52px; display: flex; align-items: center; padding: 0 14px; border-bottom: 0.5px solid #e8e8e8; white-space: nowrap; }
-    .sb-dot { width: 24px; height: 24px; min-width: 24px; background: #111; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 800; }
-    .sb-brand { font-size: 13px; font-weight: 700; color: #111; margin-left: 10px; letter-spacing: -0.3px; opacity: 0; transition: opacity 0.1s 0.07s; white-space: nowrap; }
-    .sidebar.exp .sb-brand { opacity: 1; }
-    .profile-btn { display: flex; align-items: center; margin: 10px 6px 4px; padding: 8px; border-radius: 10px; background: #f5f5f5; border: 0.5px solid #e8e8e8; cursor: pointer; text-decoration: none; overflow: hidden; }
-    .profile-avatar { width: 28px; height: 28px; min-width: 28px; background: #111; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 700; }
-    .profile-info { margin-left: 9px; opacity: 0; transition: opacity 0.1s 0.07s; white-space: nowrap; }
-    .sidebar.exp .profile-info { opacity: 1; }
-    .profile-name { font-size: 12px; font-weight: 700; color: #111; }
-    .profile-role { font-size: 10px; color: #aaa; margin-top: 1px; }
-    .sb-divider { height: 0.5px; background: #e8e8e8; margin: 6px 12px; }
-    .sb-section { font-size: 10px; font-weight: 600; color: #ccc; text-transform: uppercase; letter-spacing: 0.8px; padding: 4px 20px 2px; white-space: nowrap; opacity: 0; transition: opacity 0.1s 0.07s; }
-    .sidebar.exp .sb-section { opacity: 1; }
-    .nav-item { display: flex; align-items: center; height: 38px; padding: 0 14px; margin: 1px 6px; border-radius: 8px; cursor: pointer; text-decoration: none; color: #888; overflow: hidden; transition: background 0.15s, color 0.15s; }
-    .nav-item:hover { background: #f5f5f5; color: #111; }
-    .nav-item.active { background: #111; color: #fff; }
-    .nav-icon { font-size: 14px; min-width: 24px; display: flex; align-items: center; justify-content: center; }
-    .nav-lbl { font-size: 12.5px; font-weight: 500; margin-left: 8px; opacity: 0; transition: opacity 0.1s 0.07s; white-space: nowrap; }
-    .sidebar.exp .nav-lbl { opacity: 1; }
-    .nav-item.active .nav-lbl { color: #fff; }
-  `
-
-  // PAGE D'ACCUEIL AVANT LE PLAN
   if (!started) {
     return (
       <div style={{ display: 'flex', minHeight: '100vh', background: '#f9f9f9', fontFamily: 'Inter, sans-serif' }}>
@@ -187,7 +190,6 @@ export default function PlanPage() {
 
         <main style={{ marginLeft: sidebarW, flex: 1, minWidth: 0, transition: 'margin-left 0.2s cubic-bezier(0.4,0,0.2,1)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
           <div className="plan-anim" style={{ maxWidth: '440px', width: '100%' }}>
-
             <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
               <div style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '0.5rem' }}>Plan du matin</div>
               <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#111', letterSpacing: '-0.5px', marginBottom: '0.5rem' }}>Prêt pour la session ?</h1>
@@ -201,9 +203,7 @@ export default function PlanPage() {
               </div>
             )}
 
-            <button className="btn-start" onClick={startPlan}>
-              Commencer mon plan →
-            </button>
+            <button className="btn-start" onClick={startPlan}>Commencer mon plan →</button>
 
             <div style={{ background: '#fff', border: `0.5px solid ${isPro ? '#d1fae5' : '#e8e8e8'}`, borderRadius: '10px', padding: '1.25rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
@@ -240,14 +240,12 @@ export default function PlanPage() {
                 </div>
               )}
             </div>
-
           </div>
         </main>
       </div>
     )
   }
 
-  // PAGE DE CHAT
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f9f9f9', fontFamily: 'Inter, sans-serif' }}>
       <style>{`
@@ -265,18 +263,13 @@ export default function PlanPage() {
       {Sidebar}
 
       <main style={{ marginLeft: sidebarW, flex: 1, minWidth: 0, transition: 'margin-left 0.2s cubic-bezier(0.4,0,0.2,1)', display: 'flex', flexDirection: 'column' }}>
-
-        {/* Header */}
         <div style={{ height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2rem', borderBottom: '0.5px solid #e8e8e8', background: '#fff', flexShrink: 0 }}>
           <span style={{ fontSize: '15px', fontWeight: 700, color: '#111', letterSpacing: '-0.3px' }}>Plan du matin</span>
           {profile && (
-            <div style={{ background: '#f0fdf4', color: '#16a34a', fontSize: '11px', padding: '3px 10px', borderRadius: '20px', fontWeight: 600, border: '0.5px solid #86efac' }}>
-              En session
-            </div>
+            <div style={{ background: '#f0fdf4', color: '#16a34a', fontSize: '11px', padding: '3px 10px', borderRadius: '20px', fontWeight: 600, border: '0.5px solid #86efac' }}>En session</div>
           )}
         </div>
 
-        {/* Messages */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '2rem 1rem' }}>
           <div style={{ maxWidth: '620px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '14px' }}>
             {messages.map((m, i) => (
@@ -308,14 +301,12 @@ export default function PlanPage() {
           </div>
         </div>
 
-        {/* Input */}
         <div style={{ padding: '0.75rem 1rem 1.25rem', background: '#f9f9f9', flexShrink: 0 }}>
           <div style={{ maxWidth: '620px', margin: '0 auto', background: '#fff', border: '0.5px solid #e0e0e0', borderRadius: '12px', display: 'flex', gap: '8px', padding: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
             <input className="chat-input" value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendMessage()} placeholder="Réponds ici..." disabled={loading}/>
             <button onClick={sendMessage} disabled={loading || !input.trim()} style={{ background: input.trim() && !loading ? '#111' : '#f0f0f0', color: input.trim() && !loading ? '#fff' : '#aaa', border: 'none', borderRadius: '8px', padding: '8px 18px', fontWeight: 700, fontSize: '14px', cursor: input.trim() && !loading ? 'pointer' : 'not-allowed', transition: 'all 0.15s', flexShrink: 0 }}>→</button>
           </div>
         </div>
-
       </main>
     </div>
   )

@@ -195,6 +195,10 @@ export default function DashboardPage() {
             <span className="nav-icon">◈</span>
             <span className="nav-lbl">Débrief Macro IA</span>
           </a>
+          <a href="/journal" className="nav-item">
+            <span className="nav-icon">📒</span>
+            <span className="nav-lbl">Journal</span>
+          </a>
         </nav>
         <div className="sb-divider"></div>
         <div className="sb-section">Compte</div>
@@ -406,7 +410,6 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 </div>
-
               </>
             )}
           </div>
