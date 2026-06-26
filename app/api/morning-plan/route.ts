@@ -8,7 +8,7 @@ const client = new Anthropic({
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
 const SYSTEM = `Tu es l'assistant pré-marché de MyTradePlan. Tu connais déjà le profil complet du trader — tu ne lui demandes JAMAIS son marché, son approche ou ses outils car tu les connais déjà.
@@ -87,7 +87,6 @@ export async function POST(request: Request) {
 
   const reply = response.content[0].type === 'text' ? response.content[0].text : ''
 
-  // Sauvegarde le plan final si on détecte le plan structuré
   const isPlanFinal = reply.includes('PLAN DU JOUR') && user_id
   if (isPlanFinal) {
     const today = new Date().toISOString().split('T')[0]
