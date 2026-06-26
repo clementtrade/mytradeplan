@@ -52,7 +52,7 @@ export default function PlanPage() {
     const clean = text.replace(/\*\*(.*?)\*\*/g, '$1').replace(/━+/g, '').replace(/#{1,3} /g, '')
     const utterance = new SpeechSynthesisUtterance(clean)
     utterance.lang = 'fr-FR'
-    utterance.rate = 1
+    utterance.rate = 1.25
     utterance.onend = () => setSpeaking(false)
     utterance.onerror = () => setSpeaking(false)
     window.speechSynthesis.speak(utterance)
