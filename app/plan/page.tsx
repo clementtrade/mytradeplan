@@ -20,10 +20,7 @@ export default function PlanPage() {
       if (user) {
         const { data } = await supabase
           .from('profiles').select('*').eq('id', user.id).single()
-        if (data) {
-          setProfile(data)
-          setIsPro(data.is_pro === true)
-        }
+        if (data) { setProfile(data); setIsPro(data.is_pro === true) }
       }
     }
     loadProfile()
@@ -53,15 +50,12 @@ export default function PlanPage() {
       })
       const data = await res.json()
       setMacroResult(data.reply)
-    } catch {
-      setMacroResult('Erreur de connexion. Réessaie.')
-    }
+    } catch { setMacroResult('Erreur de connexion. Réessaie.') }
     setMacroLoading(false)
   }
 
   async function startPlan() {
-    setStarted(true)
-    setLoading(true)
+    setStarted(true); setLoading(true)
     try {
       const res = await fetch('/api/morning-plan', {
         method: 'POST',
@@ -70,18 +64,14 @@ export default function PlanPage() {
       })
       const data = await res.json()
       setMessages([{ role: 'ai', text: data.reply }])
-    } catch {
-      setMessages([{ role: 'ai', text: 'Erreur de connexion. Réessaie.' }])
-    }
+    } catch { setMessages([{ role: 'ai', text: 'Erreur de connexion. Réessaie.' }]) }
     setLoading(false)
   }
 
   async function sendMessage() {
     if (!input.trim() || loading) return
     const newMessages = [...messages, { role: 'user', text: input }]
-    setMessages(newMessages)
-    setInput('')
-    setLoading(true)
+    setMessages(newMessages); setInput(''); setLoading(true)
     try {
       const res = await fetch('/api/morning-plan', {
         method: 'POST',
@@ -90,9 +80,7 @@ export default function PlanPage() {
       })
       const data = await res.json()
       setMessages([...newMessages, { role: 'ai', text: data.reply }])
-    } catch {
-      setMessages([...newMessages, { role: 'ai', text: 'Erreur de connexion.' }])
-    }
+    } catch { setMessages([...newMessages, { role: 'ai', text: 'Erreur de connexion.' }]) }
     setLoading(false)
   }
 
@@ -160,7 +148,7 @@ export default function PlanPage() {
           <span className="nav-lbl">Débrief Macro IA</span>
         </a>
         <a href="/journal" className="nav-item">
-          <span className="nav-icon">📒</span>
+          <span className="nav-icon" style={{ fontSize: '13px', fontWeight: 700 }}>▤</span>
           <span className="nav-lbl">Journal</span>
         </a>
       </nav>
@@ -185,9 +173,7 @@ export default function PlanPage() {
           .btn-start { width: 100%; background: #111; color: #fff; border: none; border-radius: 8px; padding: 14px; font-weight: 600; font-size: 15px; cursor: pointer; transition: opacity 0.15s; margin-bottom: 1.25rem; font-family: inherit; }
           .btn-start:hover { opacity: 0.85; }
         `}</style>
-
         {Sidebar}
-
         <main style={{ marginLeft: sidebarW, flex: 1, minWidth: 0, transition: 'margin-left 0.2s cubic-bezier(0.4,0,0.2,1)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
           <div className="plan-anim" style={{ maxWidth: '440px', width: '100%' }}>
             <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
@@ -195,25 +181,20 @@ export default function PlanPage() {
               <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#111', letterSpacing: '-0.5px', marginBottom: '0.5rem' }}>Prêt pour la session ?</h1>
               <p style={{ fontSize: '14px', color: '#888', lineHeight: 1.6 }}>L'IA va te poser quelques questions sur le contexte du jour pour construire ton plan.</p>
             </div>
-
             {profile && (
               <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '10px', padding: '12px 16px', marginBottom: '1.25rem' }}>
                 <div style={{ color: '#aaa', fontSize: '11px', fontWeight: 500, marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Ton profil</div>
                 <div style={{ color: '#111', fontSize: '13px', fontWeight: 500 }}>{profile.market} · {profile.tf} · {profile.approach}</div>
               </div>
             )}
-
             <button className="btn-start" onClick={startPlan}>Commencer mon plan →</button>
-
             <div style={{ background: '#fff', border: `0.5px solid ${isPro ? '#d1fae5' : '#e8e8e8'}`, borderRadius: '10px', padding: '1.25rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
                 <div>
                   <div style={{ fontSize: '12px', fontWeight: 600, color: '#111', marginBottom: '2px' }}>Daily Briefing Macro</div>
                   <div style={{ fontSize: '12px', color: '#888' }}>Personnalisé à ton profil</div>
                 </div>
-                {!isPro && (
-                  <div style={{ background: '#f5f5f5', border: '0.5px solid #e0e0e0', borderRadius: '6px', padding: '3px 10px', fontSize: '11px', color: '#888' }}>🔒 Pro</div>
-                )}
+                {!isPro && <div style={{ background: '#f5f5f5', border: '0.5px solid #e0e0e0', borderRadius: '6px', padding: '3px 10px', fontSize: '11px', color: '#888' }}>🔒 Pro</div>}
               </div>
               {isPro ? (
                 <div>
@@ -259,9 +240,7 @@ export default function PlanPage() {
         .chat-input { flex: 1; background: transparent; border: none; color: #111; font-size: 14px; outline: none; font-family: inherit; padding: 6px 8px; }
         .chat-input::placeholder { color: #aaa; }
       `}</style>
-
       {Sidebar}
-
       <main style={{ marginLeft: sidebarW, flex: 1, minWidth: 0, transition: 'margin-left 0.2s cubic-bezier(0.4,0,0.2,1)', display: 'flex', flexDirection: 'column' }}>
         <div style={{ height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2rem', borderBottom: '0.5px solid #e8e8e8', background: '#fff', flexShrink: 0 }}>
           <span style={{ fontSize: '15px', fontWeight: 700, color: '#111', letterSpacing: '-0.3px' }}>Plan du matin</span>
@@ -269,7 +248,6 @@ export default function PlanPage() {
             <div style={{ background: '#f0fdf4', color: '#16a34a', fontSize: '11px', padding: '3px 10px', borderRadius: '20px', fontWeight: 600, border: '0.5px solid #86efac' }}>En session</div>
           )}
         </div>
-
         <div style={{ flex: 1, overflowY: 'auto', padding: '2rem 1rem' }}>
           <div style={{ maxWidth: '620px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '14px' }}>
             {messages.map((m, i) => (
@@ -278,9 +256,7 @@ export default function PlanPage() {
                   <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: '#fff', fontWeight: 600, flexShrink: 0, marginRight: '8px', marginTop: '2px' }}>M</div>
                 )}
                 <div style={{ maxWidth: '78%', padding: '12px 16px', borderRadius: m.role === 'user' ? '12px 4px 12px 12px' : '4px 12px 12px 12px', background: m.role === 'user' ? '#111' : '#fff', border: m.role === 'ai' ? '0.5px solid #e8e8e8' : 'none', color: m.role === 'user' ? '#fff' : '#111', fontSize: '14px', lineHeight: 1.7, boxShadow: m.role === 'ai' ? '0 2px 8px rgba(0,0,0,0.04)' : 'none' }}>
-                  {m.role === 'ai' && (
-                    <div style={{ color: '#aaa', fontSize: '10px', fontWeight: 500, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>MyTradePlan IA</div>
-                  )}
+                  {m.role === 'ai' && <div style={{ color: '#aaa', fontSize: '10px', fontWeight: 500, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>MyTradePlan IA</div>}
                   {m.role === 'ai' ? <div dangerouslySetInnerHTML={{ __html: formatText(m.text) }}/> : <div>{m.text}</div>}
                 </div>
               </div>
@@ -300,7 +276,6 @@ export default function PlanPage() {
             <div ref={messagesEndRef}/>
           </div>
         </div>
-
         <div style={{ padding: '0.75rem 1rem 1.25rem', background: '#f9f9f9', flexShrink: 0 }}>
           <div style={{ maxWidth: '620px', margin: '0 auto', background: '#fff', border: '0.5px solid #e0e0e0', borderRadius: '12px', display: 'flex', gap: '8px', padding: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
             <input className="chat-input" value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendMessage()} placeholder="Réponds ici..." disabled={loading}/>

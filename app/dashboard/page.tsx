@@ -21,6 +21,9 @@ export default function DashboardPage() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [planReady, setPlanReady] = useState(false)
   const [profile, setProfile] = useState<any>(null)
+  const [macroText, setMacroText] = useState('')
+  const [macroLoading, setMacroLoading] = useState(false)
+  const [macroLoaded, setMacroLoaded] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -42,6 +45,33 @@ export default function DashboardPage() {
     }
     load()
   }, [])
+
+  async function getMacroBriefing() {
+    setMacroLoading(true)
+    setMacroText('')
+    try {
+      const res = await fetch('/api/macro-briefing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profile }),
+      })
+      const data = await res.json()
+      setMacroText(data.reply)
+      setMacroLoaded(true)
+    } catch {
+      setMacroText('Erreur de connexion. Réessaie.')
+      setMacroLoaded(true)
+    }
+    setMacroLoading(false)
+  }
+
+  function formatMacro(text: string) {
+    return text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .split('\n')
+      .map((line) => `<div style="min-height:4px">${line || '&nbsp;'}</div>`)
+      .join('')
+  }
 
   const wins = trades.filter(t => t.result_r > 0)
   const losses = trades.filter(t => t.result_r <= 0)
@@ -118,7 +148,7 @@ export default function DashboardPage() {
         .sa { animation: fadeUp 0.4s ease both; }
         .sa1 { animation-delay: 0.04s; } .sa2 { animation-delay: 0.08s; }
         .sa3 { animation-delay: 0.12s; } .sa4 { animation-delay: 0.16s; }
-        .sa5 { animation-delay: 0.20s; }
+        .sa5 { animation-delay: 0.20s; } .sa6 { animation-delay: 0.25s; }
         .sidebar { position: fixed; left: 0; top: 0; height: 100vh; background: #fff; border-right: 0.5px solid #e8e8e8; display: flex; flex-direction: column; transition: width 0.2s cubic-bezier(0.4,0,0.2,1); overflow: hidden; z-index: 100; }
         .sb-logo { height: 52px; min-height: 52px; display: flex; align-items: center; padding: 0 14px; border-bottom: 0.5px solid #e8e8e8; white-space: nowrap; }
         .sb-dot { width: 24px; height: 24px; min-width: 24px; background: #111; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 800; }
@@ -150,6 +180,9 @@ export default function DashboardPage() {
         .badge-short { background: #fee2e2; color: #dc2626; }
         .setup-row { padding: 8px 0; border-bottom: 0.5px solid #f2f2f2; }
         .setup-row:last-child { border-bottom: none; }
+        .macro-btn { display: flex; align-items: center; justify-content: center; gap: 8px; background: #111; color: #fff; border: none; border-radius: 10px; padding: 10px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; width: 100%; }
+        .macro-btn:hover { background: #333; }
+        .macro-btn:disabled { background: #555; cursor: wait; }
         .cal-day { aspect-ratio: 1; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; transition: transform 0.15s; cursor: default; }
         .cal-day:hover { transform: scale(1.06); z-index: 2; position: relative; }
         .cal-win { background: #c8f0d8; color: #15803d; }
@@ -196,7 +229,7 @@ export default function DashboardPage() {
             <span className="nav-lbl">Débrief Macro IA</span>
           </a>
           <a href="/journal" className="nav-item">
-            <span className="nav-icon">📒</span>
+            <span className="nav-icon" style={{ fontSize: '13px', fontWeight: 700 }}>▤</span>
             <span className="nav-lbl">Journal</span>
           </a>
         </nav>
@@ -231,7 +264,7 @@ export default function DashboardPage() {
 
             {trades.length === 0 ? (
               <div className="sa sa2" style={{ textAlign: 'center', padding: '5rem 0' }}>
-                <div style={{ fontSize: '32px', marginBottom: '12px' }}>📒</div>
+                <div style={{ fontSize: '32px', marginBottom: '12px' }}>▤</div>
                 <div style={{ color: '#bbb', fontSize: '14px', marginBottom: '8px' }}>Aucun trade encore enregistré.</div>
                 <a href="/journal" style={{ color: '#111', fontSize: '13px', fontWeight: 600, textDecoration: 'none' }}>Ajouter un trade →</a>
               </div>
@@ -343,8 +376,32 @@ export default function DashboardPage() {
                   )}
                 </div>
 
+                {/* DÉBRIEF MACRO IA */}
+                <div className="sa sa5 mid-card" style={{ marginBottom: '1.5rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#111' }}>Débrief Macro IA</div>
+                      <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>Briefing du jour généré par IA selon ton profil</div>
+                    </div>
+                    {macroLoaded && (
+                      <button onClick={getMacroBriefing} disabled={macroLoading} style={{ background: 'none', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '5px 12px', fontSize: '11.5px', color: '#888', cursor: 'pointer' }}>
+                        ↺ Rafraîchir
+                      </button>
+                    )}
+                  </div>
+                  {!macroLoaded ? (
+                    <button className="macro-btn" onClick={getMacroBriefing} disabled={macroLoading}>
+                      {macroLoading ? <>⏳ Génération en cours...</> : <>◈ Générer le débrief macro du jour</>}
+                    </button>
+                  ) : macroLoading ? (
+                    <div style={{ color: '#aaa', fontSize: '13px', padding: '1rem 0' }}>⏳ Génération en cours...</div>
+                  ) : (
+                    <div style={{ fontSize: '13px', color: '#333', lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: formatMacro(macroText) }}/>
+                  )}
+                </div>
+
                 {/* CALENDRIER */}
-                <div className="sa sa5 mid-card">
+                <div className="sa sa6 mid-card">
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
                     <span style={{ fontSize: '15px', fontWeight: 700, color: '#111', letterSpacing: '-0.3px' }}>Calendrier · {monthNames[calMonthIdx]} {calYear}</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
