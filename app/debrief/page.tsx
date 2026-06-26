@@ -8,6 +8,7 @@ export default function DebriefPage() {
   const [macroLoading, setMacroLoading] = useState(false)
   const [macroLoaded, setMacroLoaded] = useState(false)
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
+  const [speaking, setSpeaking] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -21,6 +22,7 @@ export default function DebriefPage() {
   }, [])
 
   async function getMacroBriefing() {
+    stopSpeech()
     setMacroLoading(true)
     setMacroText('')
     try {
@@ -37,6 +39,24 @@ export default function DebriefPage() {
       setMacroLoaded(true)
     }
     setMacroLoading(false)
+  }
+
+  function speak() {
+    if (!macroText) return
+    stopSpeech()
+    const clean = macroText.replace(/\*\*(.*?)\*\*/g, '$1').replace(/#{1,3} /g, '')
+    const utterance = new SpeechSynthesisUtterance(clean)
+    utterance.lang = 'fr-FR'
+    utterance.rate = 1
+    utterance.onend = () => setSpeaking(false)
+    utterance.onerror = () => setSpeaking(false)
+    window.speechSynthesis.speak(utterance)
+    setSpeaking(true)
+  }
+
+  function stopSpeech() {
+    window.speechSynthesis.cancel()
+    setSpeaking(false)
   }
 
   function formatMacro(text: string) {
@@ -82,6 +102,9 @@ export default function DebriefPage() {
         .macro-btn { display: flex; align-items: center; justify-content: center; gap: 8px; background: #111; color: #fff; border: none; border-radius: 10px; padding: 12px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; width: 100%; }
         .macro-btn:hover { background: #333; }
         .macro-btn:disabled { background: #555; cursor: wait; }
+        .speak-btn { display: flex; align-items: center; gap: 6px; border: none; border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+        .speaking { animation: pulse 1.5s ease-in-out infinite; }
       `}</style>
 
       {/* SIDEBAR */}
@@ -117,6 +140,10 @@ export default function DebriefPage() {
             <span className="nav-icon">◈</span>
             <span className="nav-lbl">Débrief Macro IA</span>
           </a>
+          <a href="/journal" className="nav-item">
+            <span className="nav-icon" style={{ fontSize: '13px', fontWeight: 700 }}>▤</span>
+            <span className="nav-lbl">Journal</span>
+          </a>
         </nav>
         <div className="sb-divider"></div>
         <div className="sb-section">Compte</div>
@@ -138,18 +165,38 @@ export default function DebriefPage() {
               <span style={{ fontSize: '20px', fontWeight: 700, color: '#111', letterSpacing: '-0.5px' }}>Débrief Macro IA</span>
               <span style={{ fontSize: '13px', color: '#aaa' }}>{dateFormatted}</span>
             </div>
-            {macroLoaded && (
-              <button onClick={getMacroBriefing} disabled={macroLoading} style={{ background: 'none', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '6px 14px', fontSize: '12px', color: '#888', cursor: 'pointer' }}>
-                ↺ Rafraîchir
-              </button>
-            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {macroLoaded && !macroLoading && (
+                speaking ? (
+                  <button onClick={stopSpeech} className="speak-btn" style={{ background: '#fee2e2', color: '#dc2626' }}>
+                    <span className="speaking">⏹</span> Stop
+                  </button>
+                ) : (
+                  <button onClick={speak} className="speak-btn" style={{ background: '#f5f5f5', color: '#111' }}>
+                    🔊 Écouter
+                  </button>
+                )
+              )}
+              {macroLoaded && (
+                <button onClick={getMacroBriefing} disabled={macroLoading} style={{ background: 'none', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '6px 14px', fontSize: '12px', color: '#888', cursor: 'pointer' }}>
+                  ↺ Rafraîchir
+                </button>
+              )}
+            </div>
           </div>
 
           {/* CONTENU */}
           <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '14px', padding: '1.5rem' }}>
-            <div style={{ marginBottom: '1.25rem' }}>
-              <div style={{ fontSize: '13px', fontWeight: 700, color: '#111' }}>Briefing du jour</div>
-              <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>Généré par IA selon ton profil trader</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <div>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#111' }}>Briefing du jour</div>
+                <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>Généré par IA selon ton profil trader</div>
+              </div>
+              {speaking && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#16a34a', fontWeight: 600 }}>
+                  <span className="speaking">🔊</span> Lecture en cours...
+                </div>
+              )}
             </div>
 
             {!macroLoaded ? (
