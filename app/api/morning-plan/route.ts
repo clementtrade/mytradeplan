@@ -1,9 +1,15 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 })
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 const SYSTEM = `Tu es l'assistant pré-marché de MyTradePlan. Tu connais déjà le profil complet du trader — tu ne lui demandes JAMAIS son marché, son approche ou ses outils car tu les connais déjà.
 
@@ -59,7 +65,7 @@ Risque max aujourd'hui : [règle de risque]
 IMPORTANT : Commence par te présenter brièvement et poser ta PREMIÈRE question sur les données du jour — pas sur le marché ou l'approche du trader.`
 
 export async function POST(request: Request) {
-  const { messages, start, profile } = await request.json()
+  const { messages, start, profile, user_id } = await request.json()
 
   const systemWithProfile = profile
     ? `${SYSTEM}\n\nPROFIL DU TRADER :\n- Marché : ${profile.market}\n- Approche : ${profile.approach}\n- Outils : ${profile.tools}\n- Setup : ${profile.setup}\n- Point à travailler : ${profile.problem}`
@@ -80,6 +86,17 @@ export async function POST(request: Request) {
   })
 
   const reply = response.content[0].type === 'text' ? response.content[0].text : ''
+
+  // Sauvegarde le plan final si on détecte le plan structuré
+  const isPlanFinal = reply.includes('PLAN DU JOUR') && user_id
+  if (isPlanFinal) {
+    const today = new Date().toISOString().split('T')[0]
+    await supabase.from('morning_plans').upsert({
+      user_id,
+      date: today,
+      content: reply,
+    }, { onConflict: 'user_id,date' })
+  }
 
   return NextResponse.json({ reply })
 }

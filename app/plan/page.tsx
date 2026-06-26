@@ -8,6 +8,7 @@ export default function PlanPage() {
   const [loading, setLoading] = useState(false)
   const [started, setStarted] = useState(false)
   const [profile, setProfile] = useState<any>(null)
+  const [userId, setUserId] = useState<string | null>(null)
   const [isPro, setIsPro] = useState(false)
   const [macroResult, setMacroResult] = useState('')
   const [macroLoading, setMacroLoading] = useState(false)
@@ -19,6 +20,7 @@ export default function PlanPage() {
     async function loadProfile() {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
+        setUserId(user.id)
         const { data } = await supabase
           .from('profiles').select('*').eq('id', user.id).single()
         if (data) { setProfile(data); setIsPro(data.is_pro === true) }
@@ -85,7 +87,7 @@ export default function PlanPage() {
       const res = await fetch('/api/morning-plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: [], start: true, profile }),
+        body: JSON.stringify({ messages: [], start: true, profile, user_id: userId }),
       })
       const data = await res.json()
       setMessages([{ role: 'ai', text: data.reply }])
@@ -102,7 +104,7 @@ export default function PlanPage() {
       const res = await fetch('/api/morning-plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages, start: false, profile }),
+        body: JSON.stringify({ messages: newMessages, start: false, profile, user_id: userId }),
       })
       const data = await res.json()
       setMessages([...newMessages, { role: 'ai', text: data.reply }])
