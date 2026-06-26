@@ -14,43 +14,68 @@ type Trade = {
   notes: string
 }
 
-const NAV_ITEMS = [
-  { icon: '▦', label: 'Dashboard', href: '/dashboard', active: true },
-  { icon: '☀', label: 'Plan du matin', href: '/plan', active: false },
-  { icon: '◈', label: 'Débrief Macro IA', href: '/debrief', active: false },
-  { icon: '⚙', label: 'Paramètres', href: '/settings', active: false },
-]
-
 export default function DashboardPage() {
   const [trades, setTrades] = useState<Trade[]>([])
   const [loading, setLoading] = useState(true)
   const [calMonth, setCalMonth] = useState(() => new Date())
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [planReady, setPlanReady] = useState(false)
+  const [profile, setProfile] = useState<any>(null)
+  const [macroText, setMacroText] = useState('')
+  const [macroLoading, setMacroLoading] = useState(false)
+  const [macroLoaded, setMacroLoaded] = useState(false)
 
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { window.location.href = '/login'; return }
+
       const { data: tradesData } = await supabase
         .from('trades').select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
       if (tradesData) setTrades(tradesData)
 
+      const { data: profileData } = await supabase
+        .from('profiles').select('*').eq('id', user.id).single()
+      if (profileData) setProfile(profileData)
+
       const today = new Date().toISOString().split('T')[0]
       const { data: planData } = await supabase
-        .from('morning_plans')
-        .select('id')
-        .eq('user_id', user.id)
-        .gte('created_at', today)
-        .limit(1)
+        .from('morning_plans').select('id').eq('user_id', user.id).gte('created_at', today).limit(1)
       if (planData && planData.length > 0) setPlanReady(true)
 
       setLoading(false)
     }
     load()
   }, [])
+
+  async function getMacroBriefing() {
+    setMacroLoading(true)
+    setMacroText('')
+    try {
+      const res = await fetch('/api/macro-briefing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profile }),
+      })
+      const data = await res.json()
+      setMacroText(data.reply)
+      setMacroLoaded(true)
+    } catch {
+      setMacroText('Erreur de connexion. Réessaie.')
+      setMacroLoaded(true)
+    }
+    setMacroLoading(false)
+  }
+
+  function formatMacro(text: string) {
+    return text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .split('\n')
+      .map((line) => `<div style="min-height:4px">${line || '&nbsp;'}</div>`)
+      .join('')
+  }
 
   const wins = trades.filter(t => t.result_r > 0)
   const losses = trades.filter(t => t.result_r <= 0)
@@ -73,8 +98,7 @@ export default function DashboardPage() {
   }, {})
   const setupList = Object.entries(setupStats)
     .map(([name, s]) => ({ name, winRate: Math.round((s.wins / s.total) * 100), avgR: parseFloat((s.totalR / s.total).toFixed(1)), total: s.total }))
-    .sort((a, b) => b.avgR - a.avgR)
-    .slice(0, 3)
+    .sort((a, b) => b.avgR - a.avgR).slice(0, 3)
 
   const tradesAsc = [...trades].reverse()
   const equityCurve = tradesAsc.reduce((acc: { x: number; r: number }[], t, i) => {
@@ -91,7 +115,7 @@ export default function DashboardPage() {
     const x = equityCurve.length > 1 ? (i / (equityCurve.length - 1)) * 540 + 20 : 20
     return `${x},${getY(p.r)}`
   }).join(' ')
-  const lastX = equityCurve.length > 1 ? ((equityCurve.length - 1) / (equityCurve.length - 1)) * 540 + 20 : 20
+  const lastX = equityCurve.length > 1 ? 560 : 20
   const lastY = equityCurve.length > 0 ? getY(equityCurve[equityCurve.length - 1].r) : chartH / 2
 
   const calYear = calMonth.getFullYear()
@@ -117,6 +141,9 @@ export default function DashboardPage() {
   const sidebarW = sidebarExpanded ? 200 : 52
   const dateStr = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
   const dateFormatted = dateStr.charAt(0).toUpperCase() + dateStr.slice(1)
+  const initials = profile?.full_name
+    ? profile.full_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
+    : 'CL'
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#fff', fontFamily: 'Inter, sans-serif' }}>
@@ -126,7 +153,8 @@ export default function DashboardPage() {
         .sa { animation: fadeUp 0.4s ease both; }
         .sa1 { animation-delay: 0.04s; } .sa2 { animation-delay: 0.08s; }
         .sa3 { animation-delay: 0.12s; } .sa4 { animation-delay: 0.16s; }
-        .sa5 { animation-delay: 0.20s; }
+        .sa5 { animation-delay: 0.20s; } .sa6 { animation-delay: 0.25s; }
+
         .sidebar {
           position: fixed; left: 0; top: 0; height: 100vh;
           background: #fff; border-right: 0.5px solid #e8e8e8;
@@ -134,38 +162,31 @@ export default function DashboardPage() {
           transition: width 0.2s cubic-bezier(0.4,0,0.2,1);
           overflow: hidden; z-index: 100;
         }
-        .sb-logo {
-          height: 52px; min-height: 52px;
-          display: flex; align-items: center; padding: 0 14px;
-          border-bottom: 0.5px solid #e8e8e8; white-space: nowrap;
-        }
-        .sb-dot {
-          width: 24px; height: 24px; min-width: 24px;
-          background: #111; border-radius: 6px;
-          display: flex; align-items: center; justify-content: center;
-          color: #fff; font-size: 11px; font-weight: 800;
-        }
-        .sb-label {
-          font-size: 13px; font-weight: 700; color: #111;
-          margin-left: 10px; letter-spacing: -0.3px;
-          opacity: 0; transition: opacity 0.1s 0.07s; white-space: nowrap;
-        }
+        .sb-logo { height: 52px; min-height: 52px; display: flex; align-items: center; padding: 0 14px; border-bottom: 0.5px solid #e8e8e8; white-space: nowrap; }
+        .sb-dot { width: 24px; height: 24px; min-width: 24px; background: #111; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 800; }
+        .sb-label { font-size: 13px; font-weight: 700; color: #111; margin-left: 10px; letter-spacing: -0.3px; opacity: 0; transition: opacity 0.1s 0.07s; white-space: nowrap; }
         .sidebar.exp .sb-label { opacity: 1; }
-        .nav-item {
-          display: flex; align-items: center; height: 40px;
-          padding: 0 14px; margin: 2px 6px; border-radius: 8px;
-          cursor: pointer; text-decoration: none; color: #aaa;
-          transition: background 0.15s, color 0.15s; white-space: nowrap; overflow: hidden;
-        }
+
+        .profile-btn { display: flex; align-items: center; margin: 10px 6px 4px; padding: 8px; border-radius: 10px; background: #f5f5f5; border: 0.5px solid #e8e8e8; cursor: pointer; text-decoration: none; white-space: nowrap; overflow: hidden; transition: background 0.15s; }
+        .profile-btn:hover { background: #efefef; }
+        .profile-avatar { width: 28px; height: 28px; min-width: 28px; background: #111; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
+        .profile-info { margin-left: 9px; opacity: 0; transition: opacity 0.1s 0.07s; }
+        .sidebar.exp .profile-info { opacity: 1; }
+        .profile-name { font-size: 12px; font-weight: 700; color: #111; }
+        .profile-role { font-size: 10px; color: #aaa; margin-top: 1px; }
+        .sb-divider { height: 0.5px; background: #e8e8e8; margin: 6px 12px; }
+
+        .nav-item { display: flex; align-items: center; height: 38px; padding: 0 14px; margin: 1px 6px; border-radius: 8px; cursor: pointer; text-decoration: none; color: #aaa; transition: background 0.15s, color 0.15s; white-space: nowrap; overflow: hidden; }
         .nav-item:hover { background: #f5f5f5; color: #111; }
-        .nav-item.active { background: #f5f5f5; color: #111; }
+        .nav-item.active { background: #f0f0f0; color: #111; }
         .nav-icon { font-size: 15px; min-width: 24px; display: flex; align-items: center; justify-content: center; }
         .nav-lbl { font-size: 12.5px; font-weight: 500; margin-left: 8px; opacity: 0; transition: opacity 0.1s 0.07s; }
         .sidebar.exp .nav-lbl { opacity: 1; }
-        .sb-bottom { margin-top: auto; padding: 10px 6px; border-top: 0.5px solid #e8e8e8; }
+
         .kpi-card { background: #1a1a1a; border-radius: 14px; padding: 1.25rem 1.4rem; transition: transform 0.15s; }
         .kpi-card:hover { transform: translateY(-2px); }
         .mid-card { background: #fff; border: 0.5px solid #e8e8e8; border-radius: 14px; padding: 1.25rem; }
+
         .trade-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 0.5px solid #f2f2f2; }
         .trade-row:last-child { border-bottom: none; }
         .badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.4px; }
@@ -173,6 +194,11 @@ export default function DashboardPage() {
         .badge-short { background: #fee2e2; color: #dc2626; }
         .setup-row { padding: 8px 0; border-bottom: 0.5px solid #f2f2f2; }
         .setup-row:last-child { border-bottom: none; }
+
+        .macro-btn { display: flex; align-items: center; justify-content: center; gap: 8px; background: #111; color: #fff; border: none; border-radius: 10px; padding: 10px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; width: 100%; }
+        .macro-btn:hover { background: #333; }
+        .macro-btn:disabled { background: #555; cursor: wait; }
+
         .cal-day { aspect-ratio: 1; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; transition: transform 0.15s; cursor: default; }
         .cal-day:hover { transform: scale(1.06); z-index: 2; position: relative; }
         .cal-win  { background: #c8f0d8; color: #15803d; }
@@ -196,22 +222,39 @@ export default function DashboardPage() {
           <div className="sb-dot">M</div>
           <span className="sb-label">MyTradePlan</span>
         </div>
-        <nav style={{ flex: 1, paddingTop: '8px' }}>
-          {NAV_ITEMS.map(item => (
-            <a key={item.href} href={item.href} className={`nav-item${item.active ? ' active' : ''}`}>
-              <span className="nav-icon">{item.icon}</span>
-              <span className="nav-lbl">{item.label}</span>
-            </a>
-          ))}
-        </nav>
-        <div className="sb-bottom">
-          <a href="/journal" className="nav-item"><span className="nav-icon" style={{ fontSize: '14px' }}>📒</span><span className="nav-lbl">Journal</span></a>
-          <a href="/stats"   className="nav-item"><span className="nav-icon" style={{ fontSize: '14px' }}>📊</span><span className="nav-lbl">Statistiques</span></a>
-          <div className="nav-item" style={{ marginTop: '4px' }}>
-            <div style={{ width: 24, height: 24, minWidth: 24, background: '#e8e8e8', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 700, color: '#555' }}>CL</div>
-            <span className="nav-lbl" style={{ color: '#555', fontSize: '12px' }}>Mon compte</span>
+
+        <a href="/settings" className="profile-btn">
+          <div className="profile-avatar">{initials}</div>
+          <div className="profile-info">
+            <div className="profile-name">{profile?.full_name || 'Mon profil'}</div>
+            <div className="profile-role">{profile?.market || 'Trader'}</div>
           </div>
-        </div>
+        </a>
+
+        <div className="sb-divider"></div>
+
+        <nav style={{ flex: 1, paddingTop: '4px' }}>
+          <a href="/dashboard" className="nav-item active">
+            <span className="nav-icon">▦</span>
+            <span className="nav-lbl">Dashboard</span>
+          </a>
+          <a href="/plan" className="nav-item">
+            <span className="nav-icon">☀</span>
+            <span className="nav-lbl">Plan du matin</span>
+          </a>
+          <a href="/stats" className="nav-item">
+            <span className="nav-icon">📊</span>
+            <span className="nav-lbl">Statistiques</span>
+          </a>
+          <a href="/journal" className="nav-item">
+            <span className="nav-icon">📒</span>
+            <span className="nav-lbl">Journal</span>
+          </a>
+          <a href="/settings" className="nav-item">
+            <span className="nav-icon">⚙</span>
+            <span className="nav-lbl">Paramètres</span>
+          </a>
+        </nav>
       </div>
 
       {/* MAIN */}
@@ -347,8 +390,32 @@ export default function DashboardPage() {
                   )}
                 </div>
 
+                {/* DÉBRIEF MACRO IA */}
+                <div className="sa sa5 mid-card" style={{ marginBottom: '1.5rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#111' }}>Débrief Macro IA</div>
+                      <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>Briefing du jour généré par IA selon ton profil</div>
+                    </div>
+                    {macroLoaded && (
+                      <button onClick={getMacroBriefing} disabled={macroLoading} style={{ background: 'none', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '5px 12px', fontSize: '11.5px', color: '#888', cursor: 'pointer' }}>
+                        ↺ Rafraîchir
+                      </button>
+                    )}
+                  </div>
+                  {!macroLoaded ? (
+                    <button className="macro-btn" onClick={getMacroBriefing} disabled={macroLoading}>
+                      {macroLoading ? <>⏳ Génération en cours...</> : <>◈ Générer le débrief macro du jour</>}
+                    </button>
+                  ) : macroLoading ? (
+                    <div style={{ color: '#aaa', fontSize: '13px', padding: '1rem 0' }}>⏳ Génération en cours...</div>
+                  ) : (
+                    <div style={{ fontSize: '13px', color: '#333', lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: formatMacro(macroText) }}/>
+                  )}
+                </div>
+
                 {/* CALENDRIER */}
-                <div className="sa sa5 mid-card">
+                <div className="sa sa6 mid-card">
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
                     <span style={{ fontSize: '15px', fontWeight: 700, color: '#111', letterSpacing: '-0.3px' }}>Calendrier · {monthNames[calMonthIdx]} {calYear}</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
