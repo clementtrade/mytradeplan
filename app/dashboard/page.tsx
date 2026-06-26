@@ -21,9 +21,6 @@ export default function DashboardPage() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [planReady, setPlanReady] = useState(false)
   const [profile, setProfile] = useState<any>(null)
-  const [macroText, setMacroText] = useState('')
-  const [macroLoading, setMacroLoading] = useState(false)
-  const [macroLoaded, setMacroLoaded] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -45,33 +42,6 @@ export default function DashboardPage() {
     }
     load()
   }, [])
-
-  async function getMacroBriefing() {
-    setMacroLoading(true)
-    setMacroText('')
-    try {
-      const res = await fetch('/api/macro-briefing', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ profile }),
-      })
-      const data = await res.json()
-      setMacroText(data.reply)
-      setMacroLoaded(true)
-    } catch {
-      setMacroText('Erreur de connexion. Réessaie.')
-      setMacroLoaded(true)
-    }
-    setMacroLoading(false)
-  }
-
-  function formatMacro(text: string) {
-    return text
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .split('\n')
-      .map((line) => `<div style="min-height:4px">${line || '&nbsp;'}</div>`)
-      .join('')
-  }
 
   const wins = trades.filter(t => t.result_r > 0)
   const losses = trades.filter(t => t.result_r <= 0)
@@ -148,31 +118,21 @@ export default function DashboardPage() {
         .sa { animation: fadeUp 0.4s ease both; }
         .sa1 { animation-delay: 0.04s; } .sa2 { animation-delay: 0.08s; }
         .sa3 { animation-delay: 0.12s; } .sa4 { animation-delay: 0.16s; }
-        .sa5 { animation-delay: 0.20s; } .sa6 { animation-delay: 0.25s; }
-
-        .sidebar {
-          position: fixed; left: 0; top: 0; height: 100vh;
-          background: #fff; border-right: 0.5px solid #e8e8e8;
-          display: flex; flex-direction: column;
-          transition: width 0.2s cubic-bezier(0.4,0,0.2,1);
-          overflow: hidden; z-index: 100;
-        }
+        .sa5 { animation-delay: 0.20s; }
+        .sidebar { position: fixed; left: 0; top: 0; height: 100vh; background: #fff; border-right: 0.5px solid #e8e8e8; display: flex; flex-direction: column; transition: width 0.2s cubic-bezier(0.4,0,0.2,1); overflow: hidden; z-index: 100; }
         .sb-logo { height: 52px; min-height: 52px; display: flex; align-items: center; padding: 0 14px; border-bottom: 0.5px solid #e8e8e8; white-space: nowrap; }
         .sb-dot { width: 24px; height: 24px; min-width: 24px; background: #111; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 800; }
         .sb-brand { font-size: 13px; font-weight: 700; color: #111; margin-left: 10px; letter-spacing: -0.3px; opacity: 0; transition: opacity 0.1s 0.07s; white-space: nowrap; }
         .sidebar.exp .sb-brand { opacity: 1; }
-
         .profile-btn { display: flex; align-items: center; margin: 10px 6px 4px; padding: 8px; border-radius: 10px; background: #f5f5f5; border: 0.5px solid #e8e8e8; cursor: pointer; text-decoration: none; overflow: hidden; }
         .profile-avatar { width: 28px; height: 28px; min-width: 28px; background: #111; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 700; }
         .profile-info { margin-left: 9px; opacity: 0; transition: opacity 0.1s 0.07s; white-space: nowrap; }
         .sidebar.exp .profile-info { opacity: 1; }
         .profile-name { font-size: 12px; font-weight: 700; color: #111; }
         .profile-role { font-size: 10px; color: #aaa; margin-top: 1px; }
-
         .sb-divider { height: 0.5px; background: #e8e8e8; margin: 6px 12px; }
         .sb-section { font-size: 10px; font-weight: 600; color: #ccc; text-transform: uppercase; letter-spacing: 0.8px; padding: 4px 20px 2px; white-space: nowrap; opacity: 0; transition: opacity 0.1s 0.07s; }
         .sidebar.exp .sb-section { opacity: 1; }
-
         .nav-item { display: flex; align-items: center; height: 38px; padding: 0 14px; margin: 1px 6px; border-radius: 8px; cursor: pointer; text-decoration: none; color: #888; overflow: hidden; transition: background 0.15s, color 0.15s; }
         .nav-item:hover { background: #f5f5f5; color: #111; }
         .nav-item.active { background: #111; color: #fff; }
@@ -180,11 +140,9 @@ export default function DashboardPage() {
         .nav-lbl { font-size: 12.5px; font-weight: 500; margin-left: 8px; opacity: 0; transition: opacity 0.1s 0.07s; white-space: nowrap; }
         .sidebar.exp .nav-lbl { opacity: 1; }
         .nav-item.active .nav-lbl { color: #fff; }
-
         .kpi-card { background: #1a1a1a; border-radius: 14px; padding: 1.25rem 1.4rem; transition: transform 0.15s; }
         .kpi-card:hover { transform: translateY(-2px); }
         .mid-card { background: #fff; border: 0.5px solid #e8e8e8; border-radius: 14px; padding: 1.25rem; }
-
         .trade-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 0.5px solid #f2f2f2; }
         .trade-row:last-child { border-bottom: none; }
         .badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.4px; }
@@ -192,19 +150,14 @@ export default function DashboardPage() {
         .badge-short { background: #fee2e2; color: #dc2626; }
         .setup-row { padding: 8px 0; border-bottom: 0.5px solid #f2f2f2; }
         .setup-row:last-child { border-bottom: none; }
-
-        .macro-btn { display: flex; align-items: center; justify-content: center; gap: 8px; background: #111; color: #fff; border: none; border-radius: 10px; padding: 10px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; width: 100%; }
-        .macro-btn:hover { background: #333; }
-        .macro-btn:disabled { background: #555; cursor: wait; }
-
         .cal-day { aspect-ratio: 1; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; transition: transform 0.15s; cursor: default; }
         .cal-day:hover { transform: scale(1.06); z-index: 2; position: relative; }
-        .cal-win  { background: #c8f0d8; color: #15803d; }
+        .cal-win { background: #c8f0d8; color: #15803d; }
         .cal-loss { background: #fdd0d0; color: #dc2626; }
         .cal-neutral { background: #f5f5f5; color: #ccc; }
-        .cal-empty  { background: transparent; }
+        .cal-empty { background: transparent; }
         .cal-future { background: #f5f5f5; color: #ddd; }
-        .cal-today  { outline: 2px solid #888; outline-offset: -2px; }
+        .cal-today { outline: 2px solid #888; outline-offset: -2px; }
         .cal-r { font-size: 9px; margin-top: 2px; opacity: 0.75; }
         .cal-weekend { opacity: 0.3; }
       `}</style>
@@ -220,7 +173,6 @@ export default function DashboardPage() {
           <div className="sb-dot">M</div>
           <span className="sb-brand">MyTradePlan</span>
         </div>
-
         <a href="/settings" className="profile-btn">
           <div className="profile-avatar">{initials}</div>
           <div className="profile-info">
@@ -228,10 +180,8 @@ export default function DashboardPage() {
             <div className="profile-role">{profile?.market || 'Trader'}</div>
           </div>
         </a>
-
         <div className="sb-divider"></div>
         <div className="sb-section">Session</div>
-
         <nav style={{ paddingTop: '2px' }}>
           <a href="/dashboard" className="nav-item active">
             <span className="nav-icon">▦</span>
@@ -246,10 +196,8 @@ export default function DashboardPage() {
             <span className="nav-lbl">Débrief Macro IA</span>
           </a>
         </nav>
-
         <div className="sb-divider"></div>
         <div className="sb-section">Compte</div>
-
         <nav style={{ paddingTop: '2px' }}>
           <a href="/settings" className="nav-item">
             <span className="nav-icon">⚙</span>
@@ -391,32 +339,8 @@ export default function DashboardPage() {
                   )}
                 </div>
 
-                {/* DÉBRIEF MACRO IA */}
-                <div className="sa sa5 mid-card" style={{ marginBottom: '1.5rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <div>
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#111' }}>Débrief Macro IA</div>
-                      <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>Briefing du jour généré par IA selon ton profil</div>
-                    </div>
-                    {macroLoaded && (
-                      <button onClick={getMacroBriefing} disabled={macroLoading} style={{ background: 'none', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '5px 12px', fontSize: '11.5px', color: '#888', cursor: 'pointer' }}>
-                        ↺ Rafraîchir
-                      </button>
-                    )}
-                  </div>
-                  {!macroLoaded ? (
-                    <button className="macro-btn" onClick={getMacroBriefing} disabled={macroLoading}>
-                      {macroLoading ? <>⏳ Génération en cours...</> : <>◈ Générer le débrief macro du jour</>}
-                    </button>
-                  ) : macroLoading ? (
-                    <div style={{ color: '#aaa', fontSize: '13px', padding: '1rem 0' }}>⏳ Génération en cours...</div>
-                  ) : (
-                    <div style={{ fontSize: '13px', color: '#333', lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: formatMacro(macroText) }}/>
-                  )}
-                </div>
-
                 {/* CALENDRIER */}
-                <div className="sa sa6 mid-card">
+                <div className="sa sa5 mid-card">
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
                     <span style={{ fontSize: '15px', fontWeight: 700, color: '#111', letterSpacing: '-0.3px' }}>Calendrier · {monthNames[calMonthIdx]} {calYear}</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -431,13 +355,11 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   </div>
-
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '6px', marginBottom: '6px' }}>
                     {['L','M','M','J','V','S','D'].map((d, i) => (
                       <div key={`${d}${i}`} style={{ textAlign: 'center', fontSize: '12px', fontWeight: 600, color: i >= 5 ? '#ddd' : '#aaa', paddingBottom: '4px' }}>{d}</div>
                     ))}
                   </div>
-
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '6px' }}>
                     {Array(startOffset).fill(null).map((_, i) => (
                       <div key={`e${i}`} className="cal-day cal-empty"></div>
@@ -465,7 +387,6 @@ export default function DashboardPage() {
                       )
                     })}
                   </div>
-
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '10px', marginTop: '1.25rem', paddingTop: '1rem', borderTop: '0.5px solid #f0f0f0' }}>
                     <div style={{ textAlign: 'center' }}>
                       <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: calTotalR >= 0 ? '#16a34a' : '#dc2626' }}>{calTotalR >= 0 ? '+' : ''}{calTotalR}R</div>
