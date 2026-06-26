@@ -386,38 +386,47 @@ export default function DashboardPage() {
               </a>
             </div>
 
+            {/* KPI CARDS — toujours visibles */}
+            <div className="sa sa2" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '12px', marginBottom: '1.5rem' }}>
+              <div className="kpi-card">
+                <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px', fontWeight: 500 }}>Win rate</div>
+                <div style={{ fontSize: '2.4rem', fontWeight: 700, color: winRate >= 50 ? '#4ade80' : '#f87171', fontFamily: 'monospace', letterSpacing: '-2px', lineHeight: 1 }}>
+                  {trades.length === 0 ? '—' : `${winRate}%`}
+                </div>
+                <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>{trades.length} trades</div>
+              </div>
+              <div className="kpi-card">
+                <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px', fontWeight: 500 }}>R moyen</div>
+                <div style={{ fontSize: '2.4rem', fontWeight: 700, color: avgR >= 0 ? '#4ade80' : '#f87171', fontFamily: 'monospace', letterSpacing: '-2px', lineHeight: 1 }}>
+                  {trades.length === 0 ? '—' : `${avgR >= 0 ? '+' : ''}${avgR}R`}
+                </div>
+                <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>trades gagnants</div>
+              </div>
+              <div className="kpi-card">
+                <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px', fontWeight: 500 }}>Profit factor</div>
+                <div style={{ fontSize: '2.4rem', fontWeight: 700, color: '#fff', fontFamily: 'monospace', letterSpacing: '-2px', lineHeight: 1 }}>
+                  {trades.length === 0 ? '—' : (profitFactor || '—')}
+                </div>
+                <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>ce mois</div>
+              </div>
+              <div className="kpi-card">
+                <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px', fontWeight: 500 }}>Discipline</div>
+                <div style={{ fontSize: '2.4rem', fontWeight: 700, color: followedPlan >= 70 ? '#4ade80' : '#facc15', fontFamily: 'monospace', letterSpacing: '-2px', lineHeight: 1 }}>
+                  {trades.length === 0 ? '—' : `${followedPlan}%`}
+                </div>
+                <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>plan respecté</div>
+              </div>
+            </div>
+
+            {/* MESSAGE SI PAS DE TRADES */}
             {trades.length === 0 ? (
-              <div className="sa sa2" style={{ textAlign: 'center', padding: '5rem 0' }}>
-                <div style={{ fontSize: '32px', marginBottom: '12px' }}>▤</div>
+              <div className="sa sa3 mid-card" style={{ textAlign: 'center', padding: '2rem', marginBottom: '1.5rem' }}>
+                <div style={{ fontSize: '24px', marginBottom: '10px' }}>▤</div>
                 <div style={{ color: '#bbb', fontSize: '14px', marginBottom: '8px' }}>Aucun trade encore enregistré.</div>
                 <a href="/journal" style={{ color: '#111', fontSize: '13px', fontWeight: 600, textDecoration: 'none' }}>Ajouter un trade →</a>
               </div>
             ) : (
               <>
-                {/* KPI CARDS */}
-                <div className="sa sa2" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '12px', marginBottom: '1.5rem' }}>
-                  <div className="kpi-card">
-                    <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px', fontWeight: 500 }}>Win rate</div>
-                    <div style={{ fontSize: '2.4rem', fontWeight: 700, color: winRate >= 50 ? '#4ade80' : '#f87171', fontFamily: 'monospace', letterSpacing: '-2px', lineHeight: 1 }}>{winRate}%</div>
-                    <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>{trades.length} trades</div>
-                  </div>
-                  <div className="kpi-card">
-                    <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px', fontWeight: 500 }}>R moyen</div>
-                    <div style={{ fontSize: '2.4rem', fontWeight: 700, color: avgR >= 0 ? '#4ade80' : '#f87171', fontFamily: 'monospace', letterSpacing: '-2px', lineHeight: 1 }}>{avgR >= 0 ? '+' : ''}{avgR}R</div>
-                    <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>trades gagnants</div>
-                  </div>
-                  <div className="kpi-card">
-                    <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px', fontWeight: 500 }}>Profit factor</div>
-                    <div style={{ fontSize: '2.4rem', fontWeight: 700, color: '#fff', fontFamily: 'monospace', letterSpacing: '-2px', lineHeight: 1 }}>{profitFactor || '—'}</div>
-                    <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>ce mois</div>
-                  </div>
-                  <div className="kpi-card">
-                    <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px', fontWeight: 500 }}>Discipline</div>
-                    <div style={{ fontSize: '2.4rem', fontWeight: 700, color: followedPlan >= 70 ? '#4ade80' : '#facc15', fontFamily: 'monospace', letterSpacing: '-2px', lineHeight: 1 }}>{followedPlan}%</div>
-                    <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>plan respecté</div>
-                  </div>
-                </div>
-
                 {/* JOURNAL + SETUP */}
                 <div className="sa sa3" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '1.5rem' }}>
                   <div className="mid-card">
@@ -499,105 +508,106 @@ export default function DashboardPage() {
                     <div style={{ height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ddd', fontSize: '12px' }}>Pas assez de données</div>
                   )}
                 </div>
-
-                {/* DÉBRIEF MACRO IA */}
-                <div className="sa sa5 mid-card" style={{ marginBottom: '1.5rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <div>
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#111' }}>Débrief Macro IA</div>
-                      <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>Briefing du jour généré par IA selon ton profil</div>
-                    </div>
-                    {macroLoaded && (
-                      <button onClick={getMacroBriefing} disabled={macroLoading} style={{ background: 'none', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '5px 12px', fontSize: '11.5px', color: '#888', cursor: 'pointer' }}>
-                        ↺ Rafraîchir
-                      </button>
-                    )}
-                  </div>
-                  {!macroLoaded ? (
-                    <button className="macro-btn" onClick={getMacroBriefing} disabled={macroLoading}>
-                      {macroLoading ? <>⏳ Génération en cours...</> : <>◈ Générer le débrief macro du jour</>}
-                    </button>
-                  ) : macroLoading ? (
-                    <div style={{ color: '#aaa', fontSize: '13px', padding: '1rem 0' }}>⏳ Génération en cours...</div>
-                  ) : (
-                    <div style={{ fontSize: '13px', color: '#333', lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: formatMacro(macroText) }}/>
-                  )}
-                </div>
-
-                {/* CALENDRIER */}
-                <div className="sa sa6 mid-card">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-                    <span style={{ fontSize: '15px', fontWeight: 700, color: '#111', letterSpacing: '-0.3px' }}>Calendrier · {monthNames[calMonthIdx]} {calYear}</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '11.5px', color: '#aaa' }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><span style={{ width: 12, height: 12, borderRadius: '3px', background: '#c8f0d8', display: 'inline-block' }}></span>Jour gagnant</span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><span style={{ width: 12, height: 12, borderRadius: '3px', background: '#fdd0d0', display: 'inline-block' }}></span>Jour perdant</span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><span style={{ width: 12, height: 12, borderRadius: '3px', outline: '1.5px solid #888', display: 'inline-block' }}></span>Aujourd'hui</span>
-                      </div>
-                      <div style={{ display: 'flex', gap: '5px' }}>
-                        <button onClick={() => setCalMonth(new Date(calYear, calMonthIdx - 1, 1))} style={{ background: '#f5f5f5', border: 'none', borderRadius: '6px', padding: '5px 12px', fontSize: '12px', color: '#666', cursor: 'pointer' }}>← Préc.</button>
-                        <button onClick={() => setCalMonth(new Date(calYear, calMonthIdx + 1, 1))} style={{ background: '#f5f5f5', border: 'none', borderRadius: '6px', padding: '5px 12px', fontSize: '12px', color: '#666', cursor: 'pointer' }}>Suiv. →</button>
-                      </div>
-                    </div>
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '6px', marginBottom: '6px' }}>
-                    {['L','M','M','J','V','S','D'].map((d, i) => (
-                      <div key={`${d}${i}`} style={{ textAlign: 'center', fontSize: '12px', fontWeight: 600, color: i >= 5 ? '#ddd' : '#aaa', paddingBottom: '4px' }}>{d}</div>
-                    ))}
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '6px' }}>
-                    {Array(startOffset).fill(null).map((_, i) => (
-                      <div key={`e${i}`} className="cal-day cal-empty"></div>
-                    ))}
-                    {Array(daysInMonth).fill(null).map((_, i) => {
-                      const day = i + 1
-                      const key = day.toString()
-                      const dayTrades = tradesByDay[key]
-                      const r = dayTrades ? dayTrades.reduce((s, t) => s + t.result_r, 0) : undefined
-                      const isFuture = new Date(calYear, calMonthIdx, day) > today
-                      const isToday = day === today.getDate() && calMonthIdx === today.getMonth() && calYear === today.getFullYear()
-                      const isWeekend = (() => { const d = new Date(calYear, calMonthIdx, day).getDay(); return d === 0 || d === 6 })()
-                      let cls = 'cal-day '
-                      if (isFuture || isWeekend) cls += 'cal-future'
-                      else if (r !== undefined) cls += r > 0 ? 'cal-win' : 'cal-loss'
-                      else cls += 'cal-neutral'
-                      if (isToday) cls += ' cal-today'
-                      if (isWeekend) cls += ' cal-weekend'
-                      return (
-                        <div
-                          key={day}
-                          className={cls}
-                          onClick={() => dayTrades && !isWeekend && !isFuture ? openDayModal(day, dayTrades) : undefined}
-                        >
-                          {day}
-                          {r !== undefined && !isWeekend && !isFuture && (
-                            <span className="cal-r">{r >= 0 ? '+' : ''}{r.toFixed(1)}R</span>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '10px', marginTop: '1.25rem', paddingTop: '1rem', borderTop: '0.5px solid #f0f0f0' }}>
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: calTotalR >= 0 ? '#16a34a' : '#dc2626' }}>{calTotalR >= 0 ? '+' : ''}{calTotalR}R</div>
-                      <div style={{ fontSize: '11px', color: '#bbb', marginTop: '3px' }}>Total du mois</div>
-                    </div>
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: '#111' }}>{calTrades.length}</div>
-                      <div style={{ fontSize: '11px', color: '#bbb', marginTop: '3px' }}>Jours tradés</div>
-                    </div>
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: '#16a34a' }}>{calWinDays}/{calTrades.length || 0}</div>
-                      <div style={{ fontSize: '11px', color: '#bbb', marginTop: '3px' }}>Jours gagnants</div>
-                    </div>
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: calWR >= 50 ? '#16a34a' : '#dc2626' }}>{calWR}%</div>
-                      <div style={{ fontSize: '11px', color: '#bbb', marginTop: '3px' }}>Win rate mensuel</div>
-                    </div>
-                  </div>
-                </div>
               </>
             )}
+
+            {/* DÉBRIEF MACRO IA — toujours visible */}
+            <div className="sa sa5 mid-card" style={{ marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#111' }}>Débrief Macro IA</div>
+                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>Briefing du jour généré par IA selon ton profil</div>
+                </div>
+                {macroLoaded && (
+                  <button onClick={getMacroBriefing} disabled={macroLoading} style={{ background: 'none', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '5px 12px', fontSize: '11.5px', color: '#888', cursor: 'pointer' }}>
+                    ↺ Rafraîchir
+                  </button>
+                )}
+              </div>
+              {!macroLoaded ? (
+                <button className="macro-btn" onClick={getMacroBriefing} disabled={macroLoading}>
+                  {macroLoading ? <>⏳ Génération en cours...</> : <>◈ Générer le débrief macro du jour</>}
+                </button>
+              ) : macroLoading ? (
+                <div style={{ color: '#aaa', fontSize: '13px', padding: '1rem 0' }}>⏳ Génération en cours...</div>
+              ) : (
+                <div style={{ fontSize: '13px', color: '#333', lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: formatMacro(macroText) }}/>
+              )}
+            </div>
+
+            {/* CALENDRIER — toujours visible */}
+            <div className="sa sa6 mid-card">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <span style={{ fontSize: '15px', fontWeight: 700, color: '#111', letterSpacing: '-0.3px' }}>Calendrier · {monthNames[calMonthIdx]} {calYear}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '11.5px', color: '#aaa' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><span style={{ width: 12, height: 12, borderRadius: '3px', background: '#c8f0d8', display: 'inline-block' }}></span>Jour gagnant</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><span style={{ width: 12, height: 12, borderRadius: '3px', background: '#fdd0d0', display: 'inline-block' }}></span>Jour perdant</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><span style={{ width: 12, height: 12, borderRadius: '3px', outline: '1.5px solid #888', display: 'inline-block' }}></span>Aujourd'hui</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '5px' }}>
+                    <button onClick={() => setCalMonth(new Date(calYear, calMonthIdx - 1, 1))} style={{ background: '#f5f5f5', border: 'none', borderRadius: '6px', padding: '5px 12px', fontSize: '12px', color: '#666', cursor: 'pointer' }}>← Préc.</button>
+                    <button onClick={() => setCalMonth(new Date(calYear, calMonthIdx + 1, 1))} style={{ background: '#f5f5f5', border: 'none', borderRadius: '6px', padding: '5px 12px', fontSize: '12px', color: '#666', cursor: 'pointer' }}>Suiv. →</button>
+                  </div>
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '6px', marginBottom: '6px' }}>
+                {['L','M','M','J','V','S','D'].map((d, i) => (
+                  <div key={`${d}${i}`} style={{ textAlign: 'center', fontSize: '12px', fontWeight: 600, color: i >= 5 ? '#ddd' : '#aaa', paddingBottom: '4px' }}>{d}</div>
+                ))}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '6px' }}>
+                {Array(startOffset).fill(null).map((_, i) => (
+                  <div key={`e${i}`} className="cal-day cal-empty"></div>
+                ))}
+                {Array(daysInMonth).fill(null).map((_, i) => {
+                  const day = i + 1
+                  const key = day.toString()
+                  const dayTrades = tradesByDay[key]
+                  const r = dayTrades ? dayTrades.reduce((s, t) => s + t.result_r, 0) : undefined
+                  const isFuture = new Date(calYear, calMonthIdx, day) > today
+                  const isToday = day === today.getDate() && calMonthIdx === today.getMonth() && calYear === today.getFullYear()
+                  const isWeekend = (() => { const d = new Date(calYear, calMonthIdx, day).getDay(); return d === 0 || d === 6 })()
+                  let cls = 'cal-day '
+                  if (isFuture || isWeekend) cls += 'cal-future'
+                  else if (r !== undefined) cls += r > 0 ? 'cal-win' : 'cal-loss'
+                  else cls += 'cal-neutral'
+                  if (isToday) cls += ' cal-today'
+                  if (isWeekend) cls += ' cal-weekend'
+                  return (
+                    <div
+                      key={day}
+                      className={cls}
+                      onClick={() => dayTrades && !isWeekend && !isFuture ? openDayModal(day, dayTrades) : undefined}
+                    >
+                      {day}
+                      {r !== undefined && !isWeekend && !isFuture && (
+                        <span className="cal-r">{r >= 0 ? '+' : ''}{r.toFixed(1)}R</span>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '10px', marginTop: '1.25rem', paddingTop: '1rem', borderTop: '0.5px solid #f0f0f0' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: calTotalR >= 0 ? '#16a34a' : '#dc2626' }}>{calTotalR >= 0 ? '+' : ''}{calTotalR}R</div>
+                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '3px' }}>Total du mois</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: '#111' }}>{calTrades.length}</div>
+                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '3px' }}>Jours tradés</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: '#16a34a' }}>{calWinDays}/{calTrades.length || 0}</div>
+                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '3px' }}>Jours gagnants</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: calWR >= 50 ? '#16a34a' : '#dc2626' }}>{calWR}%</div>
+                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '3px' }}>Win rate mensuel</div>
+                </div>
+              </div>
+            </div>
+
           </div>
         )}
       </main>
