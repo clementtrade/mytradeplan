@@ -4,9 +4,6 @@ import { useState, useEffect, useRef } from 'react'
 export default function Home() {
   const [annual, setAnnual] = useState(false)
   const animRef = useRef<HTMLDivElement>(null)
-  const timersRef = useRef<any[]>([])
-  const progTimerRef = useRef<any>(null)
-  const sceneRef = useRef(0)
 
   useEffect(() => {
     const timers: any[] = []
@@ -148,13 +145,13 @@ export default function Home() {
       const container = document.getElementById('macro-container')
       if (!container) return
       container.innerHTML = ''
-      const lines = [
+      const lines: any[] = [
         { text: 'Fed hawkish — June minutes confirm persistent hawkish majority. Rate cut expectations revised to 1 cut in 2026.', delay: 300 },
         { text: 'GEX negative — Negative gamma amplifies directional moves. Favors clean breakouts on NQ and ES.', delay: 2400 },
         { text: 'Dollar strength — USD well bid, creating latent pressure on equities and USD-denominated commodities.', delay: 4400 },
         { text: 'Bias: BEARISH · Short only · Avoid mean reversions · Wait for Break & retest confirmation.', delay: 6000, highlight: true },
       ]
-      lines.forEach((l: any) => {
+      lines.forEach(l => {
         const t = setTimeout(() => {
           const div = document.createElement('div')
           if (l.highlight) {
@@ -253,8 +250,8 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* HERO */}
-      <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '3rem 2.5rem 3rem', display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '3rem', alignItems: 'center' }}>
+      {/* HERO — prend toute la hauteur écran moins navbar */}
+      <section style={{ maxWidth: '1100px', margin: '0 auto', padding: '2rem 2.5rem', display: 'grid', gridTemplateColumns: '1fr 1.1fr', gap: '3rem', alignItems: 'center', minHeight: 'calc(100vh - 62px)' }}>
         <div>
           <div className="anim-1" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '20px', padding: '5px 14px', marginBottom: '1.5rem' }}>
             <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#16a34a' }}></div>
@@ -290,7 +287,7 @@ export default function Home() {
         </div>
 
         {/* ANIMATED BOX */}
-        <div style={{ border: '2px solid #e8e8e8', borderRadius: '16px', overflow: 'hidden', background: '#fff', position: 'relative', minHeight: '600px' }} ref={animRef}>
+        <div style={{ border: '2px solid #e8e8e8', borderRadius: '16px', overflow: 'hidden', background: '#fff', position: 'relative', height: 'calc(100vh - 140px)', maxHeight: '720px' }} ref={animRef}>
 
           {/* SCENE 0 : Dashboard */}
           <div className="scene" id="scene0" style={{ opacity: 1, pointerEvents: 'all' }}>
