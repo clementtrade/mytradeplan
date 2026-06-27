@@ -66,20 +66,20 @@ export default function Home() {
       const t = setTimeout(() => {
         const div = document.createElement('div')
         if (type === 'ai') {
-          div.style.cssText = 'background:#f5f5f5;border-radius:3px 10px 10px 10px;padding:8px 10px;font-size:11px;color:#333;max-width:85%;margin-bottom:5px;opacity:0;transform:translateY(6px);transition:opacity 0.3s ease,transform 0.3s ease;font-family:Inter,sans-serif;'
+          div.style.cssText = 'background:#f5f5f5;border-radius:3px 10px 10px 10px;padding:10px 12px;font-size:12px;color:#333;max-width:85%;margin-bottom:6px;opacity:0;transform:translateY(6px);transition:opacity 0.3s ease,transform 0.3s ease;font-family:Inter,sans-serif;'
         } else if (type === 'user') {
-          div.style.cssText = 'background:#111;border-radius:10px 3px 10px 10px;padding:8px 10px;font-size:11px;color:#fff;max-width:75%;margin-left:auto;margin-bottom:5px;opacity:0;transform:translateY(6px);transition:opacity 0.3s ease,transform 0.3s ease;font-family:Inter,sans-serif;'
+          div.style.cssText = 'background:#111;border-radius:10px 3px 10px 10px;padding:10px 12px;font-size:12px;color:#fff;max-width:75%;margin-left:auto;margin-bottom:6px;opacity:0;transform:translateY(6px);transition:opacity 0.3s ease,transform 0.3s ease;font-family:Inter,sans-serif;'
         } else {
-          div.style.cssText = 'background:#f0fdf4;border:0.5px solid #bbf7d0;border-radius:3px 10px 10px 10px;padding:9px 11px;font-size:11px;max-width:90%;margin-bottom:5px;opacity:0;transform:translateY(6px);transition:opacity 0.3s ease,transform 0.3s ease;font-family:Inter,sans-serif;'
-          div.innerHTML = '<div style="font-size:9px;color:#16a34a;font-weight:600;margin-bottom:3px;">Plan ready ✓</div><span id="plan-text" style="color:#444;"></span>'
+          div.style.cssText = 'background:#f0fdf4;border:0.5px solid #bbf7d0;border-radius:3px 10px 10px 10px;padding:10px 12px;font-size:12px;max-width:90%;margin-bottom:6px;opacity:0;transform:translateY(6px);transition:opacity 0.3s ease,transform 0.3s ease;font-family:Inter,sans-serif;'
+          div.innerHTML = '<div style="font-size:10px;color:#16a34a;font-weight:600;margin-bottom:3px;">Plan ready ✓</div><span id="plan-text" style="color:#444;"></span>'
         }
         container.appendChild(div)
         setTimeout(() => { div.style.opacity = '1'; div.style.transform = 'translateY(0)' }, 30)
         if (type !== 'plan') {
-          typeText(div, text, 28, cb)
+          typeText(div, text, 25, cb)
         } else {
           const planEl = div.querySelector('#plan-text') as HTMLElement
-          if (planEl) typeText(planEl, text, 22, cb)
+          if (planEl) typeText(planEl, text, 20, cb)
         }
       }, delay)
       timers.push(t)
@@ -113,7 +113,7 @@ export default function Home() {
         cursor.style.transform = 'scale(0.8)'
         setTimeout(() => { cursor.style.transform = 'scale(1)' }, 150)
         modal.style.display = 'block'
-        if (mText) typeText(mText, "Your 2 shorts aligned with the flow. The long Mean reversion was off-plan — avoid this when GEX is negative.", 22, () => {
+        if (mText) typeText(mText, "Your 2 shorts aligned with the flow. The long Mean reversion was off-plan — avoid this when GEX is negative.", 20, () => {
           if (mDisc) mDisc.style.display = 'block'
         })
       }, 1900)
@@ -154,18 +154,18 @@ export default function Home() {
         { text: 'Dollar strength — USD well bid, creating latent pressure on equities and USD-denominated commodities.', delay: 4400 },
         { text: 'Bias: BEARISH · Short only · Avoid mean reversions · Wait for Break & retest confirmation.', delay: 6000, highlight: true },
       ]
-      lines.forEach(l => {
+      lines.forEach((l: any) => {
         const t = setTimeout(() => {
           const div = document.createElement('div')
           if (l.highlight) {
-            div.style.cssText = 'background:#fffbeb;border:0.5px solid #fde68a;border-radius:8px;padding:9px 11px;font-size:11px;color:#92400e;opacity:0;transform:translateY(4px);transition:opacity 0.3s ease,transform 0.3s ease;font-family:Inter,sans-serif;'
+            div.style.cssText = 'background:#fffbeb;border:0.5px solid #fde68a;border-radius:8px;padding:10px 12px;font-size:12px;color:#92400e;opacity:0;transform:translateY(4px);transition:opacity 0.3s ease,transform 0.3s ease;font-family:Inter,sans-serif;'
             div.textContent = l.text
           } else {
-            div.style.cssText = 'font-size:11px;color:#333;line-height:1.7;opacity:0;transform:translateY(4px);transition:opacity 0.3s ease,transform 0.3s ease;overflow:hidden;white-space:nowrap;font-family:Inter,sans-serif;'
+            div.style.cssText = 'font-size:12px;color:#333;line-height:1.7;opacity:0;transform:translateY(4px);transition:opacity 0.3s ease,transform 0.3s ease;overflow:hidden;white-space:nowrap;font-family:Inter,sans-serif;'
           }
           container.appendChild(div)
           setTimeout(() => { div.style.opacity = '1'; div.style.transform = 'translateY(0)' }, 30)
-          if (!l.highlight) typeText(div, l.text, 16)
+          if (!l.highlight) typeText(div, l.text, 14)
         }, l.delay)
         timers.push(t)
       })
@@ -226,21 +226,20 @@ export default function Home() {
         .toggle-label { font-size: 13px; color: #666; }
         .toggle-label.active { color: #111; font-weight: 600; }
         .save-badge { background: #f0fdf4; color: #16a34a; border: 0.5px solid #86efac; border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 600; }
-        .kpi-dark { background: #1a1a1a; border-radius: 10px; padding: 10px 12px; }
-        .kpi-lbl { font-size: 9px; color: #888; margin-bottom: 4px; }
-        .kpi-val { font-size: 17px; font-weight: 700; font-family: monospace; }
-        .cal-c { aspect-ratio: 1; border-radius: 7px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 9px; font-weight: 600; }
+        .kpi-dark { background: #1a1a1a; border-radius: 10px; padding: 12px 14px; }
+        .kpi-lbl { font-size: 10px; color: #888; margin-bottom: 5px; }
+        .kpi-val { font-size: 20px; font-weight: 700; font-family: monospace; }
+        .cal-c { aspect-ratio: 1; border-radius: 7px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; }
         .cal-w { background: #c8f0d8; color: #15803d; }
         .cal-lo { background: #fdd0d0; color: #dc2626; }
         .cal-n { background: #f5f5f5; color: #ccc; }
         .cal-we { background: #f5f5f5; color: #ddd; opacity: 0.3; }
-        .cal-r { font-size: 6px; opacity: 0.8; margin-top: 1px; }
+        .cal-r { font-size: 7px; opacity: 0.8; margin-top: 1px; }
         .cal-sel { outline: 2px solid #111; outline-offset: -2px; }
-        .b-l { background: #dcfce7; color: #16a34a; font-size: 8px; font-weight: 700; padding: 1px 5px; border-radius: 3px; }
-        .b-s { background: #fee2e2; color: #dc2626; font-size: 8px; font-weight: 700; padding: 1px 5px; border-radius: 3px; }
+        .b-l { background: #dcfce7; color: #16a34a; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 3px; }
+        .b-s { background: #fee2e2; color: #dc2626; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 3px; }
         .ind-dot { width: 6px; height: 6px; border-radius: 50%; background: #ddd; transition: all 0.3s; display: inline-block; }
-        .scene { position: absolute; top: 0; left: 0; right: 0; bottom: 0; padding: 1.25rem; opacity: 0; transition: opacity 0.5s ease; pointer-events: none; overflow: hidden; }
-        .scene.s-active { opacity: 1; pointer-events: all; }
+        .scene { position: absolute; top: 0; left: 0; right: 0; bottom: 0; padding: 1.5rem; opacity: 0; transition: opacity 0.5s ease; pointer-events: none; overflow: hidden; }
       `}</style>
 
       {/* Navbar */}
@@ -255,7 +254,7 @@ export default function Home() {
       </nav>
 
       {/* HERO */}
-      <section style={{ maxWidth: '1100px', margin: '0 auto', padding: '5rem 2.5rem 4rem', display: 'grid', gridTemplateColumns: '1fr 1.15fr', gap: '4rem', alignItems: 'center' }}>
+      <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '3rem 2.5rem 3rem', display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '3rem', alignItems: 'center' }}>
         <div>
           <div className="anim-1" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '20px', padding: '5px 14px', marginBottom: '1.5rem' }}>
             <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#16a34a' }}></div>
@@ -291,69 +290,69 @@ export default function Home() {
         </div>
 
         {/* ANIMATED BOX */}
-        <div style={{ border: '2px solid #e8e8e8', borderRadius: '16px', overflow: 'hidden', background: '#fff', position: 'relative', minHeight: '480px' }} ref={animRef}>
+        <div style={{ border: '2px solid #e8e8e8', borderRadius: '16px', overflow: 'hidden', background: '#fff', position: 'relative', minHeight: '600px' }} ref={animRef}>
 
           {/* SCENE 0 : Dashboard */}
           <div className="scene" id="scene0" style={{ opacity: 1, pointerEvents: 'all' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '0.5px solid #e8e8e8' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '10px', borderBottom: '0.5px solid #e8e8e8' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '20px', height: '20px', background: '#111', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '8px', fontWeight: 800 }}>M</div>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#111' }}>Dashboard</span>
-                  <span style={{ fontSize: '10px', color: '#bbb' }}>June 27, 2026</span>
+                  <div style={{ width: '22px', height: '22px', background: '#111', borderRadius: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '9px', fontWeight: 800 }}>M</div>
+                  <span style={{ fontSize: '14px', fontWeight: 700, color: '#111' }}>Dashboard</span>
+                  <span style={{ fontSize: '11px', color: '#bbb' }}>June 27, 2026</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', background: '#f0fdf4', border: '0.5px solid #86efac', color: '#15803d', padding: '3px 10px', borderRadius: '20px', fontSize: '9px', fontWeight: 600 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', background: '#f0fdf4', border: '0.5px solid #86efac', color: '#15803d', padding: '4px 12px', borderRadius: '20px', fontSize: '10px', fontWeight: 600 }}>
                   <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }}></span>Plan ready
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '6px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '8px' }}>
                 <div className="kpi-dark"><div className="kpi-lbl">Win rate</div><div className="kpi-val" style={{ color: '#4ade80' }}>71%</div></div>
                 <div className="kpi-dark"><div className="kpi-lbl">Avg R</div><div className="kpi-val" style={{ color: '#4ade80' }}>+1.8R</div></div>
                 <div className="kpi-dark"><div className="kpi-lbl">P. Factor</div><div className="kpi-val" style={{ color: '#fff' }}>2.4</div></div>
                 <div className="kpi-dark"><div className="kpi-lbl">Discipline</div><div className="kpi-val" style={{ color: '#4ade80' }}>84%</div></div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
-                <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '8px' }}>
-                  <div style={{ fontSize: '9px', fontWeight: 700, color: '#888', marginBottom: '6px' }}>Recent trades</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '10px', padding: '10px' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 700, color: '#888', marginBottom: '8px' }}>Recent trades</div>
                   {[{ d: 'long', s: 'Break & retest', r: '+2.1R', c: '#16a34a' }, { d: 'short', s: 'Mean reversion', r: '-1.0R', c: '#dc2626' }, { d: 'long', s: 'Continuation', r: '+3.2R', c: '#16a34a' }].map((t, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '3px 0', borderBottom: i < 2 ? '0.5px solid #f5f5f5' : 'none' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0', borderBottom: i < 2 ? '0.5px solid #f5f5f5' : 'none' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                         <span className={t.d === 'long' ? 'b-l' : 'b-s'}>{t.d.toUpperCase()}</span>
-                        <span style={{ fontSize: '9px', color: '#555' }}>{t.s}</span>
+                        <span style={{ fontSize: '10px', color: '#555' }}>{t.s}</span>
                       </div>
-                      <span style={{ fontSize: '9px', color: t.c, fontFamily: 'monospace', fontWeight: 700 }}>{t.r}</span>
+                      <span style={{ fontSize: '10px', color: t.c, fontFamily: 'monospace', fontWeight: 700 }}>{t.r}</span>
                     </div>
                   ))}
                 </div>
-                <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '8px' }}>
-                  <div style={{ fontSize: '9px', fontWeight: 700, color: '#888', marginBottom: '6px' }}>Performance by setup</div>
+                <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '10px', padding: '10px' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 700, color: '#888', marginBottom: '8px' }}>Performance by setup</div>
                   {[{ n: 'Break & retest', w: 78, pos: true }, { n: 'Continuation', w: 65, pos: true }, { n: 'Mean reversion', w: 35, pos: false }].map((s, i) => (
-                    <div key={i} style={{ marginBottom: '5px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
-                        <span style={{ fontSize: '9px', fontWeight: 600, color: '#111' }}>{s.n}</span>
-                        <span style={{ fontSize: '8px', color: s.pos ? '#16a34a' : '#dc2626', fontFamily: 'monospace' }}>{s.w}%</span>
+                    <div key={i} style={{ marginBottom: '7px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+                        <span style={{ fontSize: '10px', fontWeight: 600, color: '#111' }}>{s.n}</span>
+                        <span style={{ fontSize: '9px', color: s.pos ? '#16a34a' : '#dc2626', fontFamily: 'monospace' }}>{s.w}%</span>
                       </div>
-                      <div style={{ height: '3px', background: '#f0f0f0', borderRadius: '3px' }}>
+                      <div style={{ height: '4px', background: '#f0f0f0', borderRadius: '3px' }}>
                         <div style={{ width: `${s.w}%`, height: '100%', background: s.pos ? '#111' : '#dc2626', borderRadius: '3px' }}></div>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
-              <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '8px', position: 'relative', flex: 1 }} data-calcard>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
-                  <span style={{ fontSize: '9px', fontWeight: 700, color: '#111' }}>Calendar · June 2026</span>
-                  <div style={{ display: 'flex', gap: '6px', fontSize: '8px', color: '#aaa' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><span style={{ width: 7, height: 7, borderRadius: '2px', background: '#c8f0d8', display: 'inline-block' }}></span>Win</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><span style={{ width: 7, height: 7, borderRadius: '2px', background: '#fdd0d0', display: 'inline-block' }}></span>Loss</span>
+              <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '10px', padding: '10px', position: 'relative', flex: 1 }} data-calcard>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '7px' }}>
+                  <span style={{ fontSize: '10px', fontWeight: 700, color: '#111' }}>Calendar · June 2026</span>
+                  <div style={{ display: 'flex', gap: '8px', fontSize: '9px', color: '#aaa' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ width: 8, height: 8, borderRadius: '2px', background: '#c8f0d8', display: 'inline-block' }}></span>Win</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ width: 8, height: 8, borderRadius: '2px', background: '#fdd0d0', display: 'inline-block' }}></span>Loss</span>
                   </div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '2px', marginBottom: '2px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '3px', marginBottom: '3px' }}>
                   {['M','T','W','T','F','S','S'].map((d, i) => (
-                    <div key={i} style={{ textAlign: 'center', fontSize: '7px', color: i >= 5 ? '#ddd' : '#bbb', fontWeight: 600, paddingBottom: '2px' }}>{d}</div>
+                    <div key={i} style={{ textAlign: 'center', fontSize: '8px', color: i >= 5 ? '#ddd' : '#bbb', fontWeight: 600, paddingBottom: '2px' }}>{d}</div>
                   ))}
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '2px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '3px' }}>
                   <div className="cal-c cal-n"></div>
                   <div className="cal-c cal-w">2<span className="cal-r">+1.5</span></div>
                   <div className="cal-c cal-lo">3<span className="cal-r">-1.0</span></div>
@@ -380,17 +379,15 @@ export default function Home() {
                   <div className="cal-c cal-we">27</div><div className="cal-c cal-we">28</div>
                 </div>
 
-                {/* Modal IA Insight */}
-                <div id="cal-modal-s0" style={{ display: 'none', position: 'absolute', right: '6px', top: '6px', width: '200px', background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '10px', padding: '10px', boxShadow: '0 6px 20px rgba(0,0,0,0.1)', zIndex: 20 }}>
-                  <div style={{ fontSize: '12px', fontWeight: 700, color: '#111', marginBottom: '2px' }}>June 9, 2026</div>
-                  <div style={{ fontSize: '9px', color: '#bbb', marginBottom: '8px' }}>3 trades · +2.1R</div>
-                  <div style={{ fontSize: '8px', fontWeight: 600, color: '#bbb', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '5px' }}>AI Insight</div>
-                  <div id="modal-text" style={{ fontSize: '10px', color: '#333', lineHeight: 1.6 }}></div>
-                  <div id="modal-disc" style={{ display: 'none', marginTop: '5px', fontSize: '10px', fontWeight: 600, color: '#d97706' }}>Discipline: 67% · Needs improvement.</div>
+                <div id="cal-modal-s0" style={{ display: 'none', position: 'absolute', right: '8px', top: '8px', width: '220px', background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.1)', zIndex: 20 }}>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#111', marginBottom: '2px' }}>June 9, 2026</div>
+                  <div style={{ fontSize: '10px', color: '#bbb', marginBottom: '10px' }}>3 trades · +2.1R</div>
+                  <div style={{ fontSize: '9px', fontWeight: 600, color: '#bbb', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>AI Insight</div>
+                  <div id="modal-text" style={{ fontSize: '11px', color: '#333', lineHeight: 1.6 }}></div>
+                  <div id="modal-disc" style={{ display: 'none', marginTop: '6px', fontSize: '11px', fontWeight: 600, color: '#d97706' }}>Discipline: 67% · Needs improvement.</div>
                 </div>
 
-                {/* Cursor */}
-                <svg id="cur0" style={{ position: 'absolute', pointerEvents: 'none', zIndex: 30, width: '14px', height: '14px', opacity: 0, transition: 'left 1s cubic-bezier(0.4,0,0.2,1), top 1s cubic-bezier(0.4,0,0.2,1)', left: '20px', top: '20px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.25))' }} viewBox="0 0 20 20" fill="none">
+                <svg id="cur0" style={{ position: 'absolute', pointerEvents: 'none', zIndex: 30, width: '16px', height: '16px', opacity: 0, transition: 'left 1s cubic-bezier(0.4,0,0.2,1), top 1s cubic-bezier(0.4,0,0.2,1)', left: '20px', top: '20px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.25))' }} viewBox="0 0 20 20" fill="none">
                   <path d="M4 2L16 10L10 11L8 18L4 2Z" fill="white" stroke="#111" strokeWidth="1.5" strokeLinejoin="round"/>
                 </svg>
               </div>
@@ -400,18 +397,18 @@ export default function Home() {
           {/* SCENE 1 : Morning plan */}
           <div className="scene" id="scene1">
             <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', paddingBottom: '10px', borderBottom: '0.5px solid #e8e8e8' }}>
-                <div style={{ width: '26px', height: '26px', borderRadius: '50%', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#fff', fontWeight: 600 }}>M</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', paddingBottom: '12px', borderBottom: '0.5px solid #e8e8e8' }}>
+                <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: '#fff', fontWeight: 600 }}>M</div>
                 <div>
-                  <div style={{ fontSize: '12px', fontWeight: 600, color: '#111' }}>MyTradePlan AI</div>
-                  <div style={{ fontSize: '9px', color: '#aaa' }}>Morning plan · Today</div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#111' }}>MyTradePlan AI</div>
+                  <div style={{ fontSize: '10px', color: '#aaa' }}>Morning plan · Today</div>
                 </div>
-                <div style={{ marginLeft: 'auto', background: '#f0fdf4', color: '#16a34a', fontSize: '9px', padding: '2px 8px', borderRadius: '4px', fontWeight: 500 }}>Live</div>
+                <div style={{ marginLeft: 'auto', background: '#f0fdf4', color: '#16a34a', fontSize: '10px', padding: '3px 10px', borderRadius: '4px', fontWeight: 500 }}>Live</div>
               </div>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px', overflow: 'hidden' }} id="chat-container"></div>
-              <div style={{ background: '#f9f9f9', borderRadius: '10px', padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
-                <span style={{ fontSize: '11px', color: '#bbb' }}>Reply here...</span>
-                <div style={{ background: '#111', borderRadius: '6px', padding: '5px 12px', fontSize: '11px', color: '#fff' }}>→</div>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', overflow: 'hidden' }} id="chat-container"></div>
+              <div style={{ background: '#f9f9f9', borderRadius: '10px', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '14px' }}>
+                <span style={{ fontSize: '12px', color: '#bbb' }}>Reply here...</span>
+                <div style={{ background: '#111', borderRadius: '6px', padding: '6px 14px', fontSize: '12px', color: '#fff' }}>→</div>
               </div>
             </div>
           </div>
@@ -419,19 +416,19 @@ export default function Home() {
           {/* SCENE 2 : Macro briefing */}
           <div className="scene" id="scene2">
             <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', paddingBottom: '10px', borderBottom: '0.5px solid #e8e8e8' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '12px', borderBottom: '0.5px solid #e8e8e8' }}>
                 <div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#111' }}>Macro AI Briefing</div>
-                  <div style={{ fontSize: '10px', color: '#bbb', marginTop: '2px' }}>Generated for your profile · Order Flow</div>
+                  <div style={{ fontSize: '14px', fontWeight: 700, color: '#111' }}>Macro AI Briefing</div>
+                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>Generated for your profile · Order Flow</div>
                 </div>
-                <div style={{ background: '#f5f5f5', border: '0.5px solid #e8e8e8', borderRadius: '6px', padding: '4px 10px', fontSize: '10px', color: '#888' }}>↺ Refresh</div>
+                <div style={{ background: '#f5f5f5', border: '0.5px solid #e8e8e8', borderRadius: '6px', padding: '5px 12px', fontSize: '11px', color: '#888' }}>↺ Refresh</div>
               </div>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', overflow: 'hidden' }} id="macro-container"></div>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px', overflow: 'hidden' }} id="macro-container"></div>
             </div>
           </div>
 
           {/* Indicators */}
-          <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '5px', zIndex: 10 }}>
+          <div style={{ position: 'absolute', bottom: '12px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '6px', zIndex: 10 }}>
             <div id="id0" className="ind-dot" style={{ background: '#111', width: '18px', borderRadius: '3px' }}></div>
             <div id="id1" className="ind-dot"></div>
             <div id="id2" className="ind-dot"></div>
