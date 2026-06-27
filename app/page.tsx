@@ -1,17 +1,46 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export default function Home() {
   const [annual, setAnnual] = useState(false)
+  const [slide, setSlide] = useState(0)
+
+  useEffect(() => {
+    const DUR = 4000
+    let progTimer: any = null
+    let slideTimer: any = null
+
+    function startProgress() {
+      const bar = document.getElementById('prog')
+      if (!bar) return
+      bar.style.transition = 'none'
+      bar.style.width = '0%'
+      setTimeout(() => {
+        bar.style.transition = `width ${DUR}ms linear`
+        bar.style.width = '100%'
+      }, 30)
+    }
+
+    startProgress()
+    slideTimer = setInterval(() => {
+      setSlide(s => (s + 1) % 3)
+    }, DUR)
+
+    return () => {
+      clearInterval(slideTimer)
+      clearInterval(progTimer)
+    }
+  }, [slide])
+
+  function goSlide(i: number) {
+    setSlide(i)
+  }
 
   return (
     <main style={{ minHeight: '100vh', background: '#fff', color: '#111', fontFamily: 'Inter, sans-serif' }}>
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes floatA { 0%,100%{transform:rotate(-1.5deg) translateY(0)} 50%{transform:rotate(-1.5deg) translateY(-6px)} }
-        @keyframes floatB { 0%,100%{transform:rotate(1deg) translateY(0)} 50%{transform:rotate(1deg) translateY(-5px)} }
-        @keyframes floatC { 0%,100%{transform:rotate(-0.8deg) translateY(0)} 50%{transform:rotate(-0.8deg) translateY(-5px)} }
         @keyframes glow { 0%,100%{opacity:1} 50%{opacity:0.4} }
         @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
         .anim-1 { animation: fadeUp 0.7s ease both; }
@@ -57,20 +86,24 @@ export default function Home() {
         .toggle-label { font-size: 13px; color: #666; }
         .toggle-label.active { color: #111; font-weight: 600; }
         .save-badge { background: #f0fdf4; color: #16a34a; border: 0.5px solid #86efac; border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 600; }
-        .hero-card { background: #fff; border: 0.5px solid #e8e8e8; border-radius: 12px; padding: 0.875rem; box-shadow: 0 8px 28px rgba(0,0,0,0.09); }
-        .hero-kpi { background: #111; border-radius: 7px; padding: 6px 8px; }
+        .hero-kpi { background: #111; border-radius: 6px; padding: 6px 8px; }
         .hero-kpi-l { font-size: 8px; color: #888; margin-bottom: 2px; }
         .hero-kpi-v { font-size: 13px; font-weight: 700; font-family: monospace; }
-        .hero-cc { aspect-ratio: 1; border-radius: 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 7px; font-weight: 600; }
+        .hero-cc { aspect-ratio: 1; border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 7px; font-weight: 600; }
         .hero-cw { background: #c8f0d8; color: #15803d; }
         .hero-cl { background: #fdd0d0; color: #dc2626; }
         .hero-cn { background: #f5f5f5; color: #ccc; }
-        .hero-cwe { background: #f5f5f5; color: #ddd; opacity: 0.4; }
-        .hero-cr { font-size: 5px; opacity: 0.75; margin-top: 1px; }
-        .hero-ai-b { background: #f5f5f5; border-radius: 3px 8px 8px 8px; padding: 5px 8px; font-size: 9px; color: #333; max-width: 92%; margin-bottom: 4px; }
-        .hero-ai-lbl { font-size: 7px; color: #16a34a; font-weight: 600; margin-bottom: 1px; }
-        .hero-usr-b { background: #111; border-radius: 8px 3px 8px 8px; padding: 5px 8px; font-size: 9px; color: #fff; max-width: 80%; margin-left: auto; margin-bottom: 4px; }
-        .hero-tag { display: inline-flex; align-items: center; background: #f0fdf4; border: 0.5px solid #bbf7d0; border-radius: 6px; padding: 4px 10px; font-size: 11px; color: #15803d; font-weight: 500; margin: 3px 4px 3px 0; }
+        .hero-cwe { background: #f5f5f5; color: #ddd; opacity: 0.35; }
+        .hero-cr { font-size: 5px; opacity: 0.7; margin-top: 1px; }
+        .hero-ai-b { background: #f5f5f5; border-radius: 3px 8px 8px 8px; padding: 7px 9px; font-size: 10px; color: #333; max-width: 88%; margin-bottom: 5px; }
+        .hero-ai-lbl { font-size: 8px; color: #16a34a; font-weight: 600; margin-bottom: 2px; }
+        .hero-usr-b { background: #111; border-radius: 8px 3px 8px 8px; padding: 7px 9px; font-size: 10px; color: #fff; max-width: 78%; margin-left: auto; margin-bottom: 5px; }
+        .car-tab { font-size: 11px; padding: 5px 12px; border-radius: 20px; border: 0.5px solid #e8e8e8; background: #fff; color: #888; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+        .car-tab.on { background: #111; color: #fff; border-color: #111; }
+        .car-dot { width: 6px; height: 6px; border-radius: 50%; background: #ddd; border: none; padding: 0; cursor: pointer; transition: all 0.3s; }
+        .car-dot.on { background: #111; width: 18px; border-radius: 3px; }
+        .slide { position: absolute; top: 0; left: 0; right: 0; bottom: 0; padding: 1rem; opacity: 0; transition: opacity 0.5s ease; pointer-events: none; overflow: hidden; }
+        .slide.on { opacity: 1; pointer-events: all; }
       `}</style>
 
       {/* Navbar */}
@@ -85,28 +118,32 @@ export default function Home() {
       </nav>
 
       {/* HERO */}
-      <section style={{ background: 'linear-gradient(140deg,#fff 55%,#f0fdf4 100%)', padding: '3rem 4rem 2.5rem', display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '3rem', alignItems: 'center', position: 'relative', overflow: 'hidden' }}>
+      <section style={{ background: 'linear-gradient(140deg,#fff 55%,#f0fdf4 100%)', padding: '3rem 4rem 2.5rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem', alignItems: 'center', position: 'relative', overflow: 'hidden', minHeight: 'calc(100vh - 62px)' }}>
         <div style={{ position: 'absolute', top: '-80px', right: '-80px', width: '320px', height: '320px', borderRadius: '50%', background: 'radial-gradient(circle,rgba(34,197,94,0.06) 0%,transparent 65%)', pointerEvents: 'none' }}></div>
 
-        {/* TEXTE GAUCHE */}
+        {/* TEXTE */}
         <div>
           <div className="anim-1" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '20px', padding: '4px 12px', marginBottom: '1.25rem' }}>
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e', animation: 'glow 2s ease-in-out infinite', display: 'inline-block' }}></span>
             <span style={{ fontSize: '11px', color: '#16a34a', fontWeight: 500 }}>AI pre-market plan · All markets</span>
           </div>
-          <h1 className="anim-2" style={{ fontSize: '3.5rem', fontWeight: 700, lineHeight: 1.05, letterSpacing: '-1.5px', color: '#111', marginBottom: '1.1rem' }}>
+          <h1 className="anim-2" style={{ fontSize: '3.5rem', fontWeight: 700, lineHeight: 1.05, letterSpacing: '-1.5px', color: '#111', marginBottom: '1rem' }}>
             Trade with a plan.<br />
             <span style={{ color: '#22c55e' }}>Perform with data.</span>
           </h1>
-          <p className="anim-3" style={{ fontSize: '1.1rem', color: '#666', lineHeight: 1.75, marginBottom: '1.5rem', maxWidth: '420px' }}>
+          <p className="anim-3" style={{ fontSize: '1.1rem', color: '#666', lineHeight: 1.75, marginBottom: '1.25rem', maxWidth: '400px' }}>
             MyTradePlan guides you every morning with a personalized AI pre-market plan, and analyzes your trades to identify your real edge.
           </p>
-          <div className="anim-4" style={{ marginBottom: '1.5rem' }}>
-            {['AI Morning Plan', 'Trade Journal', 'Stats & Edge', 'Macro AI Briefing', 'AI Calendar Insight'].map((t, i) => (
-              <span key={i} className="hero-tag">{t}</span>
+          <div className="anim-4" style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
+            {[
+              { label: 'Dashboard', i: 0 },
+              { label: 'Morning Plan', i: 1 },
+              { label: 'Macro Briefing', i: 2 },
+            ].map((t) => (
+              <button key={t.i} className={`car-tab${slide === t.i ? ' on' : ''}`} onClick={() => goSlide(t.i)}>{t.label}</button>
             ))}
           </div>
-          <div className="anim-5" style={{ display: 'flex', gap: '10px', marginBottom: '1.1rem' }}>
+          <div className="anim-5" style={{ display: 'flex', gap: '10px', marginBottom: '1rem' }}>
             <a href="/register" className="btn-main" style={{ fontSize: '14px', padding: '11px 22px' }}>Start for free →</a>
             <a href="/features" className="btn-sec" style={{ fontSize: '14px', padding: '11px 22px' }}>See how it works</a>
           </div>
@@ -119,29 +156,29 @@ export default function Home() {
           </div>
         </div>
 
-        {/* MOCKUPS DROITE */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', transform: 'perspective(1200px) rotateY(-3deg) rotateX(2deg)', transformOrigin: 'center top' }}>
+        {/* CARROUSEL */}
+        <div style={{ position: 'relative', background: '#fff', border: '2px solid #e8e8e8', borderRadius: '14px', height: '520px', overflow: 'hidden', boxShadow: '0 8px 28px rgba(0,0,0,0.08)' }}>
 
-          {/* DASHBOARD */}
-          <div className="hero-card" style={{ animation: 'floatA 6s ease-in-out infinite' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '7px', paddingBottom: '6px', borderBottom: '0.5px solid #f0f0f0' }}>
+          {/* SLIDE 0 : Dashboard */}
+          <div className={`slide${slide === 0 ? ' on' : ''}`} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '7px', borderBottom: '0.5px solid #f0f0f0' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                 <div style={{ width: '16px', height: '16px', background: '#111', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '7px', fontWeight: 800 }}>M</div>
                 <span style={{ fontSize: '11px', fontWeight: 700, color: '#111' }}>Dashboard</span>
                 <span style={{ fontSize: '8px', color: '#bbb' }}>June 27, 2026</span>
               </div>
-              <span style={{ background: '#f0fdf4', color: '#16a34a', fontSize: '7px', padding: '2px 7px', borderRadius: '4px', fontWeight: 500, border: '0.5px solid #bbf7d0' }}>● Plan ready</span>
+              <span style={{ background: '#f0fdf4', color: '#16a34a', fontSize: '7px', padding: '2px 6px', borderRadius: '4px', fontWeight: 500, border: '0.5px solid #bbf7d0' }}>● Plan ready</span>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '5px', marginBottom: '8px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '4px' }}>
               <div className="hero-kpi"><div className="hero-kpi-l">Win rate</div><div className="hero-kpi-v" style={{ color: '#4ade80' }}>71%</div></div>
               <div className="hero-kpi"><div className="hero-kpi-l">Avg R</div><div className="hero-kpi-v" style={{ color: '#4ade80' }}>+1.8R</div></div>
               <div className="hero-kpi"><div className="hero-kpi-l">P. Factor</div><div className="hero-kpi-v" style={{ color: '#fff' }}>2.4</div></div>
               <div className="hero-kpi"><div className="hero-kpi-l">Discipline</div><div className="hero-kpi-v" style={{ color: '#4ade80' }}>84%</div></div>
             </div>
-            <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '7px', padding: '7px' }}>
+            <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '7px', padding: '8px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
                 <span style={{ fontSize: '9px', fontWeight: 700, color: '#111' }}>Calendar · June 2026</span>
-                <div style={{ display: 'flex', gap: '6px', fontSize: '7px', color: '#aaa' }}>
+                <div style={{ display: 'flex', gap: '5px', fontSize: '7px', color: '#aaa' }}>
                   <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><span style={{ width: 6, height: 6, borderRadius: '2px', background: '#c8f0d8', display: 'inline-block' }}></span>Win</span>
                   <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><span style={{ width: 6, height: 6, borderRadius: '2px', background: '#fdd0d0', display: 'inline-block' }}></span>Loss</span>
                 </div>
@@ -177,48 +214,98 @@ export default function Home() {
                 <div className="hero-cc hero-cw" style={{ outline: '2px solid #888', outlineOffset: '-2px' }}>26<span className="hero-cr">+2.0</span></div>
                 <div className="hero-cc hero-cwe">27</div><div className="hero-cc hero-cwe">28</div>
               </div>
-              <div style={{ background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '6px', padding: '6px 8px', fontSize: '9px', color: '#15803d', marginTop: '6px', fontWeight: 500 }}>
-                AI Insight — Break & retest: 78% of your wins this month. Focus on this setup.
+              <div style={{ background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '6px', padding: '5px 7px', fontSize: '8px', color: '#15803d', marginTop: '5px', fontWeight: 500 }}>
+                AI Insight — Break & retest: 78% of your wins. Focus on this setup.
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+              <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '7px' }}>
+                <div style={{ fontSize: '8px', fontWeight: 700, color: '#888', marginBottom: '5px' }}>Recent trades</div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '2px 0', borderBottom: '0.5px solid #f5f5f5' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><span style={{ background: '#dcfce7', color: '#16a34a', fontSize: '7px', fontWeight: 700, padding: '1px 4px', borderRadius: '3px' }}>LONG</span><span style={{ fontSize: '8px', color: '#555' }}>Break & retest</span></div>
+                  <span style={{ fontSize: '8px', color: '#16a34a', fontFamily: 'monospace', fontWeight: 700 }}>+2.1R</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '2px 0' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><span style={{ background: '#fee2e2', color: '#dc2626', fontSize: '7px', fontWeight: 700, padding: '1px 4px', borderRadius: '3px' }}>SHORT</span><span style={{ fontSize: '8px', color: '#555' }}>Mean reversion</span></div>
+                  <span style={{ fontSize: '8px', color: '#dc2626', fontFamily: 'monospace', fontWeight: 700 }}>-1.0R</span>
+                </div>
+              </div>
+              <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '7px' }}>
+                <div style={{ fontSize: '8px', fontWeight: 700, color: '#888', marginBottom: '5px' }}>By setup</div>
+                <div style={{ marginBottom: '4px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}><span style={{ fontSize: '8px', color: '#111' }}>Break & retest</span><span style={{ fontSize: '7px', color: '#16a34a' }}>78%</span></div>
+                  <div style={{ height: '3px', background: '#f0f0f0', borderRadius: '2px' }}><div style={{ width: '78%', height: '100%', background: '#22c55e', borderRadius: '2px' }}></div></div>
+                </div>
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}><span style={{ fontSize: '8px', color: '#111' }}>Continuation</span><span style={{ fontSize: '7px', color: '#16a34a' }}>65%</span></div>
+                  <div style={{ height: '3px', background: '#f0f0f0', borderRadius: '2px' }}><div style={{ width: '65%', height: '100%', background: '#22c55e', borderRadius: '2px' }}></div></div>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* MORNING PLAN + MACRO */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-
-            <div className="hero-card" style={{ animation: 'floatB 7s 0.5s ease-in-out infinite' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '7px', paddingBottom: '5px', borderBottom: '0.5px solid #f0f0f0' }}>
-                <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', color: '#fff', fontWeight: 600 }}>M</div>
-                <div>
-                  <div style={{ fontSize: '10px', fontWeight: 600, color: '#111' }}>Morning Plan AI</div>
-                  <div style={{ fontSize: '7px', color: '#aaa' }}>June 27</div>
-                </div>
-                <div style={{ marginLeft: 'auto', background: '#f0fdf4', color: '#16a34a', fontSize: '7px', padding: '1px 5px', borderRadius: '3px', fontWeight: 600, border: '0.5px solid #bbf7d0' }}>Live</div>
+          {/* SLIDE 1 : Morning Plan */}
+          <div className={`slide${slide === 1 ? ' on' : ''}`} style={{ display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', paddingBottom: '8px', borderBottom: '0.5px solid #f0f0f0' }}>
+              <div style={{ width: '26px', height: '26px', borderRadius: '50%', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#fff', fontWeight: 600 }}>M</div>
+              <div>
+                <div style={{ fontSize: '12px', fontWeight: 600, color: '#111' }}>MyTradePlan AI</div>
+                <div style={{ fontSize: '9px', color: '#aaa' }}>Morning plan · Today</div>
               </div>
-              <div className="hero-ai-b"><div className="hero-ai-lbl">MyTradePlan AI</div>GEX is negative and Volume Profile shows B shape below VAL. What's your bias today?</div>
-              <div className="hero-usr-b">Bearish — short only.</div>
-              <div className="hero-ai-b"><div className="hero-ai-lbl">MyTradePlan AI</div>Good. Focus on Break & retest. No mean reversions today.</div>
-              <div style={{ background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '3px 7px 7px 7px', padding: '5px 7px', fontSize: '8px' }}>
-                <div style={{ color: '#16a34a', fontSize: '7px', fontWeight: 600, marginBottom: '1px' }}>Plan ready ✓</div>
-                <span style={{ color: '#444' }}>Short only · Break & retest · Max 1R</span>
+              <div style={{ marginLeft: 'auto', background: '#f0fdf4', color: '#16a34a', fontSize: '9px', padding: '2px 8px', borderRadius: '4px', fontWeight: 600, border: '0.5px solid #bbf7d0' }}>Live</div>
+            </div>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '5px', overflow: 'hidden' }}>
+              <div className="hero-ai-b"><div className="hero-ai-lbl">MyTradePlan AI</div>GEX is negative today and Volume Profile shows a B shape below VAL. What's your directional bias?</div>
+              <div className="hero-usr-b">Bearish — short only on rejection.</div>
+              <div className="hero-ai-b"><div className="hero-ai-lbl">MyTradePlan AI</div>Good. B shape below VAL confirms distribution. Which setup will you focus on?</div>
+              <div className="hero-usr-b">Break & retest on failed bounce.</div>
+              <div className="hero-ai-b"><div className="hero-ai-lbl">MyTradePlan AI</div>Perfect. What's your max risk per trade today?</div>
+              <div className="hero-usr-b">1R max, no exceptions.</div>
+              <div style={{ background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '3px 10px 10px 10px', padding: '8px 10px', fontSize: '10px' }}>
+                <div style={{ color: '#16a34a', fontSize: '9px', fontWeight: 600, marginBottom: '3px' }}>Plan ready ✓</div>
+                <span style={{ color: '#444' }}>Bearish bias · Break & retest only · Max 1R · No entries before 9:30 ET · Avoid mean reversions today.</span>
               </div>
             </div>
+            <div style={{ background: '#f9f9f9', borderRadius: '8px', padding: '7px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
+              <span style={{ fontSize: '10px', color: '#bbb' }}>Reply here...</span>
+              <div style={{ background: '#111', borderRadius: '5px', padding: '4px 10px', fontSize: '10px', color: '#fff' }}>→</div>
+            </div>
+          </div>
 
-            <div className="hero-card" style={{ animation: 'floatC 6.5s 1s ease-in-out infinite' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '7px', paddingBottom: '5px', borderBottom: '0.5px solid #f0f0f0' }}>
-                <div>
-                  <div style={{ fontSize: '10px', fontWeight: 600, color: '#111' }}>Macro AI Briefing</div>
-                  <div style={{ fontSize: '7px', color: '#aaa' }}>Order Flow · Futures US</div>
-                </div>
-                <span style={{ background: '#f5f5f5', border: '0.5px solid #e8e8e8', borderRadius: '3px', padding: '1px 5px', fontSize: '7px', color: '#888' }}>↺</span>
+          {/* SLIDE 2 : Macro Briefing */}
+          <div className={`slide${slide === 2 ? ' on' : ''}`} style={{ display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', paddingBottom: '8px', borderBottom: '0.5px solid #f0f0f0' }}>
+              <div>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#111' }}>Macro AI Briefing</div>
+                <div style={{ fontSize: '9px', color: '#bbb', marginTop: '1px' }}>Generated for your profile · Order Flow · Futures US</div>
               </div>
-              <div style={{ fontSize: '9px', color: '#333', lineHeight: 1.6, marginBottom: '5px', paddingBottom: '5px', borderBottom: '0.5px solid #f5f5f5' }}><strong style={{ color: '#111' }}>Fed hawkish</strong> — No cut before Q4 2026. Dollar bid, risk appetite compressed.</div>
-              <div style={{ fontSize: '9px', color: '#333', lineHeight: 1.6, marginBottom: '5px', paddingBottom: '5px', borderBottom: '0.5px solid #f5f5f5' }}><strong style={{ color: '#111' }}>Quarter-end flows</strong> — Institutional rebalancing creates atypical volume. Avoid mean reversions.</div>
-              <div style={{ background: '#fffbeb', border: '0.5px solid #fde68a', borderRadius: '6px', padding: '5px 7px', fontSize: '9px', color: '#92400e', fontWeight: 600 }}>
-                Bias: BEARISH · Short only today
+              <div style={{ background: '#f5f5f5', border: '0.5px solid #e8e8e8', borderRadius: '6px', padding: '3px 8px', fontSize: '9px', color: '#888' }}>↺ Refresh</div>
+            </div>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', overflow: 'hidden' }}>
+              <div style={{ fontSize: '10px', color: '#333', lineHeight: 1.7, paddingBottom: '7px', borderBottom: '0.5px solid #f0f0f0' }}>
+                <strong style={{ color: '#111' }}>Fed & macro context</strong> — June FOMC minutes confirm a persistently hawkish majority. Rate cut expectations revised down to a single cut in late 2026, compressing risk appetite.
+              </div>
+              <div style={{ fontSize: '10px', color: '#333', lineHeight: 1.7, paddingBottom: '7px', borderBottom: '0.5px solid #f0f0f0' }}>
+                <strong style={{ color: '#111' }}>Quarter-end rebalancing</strong> — Today marks J-3 before Q2 close. Institutional rebalancing generates atypical order flow. Stay disciplined, avoid mean reversions.
+              </div>
+              <div style={{ fontSize: '10px', color: '#333', lineHeight: 1.7, paddingBottom: '7px', borderBottom: '0.5px solid #f0f0f0' }}>
+                <strong style={{ color: '#111' }}>Key catalysts today</strong> — PCE Core at 08:30 ET. Any upside surprise will reinforce hawkish fears. UMich Sentiment Final at 10:00 ET.
+              </div>
+              <div style={{ background: '#fffbeb', border: '0.5px solid #fde68a', borderRadius: '8px', padding: '8px 10px', fontSize: '10px', color: '#92400e', fontWeight: 600 }}>
+                Bias: BEARISH · Short only · Avoid mean reversions · Reduced liquidity after 1:00 PM ET
               </div>
             </div>
           </div>
+
+          {/* Dots */}
+          <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '5px', zIndex: 10 }}>
+            {[0, 1, 2].map(i => (
+              <button key={i} className={`car-dot${slide === i ? ' on' : ''}`} onClick={() => goSlide(i)}></button>
+            ))}
+          </div>
+
+          {/* Progress bar */}
+          <div id="prog" style={{ position: 'absolute', bottom: 0, left: 0, height: '2px', background: '#22c55e', width: '0%', zIndex: 10 }}></div>
         </div>
       </section>
 
