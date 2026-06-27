@@ -1,184 +1,17 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 
 export default function Home() {
   const [annual, setAnnual] = useState(false)
-  const animRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const timers: any[] = []
-    let progTimer: any = null
-    let progVal = 0
-    const SCENE_DUR = 8000
-
-    function clearAll() {
-      timers.forEach(clearTimeout)
-      timers.length = 0
-      clearInterval(progTimer)
-    }
-
-    function showScene(i: number) {
-      const scenes = ['scene0', 'scene1', 'scene2']
-      const dots = ['id0', 'id1', 'id2']
-      scenes.forEach((s, j) => {
-        const el = document.getElementById(s)
-        if (el) el.style.opacity = j === i ? '1' : '0'
-      })
-      dots.forEach((d, j) => {
-        const el = document.getElementById(d)
-        if (!el) return
-        el.style.background = j === i ? '#111' : '#ddd'
-        el.style.width = j === i ? '18px' : '6px'
-        el.style.borderRadius = j === i ? '3px' : '50%'
-      })
-    }
-
-    function startProgress(dur: number, cb: () => void) {
-      const prog = document.getElementById('prog')
-      if (!prog) return
-      progVal = 0
-      prog.style.transition = 'none'
-      prog.style.width = '0%'
-      const step = 50
-      const inc = (step / dur) * 100
-      progTimer = setInterval(() => {
-        progVal += inc
-        prog.style.width = Math.min(progVal, 100) + '%'
-        if (progVal >= 100) { clearInterval(progTimer); cb() }
-      }, step)
-    }
-
-    function typeText(el: HTMLElement, text: string, speed: number, cb?: () => void) {
-      let i = 0
-      el.textContent = ''
-      const t = setInterval(() => {
-        el.textContent += text[i]
-        i++
-        if (i >= text.length) { clearInterval(t); if (cb) cb() }
-      }, speed)
-      timers.push(t)
-    }
-
-    function addBubble(container: HTMLElement, type: string, text: string, delay: number, cb?: () => void) {
-      const t = setTimeout(() => {
-        const div = document.createElement('div')
-        if (type === 'ai') {
-          div.style.cssText = 'background:#f5f5f5;border-radius:3px 10px 10px 10px;padding:10px 12px;font-size:12px;color:#333;max-width:85%;margin-bottom:6px;opacity:0;transform:translateY(6px);transition:opacity 0.3s ease,transform 0.3s ease;font-family:Inter,sans-serif;'
-        } else if (type === 'user') {
-          div.style.cssText = 'background:#111;border-radius:10px 3px 10px 10px;padding:10px 12px;font-size:12px;color:#fff;max-width:75%;margin-left:auto;margin-bottom:6px;opacity:0;transform:translateY(6px);transition:opacity 0.3s ease,transform 0.3s ease;font-family:Inter,sans-serif;'
-        } else {
-          div.style.cssText = 'background:#f0fdf4;border:0.5px solid #bbf7d0;border-radius:3px 10px 10px 10px;padding:10px 12px;font-size:12px;max-width:90%;margin-bottom:6px;opacity:0;transform:translateY(6px);transition:opacity 0.3s ease,transform 0.3s ease;font-family:Inter,sans-serif;'
-          div.innerHTML = '<div style="font-size:10px;color:#16a34a;font-weight:600;margin-bottom:3px;">Plan ready ✓</div><span id="plan-text" style="color:#444;"></span>'
-        }
-        container.appendChild(div)
-        setTimeout(() => { div.style.opacity = '1'; div.style.transform = 'translateY(0)' }, 30)
-        if (type !== 'plan') {
-          typeText(div, text, 25, cb)
-        } else {
-          const planEl = div.querySelector('#plan-text') as HTMLElement
-          if (planEl) typeText(planEl, text, 20, cb)
-        }
-      }, delay)
-      timers.push(t)
-    }
-
-    function runScene0() {
-      showScene(0)
-      const cursor = document.getElementById('cur0')
-      const modal = document.getElementById('cal-modal-s0')
-      const cell = document.getElementById('tc9')
-      const calCard = cell?.closest('[data-calcard]') as HTMLElement
-      if (!cursor || !modal || !cell || !calCard) return
-      modal.style.display = 'none'
-      cursor.style.opacity = '1'
-      cursor.style.left = '20px'
-      cursor.style.top = '20px'
-      const mText = document.getElementById('modal-text')
-      const mDisc = document.getElementById('modal-disc')
-      if (mText) mText.textContent = ''
-      if (mDisc) mDisc.style.display = 'none'
-
-      const t1 = setTimeout(() => {
-        const calR = calCard.getBoundingClientRect()
-        const cellR = cell.getBoundingClientRect()
-        cursor.style.left = (cellR.left - calR.left + cellR.width / 2 - 4) + 'px'
-        cursor.style.top = (cellR.top - calR.top + cellR.height / 2 - 4) + 'px'
-      }, 700)
-      timers.push(t1)
-
-      const t2 = setTimeout(() => {
-        cursor.style.transform = 'scale(0.8)'
-        setTimeout(() => { cursor.style.transform = 'scale(1)' }, 150)
-        modal.style.display = 'block'
-        if (mText) typeText(mText, "Your 2 shorts aligned with the flow. The long Mean reversion was off-plan — avoid this when GEX is negative.", 20, () => {
-          if (mDisc) mDisc.style.display = 'block'
-        })
-      }, 1900)
-      timers.push(t2)
-
-      startProgress(SCENE_DUR, () => {
-        clearAll()
-        cursor.style.opacity = '0'
-        modal.style.display = 'none'
-        runScene1()
-      })
-    }
-
-    function runScene1() {
-      showScene(1)
-      const container = document.getElementById('chat-container')
-      if (!container) return
-      container.innerHTML = ''
-      const msgs = [
-        { type: 'ai', text: 'Is GEX positive or negative this morning?', delay: 400 },
-        { type: 'user', text: 'Negative, negative Gamma.', delay: 1900 },
-        { type: 'ai', text: 'Volume Profile shape — D, B or P?', delay: 3100 },
-        { type: 'user', text: 'B shape, below VAL.', delay: 4500 },
-        { type: 'plan', text: 'Short only · Break & retest · No mean reversion today.', delay: 5800 },
-      ]
-      msgs.forEach(m => addBubble(container, m.type, m.text, m.delay))
-      startProgress(SCENE_DUR, () => { clearAll(); runScene2() })
-    }
-
-    function runScene2() {
-      showScene(2)
-      const container = document.getElementById('macro-container')
-      if (!container) return
-      container.innerHTML = ''
-      const lines: any[] = [
-        { text: 'Fed hawkish — June minutes confirm persistent hawkish majority. Rate cut expectations revised to 1 cut in 2026.', delay: 300 },
-        { text: 'GEX negative — Negative gamma amplifies directional moves. Favors clean breakouts on NQ and ES.', delay: 2400 },
-        { text: 'Dollar strength — USD well bid, creating latent pressure on equities and USD-denominated commodities.', delay: 4400 },
-        { text: 'Bias: BEARISH · Short only · Avoid mean reversions · Wait for Break & retest confirmation.', delay: 6000, highlight: true },
-      ]
-      lines.forEach(l => {
-        const t = setTimeout(() => {
-          const div = document.createElement('div')
-          if (l.highlight) {
-            div.style.cssText = 'background:#fffbeb;border:0.5px solid #fde68a;border-radius:8px;padding:10px 12px;font-size:12px;color:#92400e;opacity:0;transform:translateY(4px);transition:opacity 0.3s ease,transform 0.3s ease;font-family:Inter,sans-serif;'
-            div.textContent = l.text
-          } else {
-            div.style.cssText = 'font-size:12px;color:#333;line-height:1.7;opacity:0;transform:translateY(4px);transition:opacity 0.3s ease,transform 0.3s ease;overflow:hidden;white-space:nowrap;font-family:Inter,sans-serif;'
-          }
-          container.appendChild(div)
-          setTimeout(() => { div.style.opacity = '1'; div.style.transform = 'translateY(0)' }, 30)
-          if (!l.highlight) typeText(div, l.text, 14)
-        }, l.delay)
-        timers.push(t)
-      })
-      startProgress(SCENE_DUR, () => { clearAll(); runScene0() })
-    }
-
-    const startTimer = setTimeout(runScene0, 600)
-    timers.push(startTimer)
-
-    return () => { clearAll(); clearTimeout(startTimer) }
-  }, [])
 
   return (
     <main style={{ minHeight: '100vh', background: '#fff', color: '#111', fontFamily: 'Inter, sans-serif' }}>
       <style>{`
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes floatA { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+        @keyframes floatB { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+        @keyframes glow { 0%,100%{opacity:1} 50%{opacity:0.4} }
         @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
         .anim-1 { animation: fadeUp 0.7s ease both; }
         .anim-2 { animation: fadeUp 0.7s 0.15s ease both; }
@@ -223,20 +56,22 @@ export default function Home() {
         .toggle-label { font-size: 13px; color: #666; }
         .toggle-label.active { color: #111; font-weight: 600; }
         .save-badge { background: #f0fdf4; color: #16a34a; border: 0.5px solid #86efac; border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 600; }
-        .kpi-dark { background: #1a1a1a; border-radius: 10px; padding: 12px 14px; }
-        .kpi-lbl { font-size: 10px; color: #888; margin-bottom: 5px; }
-        .kpi-val { font-size: 20px; font-weight: 700; font-family: monospace; }
-        .cal-c { aspect-ratio: 1; border-radius: 7px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; }
-        .cal-w { background: #c8f0d8; color: #15803d; }
-        .cal-lo { background: #fdd0d0; color: #dc2626; }
-        .cal-n { background: #f5f5f5; color: #ccc; }
-        .cal-we { background: #f5f5f5; color: #ddd; opacity: 0.3; }
-        .cal-r { font-size: 7px; opacity: 0.8; margin-top: 1px; }
-        .cal-sel { outline: 2px solid #111; outline-offset: -2px; }
-        .b-l { background: #dcfce7; color: #16a34a; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 3px; }
-        .b-s { background: #fee2e2; color: #dc2626; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 3px; }
-        .ind-dot { width: 6px; height: 6px; border-radius: 50%; background: #ddd; transition: all 0.3s; display: inline-block; }
-        .scene { position: absolute; top: 0; left: 0; right: 0; bottom: 0; padding: 1.5rem; opacity: 0; transition: opacity 0.5s ease; pointer-events: none; overflow: hidden; }
+        .hero-card { background: #fff; border: 0.5px solid #e8e8e8; border-radius: 12px; padding: 0.875rem; box-shadow: 0 8px 24px rgba(0,0,0,0.07); }
+        .hero-kpi { background: #111; border-radius: 7px; padding: 8px 10px; }
+        .hero-kpi-l { font-size: 9px; color: #888; margin-bottom: 3px; }
+        .hero-kpi-v { font-size: 15px; font-weight: 700; font-family: monospace; }
+        .hero-bl { background: #dcfce7; color: #15803d; font-size: 8px; font-weight: 600; padding: 1px 5px; border-radius: 3px; }
+        .hero-bs { background: #fee2e2; color: #dc2626; font-size: 8px; font-weight: 600; padding: 1px 5px; border-radius: 3px; }
+        .hero-cc { aspect-ratio: 1; border-radius: 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 8px; font-weight: 600; }
+        .hero-cw { background: #c8f0d8; color: #15803d; }
+        .hero-cl { background: #fdd0d0; color: #dc2626; }
+        .hero-cn { background: #f5f5f5; color: #ccc; }
+        .hero-cwe { background: #f5f5f5; color: #ddd; opacity: 0.4; }
+        .hero-cr { font-size: 6px; opacity: 0.75; margin-top: 1px; }
+        .hero-ai-b { background: #f5f5f5; border-radius: 3px 8px 8px 8px; padding: 6px 9px; font-size: 9px; color: #333; max-width: 92%; margin-bottom: 4px; }
+        .hero-ai-lbl { font-size: 7px; color: #16a34a; font-weight: 600; margin-bottom: 2px; }
+        .hero-usr-b { background: #111; border-radius: 8px 3px 8px 8px; padding: 6px 9px; font-size: 9px; color: #fff; max-width: 80%; margin-left: auto; margin-bottom: 4px; }
+        .hero-tag { display: inline-flex; align-items: center; background: #f0fdf4; border: 0.5px solid #bbf7d0; border-radius: 6px; padding: 4px 10px; font-size: 11px; color: #15803d; font-weight: 500; margin: 3px 4px 3px 0; }
       `}</style>
 
       {/* Navbar */}
@@ -250,189 +85,143 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* HERO — prend toute la hauteur écran moins navbar */}
-      <section style={{ maxWidth: '1100px', margin: '0 auto', padding: '2rem 2.5rem', display: 'grid', gridTemplateColumns: '1fr 1.1fr', gap: '3rem', alignItems: 'center', minHeight: 'calc(100vh - 62px)' }}>
-        <div>
-          <div className="anim-1" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '20px', padding: '5px 14px', marginBottom: '1.5rem' }}>
-            <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#16a34a' }}></div>
-            <span style={{ fontSize: '12px', color: '#16a34a', fontWeight: 500 }}>AI pre-market plan · All markets</span>
+      {/* HERO */}
+      <section style={{ background: 'linear-gradient(140deg,#fff 55%,#f0fdf4 100%)', padding: '3rem 2.5rem 2.5rem', display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '3rem', alignItems: 'start', maxWidth: '1200px', margin: '0 auto', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: '-80px', right: '-80px', width: '320px', height: '320px', borderRadius: '50%', background: 'radial-gradient(circle,rgba(34,197,94,0.06) 0%,transparent 65%)', pointerEvents: 'none' }}></div>
+
+        {/* TEXTE GAUCHE */}
+        <div style={{ paddingTop: '1rem' }}>
+          <div className="anim-1" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '20px', padding: '4px 12px', marginBottom: '1.1rem' }}>
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e', animation: 'glow 2s ease-in-out infinite', display: 'inline-block' }}></span>
+            <span style={{ fontSize: '11px', color: '#16a34a', fontWeight: 500 }}>AI pre-market plan · All markets</span>
           </div>
-          <h1 className="anim-2" style={{ fontSize: '2.75rem', fontWeight: 700, lineHeight: 1.1, letterSpacing: '-1.5px', marginBottom: '1.25rem' }}>
+          <h1 className="anim-2" style={{ fontSize: '2.75rem', fontWeight: 700, lineHeight: 1.05, letterSpacing: '-1.5px', color: '#111', marginBottom: '1rem' }}>
             Trade with a plan.<br />
-            <span style={{ color: '#666' }}>Perform with data.</span>
+            <span style={{ color: '#22c55e' }}>Perform with data.</span>
           </h1>
-          <p className="anim-3" style={{ fontSize: '1rem', color: '#666', lineHeight: 1.7, marginBottom: '1.75rem', maxWidth: '400px' }}>
+          <p className="anim-3" style={{ fontSize: '1rem', color: '#666', lineHeight: 1.75, marginBottom: '1.25rem', maxWidth: '340px' }}>
             MyTradePlan guides you every morning with a personalized AI pre-market plan, and analyzes your trades to identify your real edge.
           </p>
-          <div className="anim-4" style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '1.75rem' }}>
-            {['AI builds your plan, you trade', 'Find your real edge by setup', 'Turn your mistakes into edge'].map((p, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', color: '#444' }}>
-                <div className="feat-check">✓</div>
-                {p}
-              </div>
+          <div className="anim-4" style={{ marginBottom: '1.25rem' }}>
+            {['AI Morning Plan', 'Trade Journal', 'Stats & Edge', 'Macro AI Briefing', 'AI Calendar Insight'].map((t, i) => (
+              <span key={i} className="hero-tag">{t}</span>
             ))}
           </div>
-          <div className="anim-5" style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <div className="anim-5" style={{ display: 'flex', gap: '10px', marginBottom: '1rem' }}>
             <a href="/register" className="btn-main">Start for free →</a>
             <a href="/features" className="btn-sec">See how it works</a>
           </div>
-          <div className="anim-5" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#16a34a' }}></div>
-              <span style={{ fontSize: '12px', color: '#888' }}>Free to start</span>
-            </div>
-            <div style={{ width: '1px', height: '14px', background: '#e8e8e8' }}></div>
-            <span style={{ fontSize: '12px', color: '#888' }}>No credit card required</span>
+          <div className="anim-5" style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '11px', color: '#999' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#22c55e', display: 'inline-block' }}></span>Free to start
+            </span>
+            <span style={{ width: '1px', height: '10px', background: '#e8e8e8', display: 'inline-block' }}></span>
+            No credit card required
           </div>
         </div>
 
-        {/* ANIMATED BOX */}
-        <div style={{ border: '2px solid #e8e8e8', borderRadius: '16px', overflow: 'hidden', background: '#fff', position: 'relative', height: 'calc(100vh - 140px)', maxHeight: '720px' }} ref={animRef}>
+        {/* DROITE */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
 
-          {/* SCENE 0 : Dashboard */}
-          <div className="scene" id="scene0" style={{ opacity: 1, pointerEvents: 'all' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '10px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '10px', borderBottom: '0.5px solid #e8e8e8' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '22px', height: '22px', background: '#111', borderRadius: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '9px', fontWeight: 800 }}>M</div>
-                  <span style={{ fontSize: '14px', fontWeight: 700, color: '#111' }}>Dashboard</span>
-                  <span style={{ fontSize: '11px', color: '#bbb' }}>June 27, 2026</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', background: '#f0fdf4', border: '0.5px solid #86efac', color: '#15803d', padding: '4px 12px', borderRadius: '20px', fontSize: '10px', fontWeight: 600 }}>
-                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }}></span>Plan ready
+          {/* DASHBOARD */}
+          <div className="hero-card" style={{ animation: 'floatA 6s ease-in-out infinite' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', paddingBottom: '7px', borderBottom: '0.5px solid #f0f0f0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ width: '18px', height: '18px', background: '#111', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '8px', fontWeight: 800 }}>M</div>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: '#111' }}>Dashboard</span>
+                <span style={{ fontSize: '9px', color: '#bbb' }}>June 27, 2026</span>
+              </div>
+              <span style={{ background: '#f0fdf4', color: '#16a34a', fontSize: '8px', padding: '2px 7px', borderRadius: '4px', fontWeight: 500, border: '0.5px solid #bbf7d0' }}>● Plan ready</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '5px', marginBottom: '8px' }}>
+              <div className="hero-kpi"><div className="hero-kpi-l">Win rate</div><div className="hero-kpi-v" style={{ color: '#4ade80' }}>71%</div></div>
+              <div className="hero-kpi"><div className="hero-kpi-l">Avg R</div><div className="hero-kpi-v" style={{ color: '#4ade80' }}>+1.8R</div></div>
+              <div className="hero-kpi"><div className="hero-kpi-l">P. Factor</div><div className="hero-kpi-v" style={{ color: '#fff' }}>2.4</div></div>
+              <div className="hero-kpi"><div className="hero-kpi-l">Discipline</div><div className="hero-kpi-v" style={{ color: '#4ade80' }}>84%</div></div>
+            </div>
+            <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                <span style={{ fontSize: '9px', fontWeight: 700, color: '#111' }}>Calendar · June 2026</span>
+                <div style={{ display: 'flex', gap: '8px', fontSize: '8px', color: '#aaa' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><span style={{ width: 7, height: 7, borderRadius: '2px', background: '#c8f0d8', display: 'inline-block' }}></span>Win</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><span style={{ width: 7, height: 7, borderRadius: '2px', background: '#fdd0d0', display: 'inline-block' }}></span>Loss</span>
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '8px' }}>
-                <div className="kpi-dark"><div className="kpi-lbl">Win rate</div><div className="kpi-val" style={{ color: '#4ade80' }}>71%</div></div>
-                <div className="kpi-dark"><div className="kpi-lbl">Avg R</div><div className="kpi-val" style={{ color: '#4ade80' }}>+1.8R</div></div>
-                <div className="kpi-dark"><div className="kpi-lbl">P. Factor</div><div className="kpi-val" style={{ color: '#fff' }}>2.4</div></div>
-                <div className="kpi-dark"><div className="kpi-lbl">Discipline</div><div className="kpi-val" style={{ color: '#4ade80' }}>84%</div></div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '2px', marginBottom: '2px' }}>
+                {['M','T','W','T','F','S','S'].map((d, i) => (
+                  <div key={i} style={{ textAlign: 'center', fontSize: '7px', color: i >= 5 ? '#ddd' : '#bbb', fontWeight: 600 }}>{d}</div>
+                ))}
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '10px', padding: '10px' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: '#888', marginBottom: '8px' }}>Recent trades</div>
-                  {[{ d: 'long', s: 'Break & retest', r: '+2.1R', c: '#16a34a' }, { d: 'short', s: 'Mean reversion', r: '-1.0R', c: '#dc2626' }, { d: 'long', s: 'Continuation', r: '+3.2R', c: '#16a34a' }].map((t, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0', borderBottom: i < 2 ? '0.5px solid #f5f5f5' : 'none' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                        <span className={t.d === 'long' ? 'b-l' : 'b-s'}>{t.d.toUpperCase()}</span>
-                        <span style={{ fontSize: '10px', color: '#555' }}>{t.s}</span>
-                      </div>
-                      <span style={{ fontSize: '10px', color: t.c, fontFamily: 'monospace', fontWeight: 700 }}>{t.r}</span>
-                    </div>
-                  ))}
-                </div>
-                <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '10px', padding: '10px' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: '#888', marginBottom: '8px' }}>Performance by setup</div>
-                  {[{ n: 'Break & retest', w: 78, pos: true }, { n: 'Continuation', w: 65, pos: true }, { n: 'Mean reversion', w: 35, pos: false }].map((s, i) => (
-                    <div key={i} style={{ marginBottom: '7px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
-                        <span style={{ fontSize: '10px', fontWeight: 600, color: '#111' }}>{s.n}</span>
-                        <span style={{ fontSize: '9px', color: s.pos ? '#16a34a' : '#dc2626', fontFamily: 'monospace' }}>{s.w}%</span>
-                      </div>
-                      <div style={{ height: '4px', background: '#f0f0f0', borderRadius: '3px' }}>
-                        <div style={{ width: `${s.w}%`, height: '100%', background: s.pos ? '#111' : '#dc2626', borderRadius: '3px' }}></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '2px' }}>
+                <div className="hero-cc hero-cn"></div>
+                <div className="hero-cc hero-cw">2<span className="hero-cr">+1.5</span></div>
+                <div className="hero-cc hero-cl">3<span className="hero-cr">-1.0</span></div>
+                <div className="hero-cc hero-cw">4<span className="hero-cr">+0.8</span></div>
+                <div className="hero-cc hero-cw">5<span className="hero-cr">+2.1</span></div>
+                <div className="hero-cc hero-cwe">6</div><div className="hero-cc hero-cwe">7</div>
+                <div className="hero-cc hero-cw">8<span className="hero-cr">+1.3</span></div>
+                <div className="hero-cc hero-cw" style={{ outline: '2px solid #22c55e', outlineOffset: '-2px' }}>9<span className="hero-cr">+2.1</span></div>
+                <div className="hero-cc hero-cl">10<span className="hero-cr">-0.5</span></div>
+                <div className="hero-cc hero-cw">11<span className="hero-cr">+0.7</span></div>
+                <div className="hero-cc hero-cw">12<span className="hero-cr">+1.1</span></div>
+                <div className="hero-cc hero-cwe">13</div><div className="hero-cc hero-cwe">14</div>
+                <div className="hero-cc hero-cn">15</div>
+                <div className="hero-cc hero-cw">16<span className="hero-cr">+1.8</span></div>
+                <div className="hero-cc hero-cl">17<span className="hero-cr">-1.2</span></div>
+                <div className="hero-cc hero-cw">18<span className="hero-cr">+0.9</span></div>
+                <div className="hero-cc hero-cw">19<span className="hero-cr">+2.3</span></div>
+                <div className="hero-cc hero-cwe">20</div><div className="hero-cc hero-cwe">21</div>
+                <div className="hero-cc hero-cw">22<span className="hero-cr">+1.5</span></div>
+                <div className="hero-cc hero-cw">23<span className="hero-cr">+2.3</span></div>
+                <div className="hero-cc hero-cl">24<span className="hero-cr">-1.0</span></div>
+                <div className="hero-cc hero-cw">25<span className="hero-cr">+0.7</span></div>
+                <div className="hero-cc hero-cw" style={{ outline: '2px solid #888', outlineOffset: '-2px' }}>26<span className="hero-cr">+2.0</span></div>
+                <div className="hero-cc hero-cwe">27</div><div className="hero-cc hero-cwe">28</div>
               </div>
-              <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '10px', padding: '10px', position: 'relative', flex: 1 }} data-calcard>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '7px' }}>
-                  <span style={{ fontSize: '10px', fontWeight: 700, color: '#111' }}>Calendar · June 2026</span>
-                  <div style={{ display: 'flex', gap: '8px', fontSize: '9px', color: '#aaa' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ width: 8, height: 8, borderRadius: '2px', background: '#c8f0d8', display: 'inline-block' }}></span>Win</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ width: 8, height: 8, borderRadius: '2px', background: '#fdd0d0', display: 'inline-block' }}></span>Loss</span>
-                  </div>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '3px', marginBottom: '3px' }}>
-                  {['M','T','W','T','F','S','S'].map((d, i) => (
-                    <div key={i} style={{ textAlign: 'center', fontSize: '8px', color: i >= 5 ? '#ddd' : '#bbb', fontWeight: 600, paddingBottom: '2px' }}>{d}</div>
-                  ))}
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '3px' }}>
-                  <div className="cal-c cal-n"></div>
-                  <div className="cal-c cal-w">2<span className="cal-r">+1.5</span></div>
-                  <div className="cal-c cal-lo">3<span className="cal-r">-1.0</span></div>
-                  <div className="cal-c cal-w">4<span className="cal-r">+0.8</span></div>
-                  <div className="cal-c cal-w">5<span className="cal-r">+2.1</span></div>
-                  <div className="cal-c cal-we">6</div><div className="cal-c cal-we">7</div>
-                  <div className="cal-c cal-w">8<span className="cal-r">+1.3</span></div>
-                  <div className="cal-c cal-w cal-sel" id="tc9">9<span className="cal-r">+2.1</span></div>
-                  <div className="cal-c cal-lo">10<span className="cal-r">-0.5</span></div>
-                  <div className="cal-c cal-w">11<span className="cal-r">+0.7</span></div>
-                  <div className="cal-c cal-w">12<span className="cal-r">+1.1</span></div>
-                  <div className="cal-c cal-we">13</div><div className="cal-c cal-we">14</div>
-                  <div className="cal-c cal-n">15</div>
-                  <div className="cal-c cal-w">16<span className="cal-r">+1.8</span></div>
-                  <div className="cal-c cal-lo">17<span className="cal-r">-1.2</span></div>
-                  <div className="cal-c cal-w">18<span className="cal-r">+0.9</span></div>
-                  <div className="cal-c cal-w">19<span className="cal-r">+2.3</span></div>
-                  <div className="cal-c cal-we">20</div><div className="cal-c cal-we">21</div>
-                  <div className="cal-c cal-w">22<span className="cal-r">+1.5</span></div>
-                  <div className="cal-c cal-w">23<span className="cal-r">+2.3</span></div>
-                  <div className="cal-c cal-lo">24<span className="cal-r">-1.0</span></div>
-                  <div className="cal-c cal-w">25<span className="cal-r">+0.7</span></div>
-                  <div className="cal-c cal-w" style={{ outline: '2px solid #888', outlineOffset: '-2px' }}>26<span className="cal-r">+2.0</span></div>
-                  <div className="cal-c cal-we">27</div><div className="cal-c cal-we">28</div>
-                </div>
-
-                <div id="cal-modal-s0" style={{ display: 'none', position: 'absolute', right: '8px', top: '8px', width: '220px', background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.1)', zIndex: 20 }}>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#111', marginBottom: '2px' }}>June 9, 2026</div>
-                  <div style={{ fontSize: '10px', color: '#bbb', marginBottom: '10px' }}>3 trades · +2.1R</div>
-                  <div style={{ fontSize: '9px', fontWeight: 600, color: '#bbb', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>AI Insight</div>
-                  <div id="modal-text" style={{ fontSize: '11px', color: '#333', lineHeight: 1.6 }}></div>
-                  <div id="modal-disc" style={{ display: 'none', marginTop: '6px', fontSize: '11px', fontWeight: 600, color: '#d97706' }}>Discipline: 67% · Needs improvement.</div>
-                </div>
-
-                <svg id="cur0" style={{ position: 'absolute', pointerEvents: 'none', zIndex: 30, width: '16px', height: '16px', opacity: 0, transition: 'left 1s cubic-bezier(0.4,0,0.2,1), top 1s cubic-bezier(0.4,0,0.2,1)', left: '20px', top: '20px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.25))' }} viewBox="0 0 20 20" fill="none">
-                  <path d="M4 2L16 10L10 11L8 18L4 2Z" fill="white" stroke="#111" strokeWidth="1.5" strokeLinejoin="round"/>
-                </svg>
+              <div style={{ background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '8px', padding: '7px 9px', fontSize: '9px', color: '#15803d', marginTop: '7px', fontWeight: 500 }}>
+                AI Insight — Break & retest accounts for 78% of your wins this month. Focus exclusively on this setup.
               </div>
             </div>
           </div>
 
-          {/* SCENE 1 : Morning plan */}
-          <div className="scene" id="scene1">
-            <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', paddingBottom: '12px', borderBottom: '0.5px solid #e8e8e8' }}>
-                <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: '#fff', fontWeight: 600 }}>M</div>
+          {/* MORNING PLAN + MACRO */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+
+            {/* MORNING PLAN */}
+            <div className="hero-card" style={{ animation: 'floatB 7s 0.5s ease-in-out infinite' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '7px', paddingBottom: '6px', borderBottom: '0.5px solid #f0f0f0' }}>
+                <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', color: '#fff', fontWeight: 600 }}>M</div>
                 <div>
-                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#111' }}>MyTradePlan AI</div>
-                  <div style={{ fontSize: '10px', color: '#aaa' }}>Morning plan · Today</div>
+                  <div style={{ fontSize: '10px', fontWeight: 600, color: '#111' }}>Morning Plan AI</div>
+                  <div style={{ fontSize: '7px', color: '#aaa' }}>June 27</div>
                 </div>
-                <div style={{ marginLeft: 'auto', background: '#f0fdf4', color: '#16a34a', fontSize: '10px', padding: '3px 10px', borderRadius: '4px', fontWeight: 500 }}>Live</div>
+                <div style={{ marginLeft: 'auto', background: '#f0fdf4', color: '#16a34a', fontSize: '7px', padding: '1px 5px', borderRadius: '3px', fontWeight: 600, border: '0.5px solid #bbf7d0' }}>Live</div>
               </div>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', overflow: 'hidden' }} id="chat-container"></div>
-              <div style={{ background: '#f9f9f9', borderRadius: '10px', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '14px' }}>
-                <span style={{ fontSize: '12px', color: '#bbb' }}>Reply here...</span>
-                <div style={{ background: '#111', borderRadius: '6px', padding: '6px 14px', fontSize: '12px', color: '#fff' }}>→</div>
+              <div className="hero-ai-b"><div className="hero-ai-lbl">MyTradePlan AI</div>GEX is negative and Volume Profile shows a B shape below VAL. What's your directional bias today?</div>
+              <div className="hero-usr-b">Bearish — short only on rejection.</div>
+              <div className="hero-ai-b"><div className="hero-ai-lbl">MyTradePlan AI</div>Good. B shape below VAL confirms distribution. Focus on Break & retest. No mean reversions today.</div>
+              <div style={{ background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '3px 8px 8px 8px', padding: '5px 7px', fontSize: '8px' }}>
+                <div style={{ color: '#16a34a', fontSize: '7px', fontWeight: 600, marginBottom: '1px' }}>Plan ready ✓</div>
+                <span style={{ color: '#444' }}>Short only · Break & retest · Max 1R</span>
               </div>
             </div>
-          </div>
 
-          {/* SCENE 2 : Macro briefing */}
-          <div className="scene" id="scene2">
-            <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '12px', borderBottom: '0.5px solid #e8e8e8' }}>
+            {/* MACRO BRIEFING */}
+            <div className="hero-card" style={{ animation: 'floatB 6.5s 1s ease-in-out infinite' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '7px', paddingBottom: '6px', borderBottom: '0.5px solid #f0f0f0' }}>
                 <div>
-                  <div style={{ fontSize: '14px', fontWeight: 700, color: '#111' }}>Macro AI Briefing</div>
-                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>Generated for your profile · Order Flow</div>
+                  <div style={{ fontSize: '10px', fontWeight: 600, color: '#111' }}>Macro AI Briefing</div>
+                  <div style={{ fontSize: '7px', color: '#aaa' }}>Order Flow · Futures US</div>
                 </div>
-                <div style={{ background: '#f5f5f5', border: '0.5px solid #e8e8e8', borderRadius: '6px', padding: '5px 12px', fontSize: '11px', color: '#888' }}>↺ Refresh</div>
+                <span style={{ background: '#f5f5f5', border: '0.5px solid #e8e8e8', borderRadius: '4px', padding: '2px 6px', fontSize: '8px', color: '#888' }}>↺</span>
               </div>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px', overflow: 'hidden' }} id="macro-container"></div>
+              <div style={{ fontSize: '9px', color: '#333', lineHeight: 1.6, marginBottom: '5px', paddingBottom: '5px', borderBottom: '0.5px solid #f5f5f5' }}><strong style={{ color: '#111' }}>Fed hawkish</strong> — No cut before Q4 2026. Dollar bid, risk appetite compressed.</div>
+              <div style={{ fontSize: '9px', color: '#333', lineHeight: 1.6, marginBottom: '5px', paddingBottom: '5px', borderBottom: '0.5px solid #f5f5f5' }}><strong style={{ color: '#111' }}>Quarter-end flows</strong> — Institutional rebalancing creates atypical volume. Avoid mean reversions.</div>
+              <div style={{ background: '#fffbeb', border: '0.5px solid #fde68a', borderRadius: '6px', padding: '5px 7px', fontSize: '9px', color: '#92400e', fontWeight: 600 }}>
+                Bias: BEARISH · Short only today
+              </div>
             </div>
           </div>
-
-          {/* Indicators */}
-          <div style={{ position: 'absolute', bottom: '12px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '6px', zIndex: 10 }}>
-            <div id="id0" className="ind-dot" style={{ background: '#111', width: '18px', borderRadius: '3px' }}></div>
-            <div id="id1" className="ind-dot"></div>
-            <div id="id2" className="ind-dot"></div>
-          </div>
-
-          {/* Progress bar */}
-          <div id="prog" style={{ position: 'absolute', bottom: 0, left: 0, height: '2px', background: '#111', width: '0%', zIndex: 10 }}></div>
         </div>
       </section>
 
