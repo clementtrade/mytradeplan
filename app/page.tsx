@@ -58,18 +58,18 @@ export default function Home() {
         .toggle-label.active { color: #111; font-weight: 600; }
         .save-badge { background: #f0fdf4; color: #16a34a; border: 0.5px solid #86efac; border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 600; }
         .hero-card { background: #fff; border: 0.5px solid #e8e8e8; border-radius: 12px; padding: 0.875rem; box-shadow: 0 8px 28px rgba(0,0,0,0.09); }
-        .hero-kpi { background: #111; border-radius: 7px; padding: 8px 10px; }
-        .hero-kpi-l { font-size: 9px; color: #888; margin-bottom: 3px; }
-        .hero-kpi-v { font-size: 15px; font-weight: 700; font-family: monospace; }
-        .hero-cc { aspect-ratio: 1; border-radius: 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 8px; font-weight: 600; }
+        .hero-kpi { background: #111; border-radius: 7px; padding: 6px 8px; }
+        .hero-kpi-l { font-size: 8px; color: #888; margin-bottom: 2px; }
+        .hero-kpi-v { font-size: 13px; font-weight: 700; font-family: monospace; }
+        .hero-cc { aspect-ratio: 1; border-radius: 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 7px; font-weight: 600; }
         .hero-cw { background: #c8f0d8; color: #15803d; }
         .hero-cl { background: #fdd0d0; color: #dc2626; }
         .hero-cn { background: #f5f5f5; color: #ccc; }
         .hero-cwe { background: #f5f5f5; color: #ddd; opacity: 0.4; }
-        .hero-cr { font-size: 6px; opacity: 0.75; margin-top: 1px; }
-        .hero-ai-b { background: #f5f5f5; border-radius: 3px 8px 8px 8px; padding: 6px 9px; font-size: 9px; color: #333; max-width: 92%; margin-bottom: 4px; }
-        .hero-ai-lbl { font-size: 7px; color: #16a34a; font-weight: 600; margin-bottom: 2px; }
-        .hero-usr-b { background: #111; border-radius: 8px 3px 8px 8px; padding: 6px 9px; font-size: 9px; color: #fff; max-width: 80%; margin-left: auto; margin-bottom: 4px; }
+        .hero-cr { font-size: 5px; opacity: 0.75; margin-top: 1px; }
+        .hero-ai-b { background: #f5f5f5; border-radius: 3px 8px 8px 8px; padding: 5px 8px; font-size: 9px; color: #333; max-width: 92%; margin-bottom: 4px; }
+        .hero-ai-lbl { font-size: 7px; color: #16a34a; font-weight: 600; margin-bottom: 1px; }
+        .hero-usr-b { background: #111; border-radius: 8px 3px 8px 8px; padding: 5px 8px; font-size: 9px; color: #fff; max-width: 80%; margin-left: auto; margin-bottom: 4px; }
         .hero-tag { display: inline-flex; align-items: center; background: #f0fdf4; border: 0.5px solid #bbf7d0; border-radius: 6px; padding: 4px 10px; font-size: 11px; color: #15803d; font-weight: 500; margin: 3px 4px 3px 0; }
       `}</style>
 
@@ -84,74 +84,74 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* HERO — pleine largeur */}
-      <section style={{ background: 'linear-gradient(140deg,#fff 55%,#f0fdf4 100%)', padding: '3rem 4rem 2.5rem', display: 'grid', gridTemplateColumns: '1fr 1.6fr', gap: '3rem', alignItems: 'start', position: 'relative', overflow: 'hidden' }}>
+      {/* HERO */}
+      <section style={{ background: 'linear-gradient(140deg,#fff 55%,#f0fdf4 100%)', padding: '3rem 4rem 2.5rem', display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '3rem', alignItems: 'center', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: '-80px', right: '-80px', width: '320px', height: '320px', borderRadius: '50%', background: 'radial-gradient(circle,rgba(34,197,94,0.06) 0%,transparent 65%)', pointerEvents: 'none' }}></div>
 
         {/* TEXTE GAUCHE */}
-        <div style={{ paddingTop: '1rem' }}>
-          <div className="anim-1" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '20px', padding: '4px 12px', marginBottom: '1.1rem' }}>
+        <div>
+          <div className="anim-1" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '20px', padding: '4px 12px', marginBottom: '1.25rem' }}>
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e', animation: 'glow 2s ease-in-out infinite', display: 'inline-block' }}></span>
             <span style={{ fontSize: '11px', color: '#16a34a', fontWeight: 500 }}>AI pre-market plan · All markets</span>
           </div>
-          <h1 className="anim-2" style={{ fontSize: '2.75rem', fontWeight: 700, lineHeight: 1.05, letterSpacing: '-1.5px', color: '#111', marginBottom: '1rem' }}>
+          <h1 className="anim-2" style={{ fontSize: '3.5rem', fontWeight: 700, lineHeight: 1.05, letterSpacing: '-1.5px', color: '#111', marginBottom: '1.1rem' }}>
             Trade with a plan.<br />
             <span style={{ color: '#22c55e' }}>Perform with data.</span>
           </h1>
-          <p className="anim-3" style={{ fontSize: '1rem', color: '#666', lineHeight: 1.75, marginBottom: '1.25rem', maxWidth: '340px' }}>
+          <p className="anim-3" style={{ fontSize: '1.1rem', color: '#666', lineHeight: 1.75, marginBottom: '1.5rem', maxWidth: '420px' }}>
             MyTradePlan guides you every morning with a personalized AI pre-market plan, and analyzes your trades to identify your real edge.
           </p>
-          <div className="anim-4" style={{ marginBottom: '1.25rem' }}>
+          <div className="anim-4" style={{ marginBottom: '1.5rem' }}>
             {['AI Morning Plan', 'Trade Journal', 'Stats & Edge', 'Macro AI Briefing', 'AI Calendar Insight'].map((t, i) => (
               <span key={i} className="hero-tag">{t}</span>
             ))}
           </div>
-          <div className="anim-5" style={{ display: 'flex', gap: '10px', marginBottom: '1rem' }}>
-            <a href="/register" className="btn-main">Start for free →</a>
-            <a href="/features" className="btn-sec">See how it works</a>
+          <div className="anim-5" style={{ display: 'flex', gap: '10px', marginBottom: '1.1rem' }}>
+            <a href="/register" className="btn-main" style={{ fontSize: '14px', padding: '11px 22px' }}>Start for free →</a>
+            <a href="/features" className="btn-sec" style={{ fontSize: '14px', padding: '11px 22px' }}>See how it works</a>
           </div>
-          <div className="anim-5" style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '11px', color: '#999' }}>
+          <div className="anim-5" style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', color: '#999' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#22c55e', display: 'inline-block' }}></span>Free to start
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e', display: 'inline-block' }}></span>Free to start
             </span>
-            <span style={{ width: '1px', height: '10px', background: '#e8e8e8', display: 'inline-block' }}></span>
+            <span style={{ width: '1px', height: '11px', background: '#e8e8e8', display: 'inline-block' }}></span>
             No credit card required
           </div>
         </div>
 
-        {/* MOCKUPS DROITE — inclinés */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', transform: 'perspective(1200px) rotateY(-3deg) rotateX(2deg)', transformOrigin: 'center top' }}>
+        {/* MOCKUPS DROITE */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', transform: 'perspective(1200px) rotateY(-3deg) rotateX(2deg)', transformOrigin: 'center top' }}>
 
           {/* DASHBOARD */}
           <div className="hero-card" style={{ animation: 'floatA 6s ease-in-out infinite' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', paddingBottom: '7px', borderBottom: '0.5px solid #f0f0f0' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <div style={{ width: '18px', height: '18px', background: '#111', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '8px', fontWeight: 800 }}>M</div>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: '#111' }}>Dashboard</span>
-                <span style={{ fontSize: '9px', color: '#bbb' }}>June 27, 2026</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '7px', paddingBottom: '6px', borderBottom: '0.5px solid #f0f0f0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <div style={{ width: '16px', height: '16px', background: '#111', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '7px', fontWeight: 800 }}>M</div>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: '#111' }}>Dashboard</span>
+                <span style={{ fontSize: '8px', color: '#bbb' }}>June 27, 2026</span>
               </div>
-              <span style={{ background: '#f0fdf4', color: '#16a34a', fontSize: '8px', padding: '2px 8px', borderRadius: '4px', fontWeight: 500, border: '0.5px solid #bbf7d0' }}>● Plan ready</span>
+              <span style={{ background: '#f0fdf4', color: '#16a34a', fontSize: '7px', padding: '2px 7px', borderRadius: '4px', fontWeight: 500, border: '0.5px solid #bbf7d0' }}>● Plan ready</span>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '6px', marginBottom: '10px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '5px', marginBottom: '8px' }}>
               <div className="hero-kpi"><div className="hero-kpi-l">Win rate</div><div className="hero-kpi-v" style={{ color: '#4ade80' }}>71%</div></div>
               <div className="hero-kpi"><div className="hero-kpi-l">Avg R</div><div className="hero-kpi-v" style={{ color: '#4ade80' }}>+1.8R</div></div>
               <div className="hero-kpi"><div className="hero-kpi-l">P. Factor</div><div className="hero-kpi-v" style={{ color: '#fff' }}>2.4</div></div>
               <div className="hero-kpi"><div className="hero-kpi-l">Discipline</div><div className="hero-kpi-v" style={{ color: '#4ade80' }}>84%</div></div>
             </div>
-            <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '10px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '7px' }}>
-                <span style={{ fontSize: '10px', fontWeight: 700, color: '#111' }}>Calendar · June 2026</span>
-                <div style={{ display: 'flex', gap: '8px', fontSize: '8px', color: '#aaa' }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><span style={{ width: 8, height: 8, borderRadius: '2px', background: '#c8f0d8', display: 'inline-block' }}></span>Win</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><span style={{ width: 8, height: 8, borderRadius: '2px', background: '#fdd0d0', display: 'inline-block' }}></span>Loss</span>
+            <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '7px', padding: '7px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+                <span style={{ fontSize: '9px', fontWeight: 700, color: '#111' }}>Calendar · June 2026</span>
+                <div style={{ display: 'flex', gap: '6px', fontSize: '7px', color: '#aaa' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><span style={{ width: 6, height: 6, borderRadius: '2px', background: '#c8f0d8', display: 'inline-block' }}></span>Win</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><span style={{ width: 6, height: 6, borderRadius: '2px', background: '#fdd0d0', display: 'inline-block' }}></span>Loss</span>
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '3px', marginBottom: '3px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '2px', marginBottom: '2px' }}>
                 {['M','T','W','T','F','S','S'].map((d, i) => (
-                  <div key={i} style={{ textAlign: 'center', fontSize: '8px', color: i >= 5 ? '#ddd' : '#bbb', fontWeight: 600 }}>{d}</div>
+                  <div key={i} style={{ textAlign: 'center', fontSize: '6px', color: i >= 5 ? '#ddd' : '#bbb', fontWeight: 600 }}>{d}</div>
                 ))}
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '3px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '2px' }}>
                 <div className="hero-cc hero-cn"></div>
                 <div className="hero-cc hero-cw">2<span className="hero-cr">+1.5</span></div>
                 <div className="hero-cc hero-cl">3<span className="hero-cr">-1.0</span></div>
@@ -177,44 +177,44 @@ export default function Home() {
                 <div className="hero-cc hero-cw" style={{ outline: '2px solid #888', outlineOffset: '-2px' }}>26<span className="hero-cr">+2.0</span></div>
                 <div className="hero-cc hero-cwe">27</div><div className="hero-cc hero-cwe">28</div>
               </div>
-              <div style={{ background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '8px', padding: '8px 10px', fontSize: '10px', color: '#15803d', marginTop: '8px', fontWeight: 500 }}>
-                AI Insight — Break & retest accounts for 78% of your wins this month. Focus exclusively on this setup.
+              <div style={{ background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '6px', padding: '6px 8px', fontSize: '9px', color: '#15803d', marginTop: '6px', fontWeight: 500 }}>
+                AI Insight — Break & retest: 78% of your wins this month. Focus on this setup.
               </div>
             </div>
           </div>
 
           {/* MORNING PLAN + MACRO */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
 
             <div className="hero-card" style={{ animation: 'floatB 7s 0.5s ease-in-out infinite' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '8px', paddingBottom: '6px', borderBottom: '0.5px solid #f0f0f0' }}>
-                <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: '#fff', fontWeight: 600 }}>M</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '7px', paddingBottom: '5px', borderBottom: '0.5px solid #f0f0f0' }}>
+                <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', color: '#fff', fontWeight: 600 }}>M</div>
                 <div>
                   <div style={{ fontSize: '10px', fontWeight: 600, color: '#111' }}>Morning Plan AI</div>
-                  <div style={{ fontSize: '8px', color: '#aaa' }}>June 27</div>
+                  <div style={{ fontSize: '7px', color: '#aaa' }}>June 27</div>
                 </div>
-                <div style={{ marginLeft: 'auto', background: '#f0fdf4', color: '#16a34a', fontSize: '7px', padding: '1px 6px', borderRadius: '3px', fontWeight: 600, border: '0.5px solid #bbf7d0' }}>Live</div>
+                <div style={{ marginLeft: 'auto', background: '#f0fdf4', color: '#16a34a', fontSize: '7px', padding: '1px 5px', borderRadius: '3px', fontWeight: 600, border: '0.5px solid #bbf7d0' }}>Live</div>
               </div>
-              <div className="hero-ai-b"><div className="hero-ai-lbl">MyTradePlan AI</div>GEX is negative and Volume Profile shows a B shape below VAL. What's your directional bias today?</div>
-              <div className="hero-usr-b">Bearish — short only on rejection.</div>
-              <div className="hero-ai-b"><div className="hero-ai-lbl">MyTradePlan AI</div>Good. B shape below VAL confirms distribution. Focus on Break & retest. No mean reversions today.</div>
-              <div style={{ background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '3px 8px 8px 8px', padding: '6px 8px', fontSize: '9px' }}>
-                <div style={{ color: '#16a34a', fontSize: '8px', fontWeight: 600, marginBottom: '2px' }}>Plan ready ✓</div>
+              <div className="hero-ai-b"><div className="hero-ai-lbl">MyTradePlan AI</div>GEX is negative and Volume Profile shows B shape below VAL. What's your bias today?</div>
+              <div className="hero-usr-b">Bearish — short only.</div>
+              <div className="hero-ai-b"><div className="hero-ai-lbl">MyTradePlan AI</div>Good. Focus on Break & retest. No mean reversions today.</div>
+              <div style={{ background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '3px 7px 7px 7px', padding: '5px 7px', fontSize: '8px' }}>
+                <div style={{ color: '#16a34a', fontSize: '7px', fontWeight: 600, marginBottom: '1px' }}>Plan ready ✓</div>
                 <span style={{ color: '#444' }}>Short only · Break & retest · Max 1R</span>
               </div>
             </div>
 
             <div className="hero-card" style={{ animation: 'floatC 6.5s 1s ease-in-out infinite' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', paddingBottom: '6px', borderBottom: '0.5px solid #f0f0f0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '7px', paddingBottom: '5px', borderBottom: '0.5px solid #f0f0f0' }}>
                 <div>
                   <div style={{ fontSize: '10px', fontWeight: 600, color: '#111' }}>Macro AI Briefing</div>
-                  <div style={{ fontSize: '8px', color: '#aaa' }}>Order Flow · Futures US</div>
+                  <div style={{ fontSize: '7px', color: '#aaa' }}>Order Flow · Futures US</div>
                 </div>
-                <span style={{ background: '#f5f5f5', border: '0.5px solid #e8e8e8', borderRadius: '4px', padding: '2px 6px', fontSize: '8px', color: '#888' }}>↺</span>
+                <span style={{ background: '#f5f5f5', border: '0.5px solid #e8e8e8', borderRadius: '3px', padding: '1px 5px', fontSize: '7px', color: '#888' }}>↺</span>
               </div>
-              <div style={{ fontSize: '9px', color: '#333', lineHeight: 1.6, marginBottom: '6px', paddingBottom: '6px', borderBottom: '0.5px solid #f5f5f5' }}><strong style={{ color: '#111' }}>Fed hawkish</strong> — No cut before Q4 2026. Dollar bid, risk appetite compressed.</div>
-              <div style={{ fontSize: '9px', color: '#333', lineHeight: 1.6, marginBottom: '6px', paddingBottom: '6px', borderBottom: '0.5px solid #f5f5f5' }}><strong style={{ color: '#111' }}>Quarter-end flows</strong> — Institutional rebalancing creates atypical volume. Avoid mean reversions.</div>
-              <div style={{ background: '#fffbeb', border: '0.5px solid #fde68a', borderRadius: '6px', padding: '6px 8px', fontSize: '9px', color: '#92400e', fontWeight: 600 }}>
+              <div style={{ fontSize: '9px', color: '#333', lineHeight: 1.6, marginBottom: '5px', paddingBottom: '5px', borderBottom: '0.5px solid #f5f5f5' }}><strong style={{ color: '#111' }}>Fed hawkish</strong> — No cut before Q4 2026. Dollar bid, risk appetite compressed.</div>
+              <div style={{ fontSize: '9px', color: '#333', lineHeight: 1.6, marginBottom: '5px', paddingBottom: '5px', borderBottom: '0.5px solid #f5f5f5' }}><strong style={{ color: '#111' }}>Quarter-end flows</strong> — Institutional rebalancing creates atypical volume. Avoid mean reversions.</div>
+              <div style={{ background: '#fffbeb', border: '0.5px solid #fde68a', borderRadius: '6px', padding: '5px 7px', fontSize: '9px', color: '#92400e', fontWeight: 600 }}>
                 Bias: BEARISH · Short only today
               </div>
             </div>
