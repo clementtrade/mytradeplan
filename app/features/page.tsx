@@ -14,12 +14,7 @@ export default function FeaturesPage() {
         .float-4 { animation: float 5s 1.5s ease-in-out infinite; }
         .nav-link { color: #666; text-decoration: none; font-size: 14px; transition: color 0.15s; }
         .nav-link:hover { color: #111; }
-        .btn-main {
-          background: #111; color: #fff; font-size: 0.9rem; font-weight: 500;
-          padding: 0.75rem 1.75rem; border-radius: 6px; text-decoration: none;
-          box-shadow: 0 4px 14px rgba(0,0,0,0.15);
-          transition: box-shadow 0.2s, transform 0.2s; display: inline-block;
-        }
+        .btn-main { background: #111; color: #fff; font-size: 0.9rem; font-weight: 500; padding: 0.75rem 1.75rem; border-radius: 6px; text-decoration: none; box-shadow: 0 4px 14px rgba(0,0,0,0.15); transition: box-shadow 0.2s, transform 0.2s; display: inline-block; }
         .btn-main:hover { box-shadow: 0 6px 22px rgba(0,0,0,0.25); transform: translateY(-1px); }
         .feat-section { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; padding: 6rem 3rem; border-bottom: 0.5px solid #f0f0f0; max-width: 1100px; margin: 0 auto; }
         .feat-section-bg { background: #f9f9f9; border-bottom: 0.5px solid #f0f0f0; }
@@ -29,16 +24,17 @@ export default function FeaturesPage() {
         .feat-point { display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #444; margin-bottom: 10px; }
         .feat-check { width: 22px; height: 22px; border-radius: 50%; background: #111; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
         .mockup-card { background: #fff; border: 0.5px solid #e8e8e8; border-radius: 16px; padding: 1.5rem; box-shadow: 0 8px 40px rgba(0,0,0,0.08); }
-        .chat-ai { background: #f5f5f5; border-radius: 4px 12px 12px 12px; padding: 12px 14px; margin-bottom: 8px; font-size: 13px; color: #333; max-width: 90%; }
-        .chat-user { background: #111; border-radius: 12px 4px 12px 12px; padding: 12px 14px; margin-bottom: 8px; font-size: 13px; color: #fff; max-width: 82%; margin-left: auto; }
-        .chat-tag { font-size: 10px; color: #aaa; margin-bottom: 4px; font-weight: 500; }
-        .chat-tag-u { font-size: 10px; color: rgba(255,255,255,0.4); margin-bottom: 4px; text-align: right; }
-        .trade-row { display: flex; align-items: center; padding: 10px 0; border-bottom: 0.5px solid #f5f5f5; }
-        .badge-l { background: #dcfce7; color: #16a34a; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 5px; }
-        .badge-s { background: #fee2e2; color: #dc2626; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 5px; }
-        .setup-row { padding: 10px 0; border-bottom: 0.5px solid #f5f5f5; }
-        .setup-row:last-child { border-bottom: none; }
-        .bar-bg { flex: 1; height: 6px; background: #f0f0f0; border-radius: 3px; }
+        .dash-kpi { background: #111; border-radius: 8px; padding: 9px 11px; }
+        .dash-kpi-l { font-size: 9px; color: #888; margin-bottom: 3px; }
+        .dash-kpi-v { font-size: 15px; font-weight: 700; font-family: monospace; }
+        .dash-badge-l { background: #dcfce7; color: #16a34a; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+        .dash-badge-s { background: #fee2e2; color: #dc2626; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+        .dash-cal { aspect-ratio: 1; border-radius: 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 9px; font-weight: 600; }
+        .cal-win { background: #c8f0d8; color: #15803d; }
+        .cal-loss { background: #fdd0d0; color: #dc2626; }
+        .cal-neu { background: #f5f5f5; color: #ccc; }
+        .cal-we { background: #f5f5f5; color: #ddd; opacity: 0.35; }
+        .cal-r { font-size: 7px; opacity: 0.8; margin-top: 1px; }
       `}</style>
 
       {/* Navbar */}
@@ -46,7 +42,7 @@ export default function FeaturesPage() {
         <a href="/" style={{ fontWeight: 700, fontSize: '1rem', color: '#111', textDecoration: 'none', letterSpacing: '-0.3px' }}>MyTradePlan</a>
         <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
           <a href="/features" className="nav-link" style={{ color: '#111', fontWeight: 600 }}>Fonctionnalités</a>
-          <a href="/#pricing" className="nav-link">Pricing</a>
+          <a href="/#pricing" className="nav-link">Tarifs</a>
           <a href="/login" className="nav-link">Connexion</a>
           <a href="/register" className="btn-main">Essayer gratuitement</a>
         </div>
@@ -56,7 +52,7 @@ export default function FeaturesPage() {
       <div style={{ textAlign: 'center', padding: '6rem 2rem 4rem', borderBottom: '0.5px solid #f0f0f0' }}>
         <div className="anim-1" style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '1.25rem' }}>Fonctionnalités</div>
         <h1 className="anim-2" style={{ fontSize: '3.5rem', fontWeight: 700, color: '#111', letterSpacing: '-1.5px', marginBottom: '1.25rem', lineHeight: 1.1 }}>
-          Tout ce dont tu as besoin<br />pour mieux trader
+          Tout ce dont vous avez besoin<br />pour mieux trader
         </h1>
         <p className="anim-3" style={{ fontSize: '1.125rem', color: '#888', maxWidth: '520px', margin: '0 auto 2rem', lineHeight: 1.7 }}>
           Chaque fonctionnalité a été pensée pour un trader actif qui veut progresser — pas juste collecter des données.
@@ -64,136 +60,232 @@ export default function FeaturesPage() {
         <a href="/register" className="btn-main anim-4" style={{ fontSize: '1rem', padding: '0.875rem 2rem' }}>Commencer gratuitement →</a>
       </div>
 
-      {/* Feature 1 — Plan du matin */}
+      {/* FEATURE 1 — Plan du matin */}
       <div className="feat-section">
         <div>
           <div className="feat-label">Plan du matin</div>
-          <h2 className="feat-h2">L'IA te guide.<br />Tu trades avec un plan.</h2>
-          <p className="feat-desc">Avant d'ouvrir tes charts, MyTradePlan te pose les bonnes questions. Tu réponds, l'IA structure ton plan et te donne une synthèse claire pour la session.</p>
-          <div className="feat-point"><div className="feat-check">✓</div>Personnalisé à ton marché et ta méthode</div>
-          <div className="feat-point"><div className="feat-check">✓</div>Questions ciblées sur le contexte du jour</div>
-          <div className="feat-point"><div className="feat-check">✓</div>Plan structuré en moins de 5 minutes</div>
+          <h2 className="feat-h2">L'IA vous guide.<br />Vous tradez avec un plan.</h2>
+          <p className="feat-desc">Avant d'ouvrir vos graphiques, MyTradePlan pose les bonnes questions. Biais, setup, zone d'invalidation — votre plan est structuré en 5 minutes.</p>
+          <div className="feat-point"><div className="feat-check">✓</div>Personnalisé à votre profil de trader</div>
+          <div className="feat-point"><div className="feat-check">✓</div>Questions centrées sur le contexte du jour</div>
+          <div className="feat-point"><div className="feat-check">✓</div>Résumé clair avant l'ouverture</div>
         </div>
-        <div className="mockup-card float">
-          <div style={{ fontSize: '11px', color: '#aaa', marginBottom: '12px', paddingBottom: '10px', borderBottom: '0.5px solid #f0f0f0', fontWeight: 500 }}>Plan du matin · Aujourd'hui</div>
-          <div className="chat-ai"><div className="chat-tag">MyTradePlan IA</div>Quel est ton biais directionnel pour cette session ?</div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}><div className="chat-user"><div className="chat-tag-u">Toi</div>Haussier si le marché tient ses supports.</div></div>
-          <div className="chat-ai"><div className="chat-tag">MyTradePlan IA</div>Quel setup vas-tu privilégier aujourd'hui ?</div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}><div className="chat-user"><div className="chat-tag-u">Toi</div>Break & retest en long.</div></div>
-          <div style={{ background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '4px 12px 12px 12px', padding: '12px 14px', fontSize: '13px', maxWidth: '90%', marginBottom: '10px' }}>
-            <div style={{ fontSize: '10px', color: '#16a34a', marginBottom: '4px', fontWeight: 600 }}>Plan structuré ✓</div>
-            <span style={{ color: '#555' }}>Biais haussier · Break & retest · Attends la confirmation avant d'entrer.</span>
+        <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.08)' }} className="float">
+          <div style={{ background: '#111', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ width: '26px', height: '26px', borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 700, color: '#111' }}>M</div>
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: '#fff' }}>MyTradePlan IA</div>
+              <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>Plan du matin · 08h14</div>
+            </div>
+            <div style={{ marginLeft: 'auto', background: '#22c55e', color: '#fff', fontSize: '9px', fontWeight: 600, padding: '3px 10px', borderRadius: '4px' }}>En direct</div>
           </div>
-          <div style={{ display: 'flex', gap: '8px', borderTop: '0.5px solid #f5f5f5', paddingTop: '10px' }}>
-            <div style={{ flex: 1, background: '#f5f5f5', borderRadius: '8px', padding: '10px 12px', fontSize: '12px', color: '#aaa' }}>Réponds ici...</div>
-            <div style={{ background: '#111', borderRadius: '8px', padding: '10px 16px', fontSize: '12px', color: '#fff' }}>→</div>
+          <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ background: '#f5f5f5', borderRadius: '3px 10px 10px 10px', padding: '9px 12px', fontSize: '12px', color: '#333', maxWidth: '88%' }}>
+              <div style={{ fontSize: '9px', color: '#16a34a', fontWeight: 600, marginBottom: '3px' }}>MyTradePlan IA</div>
+              Le GEX est-il positif ou négatif ce matin ?
+            </div>
+            <div style={{ background: '#111', borderRadius: '10px 3px 10px 10px', padding: '9px 12px', fontSize: '12px', color: '#fff', maxWidth: '78%', marginLeft: 'auto' }}>Négatif, gamma négatif.</div>
+            <div style={{ background: '#f5f5f5', borderRadius: '3px 10px 10px 10px', padding: '9px 12px', fontSize: '12px', color: '#333', maxWidth: '88%' }}>
+              <div style={{ fontSize: '9px', color: '#16a34a', fontWeight: 600, marginBottom: '3px' }}>MyTradePlan IA</div>
+              Forme du Volume Profile — D, B ou P ?
+            </div>
+            <div style={{ background: '#111', borderRadius: '10px 3px 10px 10px', padding: '9px 12px', fontSize: '12px', color: '#fff', maxWidth: '78%', marginLeft: 'auto' }}>Forme B, sous le VAL.</div>
+            <div style={{ background: '#f5f5f5', borderRadius: '3px 10px 10px 10px', padding: '9px 12px', fontSize: '12px', color: '#333', maxWidth: '88%' }}>
+              <div style={{ fontSize: '9px', color: '#16a34a', fontWeight: 600, marginBottom: '3px' }}>MyTradePlan IA</div>
+              Quel est votre risque max par trade aujourd'hui ?
+            </div>
+            <div style={{ background: '#111', borderRadius: '10px 3px 10px 10px', padding: '9px 12px', fontSize: '12px', color: '#fff', maxWidth: '78%', marginLeft: 'auto' }}>1R max, sans exception.</div>
+            <div style={{ background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '3px 10px 10px 10px', padding: '10px 12px', fontSize: '12px', maxWidth: '92%' }}>
+              <div style={{ color: '#16a34a', fontSize: '10px', fontWeight: 600, marginBottom: '4px' }}>Plan prêt ✓</div>
+              <span style={{ color: '#444' }}>Biais baissier · Short uniquement · Break & retest · Max 1R · Pas d'entrée avant 9h30 · Évitez les mean reversions.</span>
+            </div>
+          </div>
+          <div style={{ padding: '0 16px 14px' }}>
+            <div style={{ background: '#f9f9f9', borderRadius: '10px', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '12px', color: '#bbb' }}>Répondre ici...</span>
+              <div style={{ background: '#111', borderRadius: '7px', padding: '7px 16px', fontSize: '12px', color: '#fff' }}>→</div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Feature 2 — Journal */}
+      {/* FEATURE 2 — Dashboard */}
       <div className="feat-section-bg">
         <div className="feat-section">
-          <div className="mockup-card float-2">
-            <div style={{ fontSize: '11px', color: '#aaa', marginBottom: '12px', paddingBottom: '10px', borderBottom: '0.5px solid #f0f0f0', fontWeight: 500 }}>Derniers trades</div>
-            <div className="trade-row"><span className="badge-l">LONG</span><span style={{ color: '#555', flex: 1, margin: '0 12px', fontSize: '13px' }}>Break & retest</span><span style={{ color: '#16a34a', fontWeight: 700, fontFamily: 'monospace', fontSize: '14px' }}>+2.1R</span></div>
-            <div className="trade-row"><span className="badge-s">SHORT</span><span style={{ color: '#555', flex: 1, margin: '0 12px', fontSize: '13px' }}>Mean reversion</span><span style={{ color: '#dc2626', fontWeight: 700, fontFamily: 'monospace', fontSize: '14px' }}>-1.0R</span></div>
-            <div className="trade-row"><span className="badge-l">LONG</span><span style={{ color: '#555', flex: 1, margin: '0 12px', fontSize: '13px' }}>Continuation</span><span style={{ color: '#16a34a', fontWeight: 700, fontFamily: 'monospace', fontSize: '14px' }}>+3.2R</span></div>
-            <div className="trade-row" style={{ border: 'none' }}><span className="badge-l">LONG</span><span style={{ color: '#555', flex: 1, margin: '0 12px', fontSize: '13px' }}>Break & retest</span><span style={{ color: '#16a34a', fontWeight: 700, fontFamily: 'monospace', fontSize: '14px' }}>+1.8R</span></div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginTop: '14px' }}>
-              <div style={{ background: '#f9f9f9', borderRadius: '8px', padding: '10px', textAlign: 'center' }}><div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace' }}>75%</div><div style={{ fontSize: '10px', color: '#aaa', marginTop: '2px' }}>Win rate</div></div>
-              <div style={{ background: '#f9f9f9', borderRadius: '8px', padding: '10px', textAlign: 'center' }}><div style={{ fontSize: '18px', fontWeight: 700, color: '#16a34a', fontFamily: 'monospace' }}>+1.9R</div><div style={{ fontSize: '10px', color: '#aaa', marginTop: '2px' }}>R moyen</div></div>
-              <div style={{ background: '#f9f9f9', borderRadius: '8px', padding: '10px', textAlign: 'center' }}><div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace' }}>88%</div><div style={{ fontSize: '10px', color: '#aaa', marginTop: '2px' }}>Discipline</div></div>
+          <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.08)' }} className="float-2">
+            <div style={{ display: 'flex' }}>
+              {/* Mini sidebar */}
+              <div style={{ width: '40px', background: '#fff', borderRight: '0.5px solid #e8e8e8', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px 0', gap: '6px', flexShrink: 0 }}>
+                <div style={{ width: '22px', height: '22px', background: '#111', borderRadius: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '8px', fontWeight: 800, marginBottom: '4px' }}>M</div>
+                <div style={{ width: '28px', height: '28px', background: '#111', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '11px' }}>▦</div>
+                <div style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ddd', fontSize: '11px' }}>☀</div>
+                <div style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ddd', fontSize: '11px' }}>◈</div>
+                <div style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ddd', fontSize: '11px' }}>▤</div>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                {/* Header */}
+                <div style={{ height: '42px', borderBottom: '0.5px solid #e8e8e8', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ fontSize: '14px', fontWeight: 700, color: '#111' }}>Dashboard</span>
+                    <span style={{ fontSize: '10px', color: '#bbb' }}>27 juin 2026</span>
+                  </div>
+                  <span style={{ background: '#f0fdf4', color: '#16a34a', fontSize: '9px', padding: '3px 9px', borderRadius: '4px', border: '0.5px solid #bbf7d0', fontWeight: 600 }}>● Plan prêt</span>
+                </div>
+                <div style={{ padding: '10px 14px' }}>
+                  {/* KPIs */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '6px', marginBottom: '10px' }}>
+                    <div className="dash-kpi"><div className="dash-kpi-l">Réussite</div><div className="dash-kpi-v" style={{ color: '#4ade80' }}>71%</div></div>
+                    <div className="dash-kpi"><div className="dash-kpi-l">R moyen</div><div className="dash-kpi-v" style={{ color: '#4ade80' }}>+1.8R</div></div>
+                    <div className="dash-kpi"><div className="dash-kpi-l">F. profit</div><div className="dash-kpi-v" style={{ color: '#fff' }}>2.4</div></div>
+                    <div className="dash-kpi"><div className="dash-kpi-l">Discipline</div><div className="dash-kpi-v" style={{ color: '#4ade80' }}>84%</div></div>
+                  </div>
+                  {/* Trades + Setups */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
+                    <div style={{ background: '#f9f9f9', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '8px' }}>
+                      <div style={{ fontSize: '9px', fontWeight: 700, color: '#888', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.3px' }}>Trades récents</div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 0', borderBottom: '0.5px solid #f0f0f0' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span className="dash-badge-l">LONG</span><span style={{ fontSize: '9px', color: '#555' }}>B&R</span></div>
+                        <span style={{ fontSize: '9px', color: '#16a34a', fontFamily: 'monospace', fontWeight: 700 }}>+2.1R</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 0', borderBottom: '0.5px solid #f0f0f0' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span className="dash-badge-s">SHORT</span><span style={{ fontSize: '9px', color: '#555' }}>MR</span></div>
+                        <span style={{ fontSize: '9px', color: '#dc2626', fontFamily: 'monospace', fontWeight: 700 }}>-1.0R</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 0' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span className="dash-badge-l">LONG</span><span style={{ fontSize: '9px', color: '#555' }}>Cont.</span></div>
+                        <span style={{ fontSize: '9px', color: '#16a34a', fontFamily: 'monospace', fontWeight: 700 }}>+3.2R</span>
+                      </div>
+                    </div>
+                    <div style={{ background: '#f9f9f9', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '8px' }}>
+                      <div style={{ fontSize: '9px', fontWeight: 700, color: '#888', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.3px' }}>Par setup</div>
+                      <div style={{ marginBottom: '5px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}><span style={{ fontSize: '9px', color: '#111' }}>Break & retest</span><span style={{ fontSize: '8px', color: '#16a34a' }}>78%</span></div>
+                        <div style={{ height: '4px', background: '#e8e8e8', borderRadius: '2px' }}><div style={{ width: '78%', height: '100%', background: '#111', borderRadius: '2px' }}></div></div>
+                      </div>
+                      <div style={{ marginBottom: '5px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}><span style={{ fontSize: '9px', color: '#111' }}>Continuation</span><span style={{ fontSize: '8px', color: '#16a34a' }}>65%</span></div>
+                        <div style={{ height: '4px', background: '#e8e8e8', borderRadius: '2px' }}><div style={{ width: '65%', height: '100%', background: '#111', borderRadius: '2px' }}></div></div>
+                      </div>
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}><span style={{ fontSize: '9px', color: '#111' }}>Mean reversion</span><span style={{ fontSize: '8px', color: '#dc2626' }}>35%</span></div>
+                        <div style={{ height: '4px', background: '#e8e8e8', borderRadius: '2px' }}><div style={{ width: '35%', height: '100%', background: '#dc2626', borderRadius: '2px' }}></div></div>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Calendrier */}
+                  <div style={{ background: '#f9f9f9', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '8px', position: 'relative' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+                      <span style={{ fontSize: '9px', fontWeight: 700, color: '#111' }}>Calendrier · Juin 2026</span>
+                      <div style={{ display: 'flex', gap: '6px', fontSize: '8px', color: '#aaa' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><span style={{ width: 6, height: 6, borderRadius: '1px', background: '#c8f0d8', display: 'inline-block' }}></span>Gain</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><span style={{ width: 6, height: 6, borderRadius: '1px', background: '#fdd0d0', display: 'inline-block' }}></span>Perte</span>
+                      </div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '2px', marginBottom: '2px' }}>
+                      {['L','M','M','J','V','S','D'].map((d, i) => (
+                        <div key={i} style={{ textAlign: 'center', fontSize: '7px', color: i >= 5 ? '#ddd' : '#bbb', fontWeight: 600 }}>{d}</div>
+                      ))}
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '2px' }}>
+                      <div className="dash-cal cal-neu"></div>
+                      <div className="dash-cal cal-win">2<span className="cal-r">+1.5</span></div><div className="dash-cal cal-loss">3<span className="cal-r">-1.0</span></div><div className="dash-cal cal-win">4<span className="cal-r">+0.8</span></div><div className="dash-cal cal-win">5<span className="cal-r">+2.1</span></div><div className="dash-cal cal-we">6</div><div className="dash-cal cal-we">7</div>
+                      <div className="dash-cal cal-win">8<span className="cal-r">+1.3</span></div><div className="dash-cal cal-win" style={{ outline: '1.5px solid #111', outlineOffset: '-1px' }}>9<span className="cal-r">+2.1</span></div><div className="dash-cal cal-loss">10<span className="cal-r">-0.5</span></div><div className="dash-cal cal-win">11<span className="cal-r">+0.7</span></div><div className="dash-cal cal-win">12<span className="cal-r">+1.1</span></div><div className="dash-cal cal-we">13</div><div className="dash-cal cal-we">14</div>
+                      <div className="dash-cal cal-neu">15</div><div className="dash-cal cal-win">16<span className="cal-r">+1.8</span></div><div className="dash-cal cal-loss">17<span className="cal-r">-1.2</span></div><div className="dash-cal cal-win">18<span className="cal-r">+0.9</span></div><div className="dash-cal cal-win">19<span className="cal-r">+2.3</span></div><div className="dash-cal cal-we">20</div><div className="dash-cal cal-we">21</div>
+                      <div className="dash-cal cal-win">22<span className="cal-r">+1.5</span></div><div className="dash-cal cal-win">23<span className="cal-r">+2.3</span></div><div className="dash-cal cal-loss">24<span className="cal-r">-1.0</span></div><div className="dash-cal cal-win">25<span className="cal-r">+0.7</span></div><div className="dash-cal cal-win" style={{ outline: '1px solid #888', outlineOffset: '-1px' }}>26<span className="cal-r">+2.0</span></div><div className="dash-cal cal-we">27</div><div className="dash-cal cal-we">28</div>
+                    </div>
+                    {/* Mini modal IA */}
+                    <div style={{ position: 'absolute', right: '6px', top: '6px', background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '8px 10px', width: '140px', boxShadow: '0 4px 16px rgba(0,0,0,0.1)', zIndex: 10 }}>
+                      <div style={{ fontSize: '10px', fontWeight: 700, color: '#111' }}>9 juin · +2.1R</div>
+                      <div style={{ fontSize: '8px', color: '#aaa', marginBottom: '4px' }}>3 trades</div>
+                      <div style={{ fontSize: '8px', color: '#16a34a', fontWeight: 600, marginBottom: '2px' }}>Analyse IA</div>
+                      <div style={{ fontSize: '8px', color: '#555', lineHeight: 1.5 }}>Vos shorts alignés avec le flux. Évitez le mean reversion quand le GEX est négatif.</div>
+                      <div style={{ fontSize: '8px', fontWeight: 600, color: '#d97706', marginTop: '3px' }}>Discipline : 67%</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           <div>
-            <div className="feat-label">Journal de trades</div>
-            <h2 className="feat-h2">Chaque trade documenté.<br />Chaque erreur analysée.</h2>
-            <p className="feat-desc">Enregistre contexte, zone, cible, confirmation et résultat en R. Identifie tes patterns et améliore ta discipline trade après trade.</p>
-            <div className="feat-point"><div className="feat-check">✓</div>Résultat en R par trade</div>
-            <div className="feat-point"><div className="feat-check">✓</div>Suivi du respect du plan</div>
-            <div className="feat-point"><div className="feat-check">✓</div>Historique complet et détaillé</div>
+            <div className="feat-label">Dashboard IA</div>
+            <h2 className="feat-h2">Votre trading,<br />enfin visible.</h2>
+            <p className="feat-desc">Un tableau de bord complet pour suivre vos performances en temps réel. Cliquez sur n'importe quel jour du calendrier et obtenez une analyse IA instantanée de votre session.</p>
+            <div className="feat-point"><div className="feat-check">✓</div>KPIs en temps réel — réussite, R moyen, discipline</div>
+            <div className="feat-point"><div className="feat-check">✓</div>Calendrier visuel vert/rouge par session</div>
+            <div className="feat-point"><div className="feat-check">✓</div>Analyse IA au clic sur chaque journée</div>
+            <div style={{ marginTop: '1.5rem', background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '10px', padding: '14px 16px' }}>
+              <div style={{ fontSize: '11px', fontWeight: 700, color: '#16a34a', marginBottom: '4px' }}>Ce que vos concurrents ne voient pas</div>
+              <div style={{ fontSize: '13px', color: '#444', lineHeight: 1.6 }}>MyTradePlan identifie automatiquement vos patterns — les jours où vous sur-tradez, les setups que vous évitez, les sessions où vous êtes hors plan.</div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Feature 3 — Stats */}
-      <div className="feat-section">
+      {/* FEATURE 3 — Briefing Macro */}
+      <div className="feat-section" style={{ borderBottom: 'none' }}>
         <div>
-          <div className="feat-label">Stats & performance</div>
-          <h2 className="feat-h2">Trouve ton edge.<br />Arrête de deviner.</h2>
-          <p className="feat-desc">Win rate, R moyen, profit factor — et la performance par setup pour savoir exactement quelles configurations te font gagner de l'argent.</p>
-          <div className="feat-point"><div className="feat-check">✓</div>Performance par type de setup</div>
-          <div className="feat-point"><div className="feat-check">✓</div>Courbe de capital en R cumulé</div>
-          <div className="feat-point"><div className="feat-check">✓</div>Insight IA sur tes forces et faiblesses</div>
+          <div className="feat-label">Briefing Macro IA</div>
+          <h2 className="feat-h2">Le contexte macro<br />en 30 secondes.</h2>
+          <p className="feat-desc">Chaque matin, MyTradePlan analyse les données macro, les catalyseurs du jour et les flux institutionnels pour vous donner un biais directionnel clair et personnalisé.</p>
+          <div className="feat-point"><div className="feat-check">✓</div>Analyse Fed, inflation, flux institutionnels</div>
+          <div className="feat-point"><div className="feat-check">✓</div>Catalyseurs économiques du jour avec horaires</div>
+          <div className="feat-point"><div className="feat-check">✓</div>Biais directionnel avec score de confiance IA</div>
         </div>
-        <div className="mockup-card float-3">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '16px' }}>
-            <div style={{ background: '#f9f9f9', borderRadius: '8px', padding: '10px', textAlign: 'center' }}><div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace' }}>71%</div><div style={{ fontSize: '10px', color: '#aaa', marginTop: '2px' }}>Win rate</div></div>
-            <div style={{ background: '#f9f9f9', borderRadius: '8px', padding: '10px', textAlign: 'center' }}><div style={{ fontSize: '18px', fontWeight: 700, color: '#16a34a', fontFamily: 'monospace' }}>+1.8R</div><div style={{ fontSize: '10px', color: '#aaa', marginTop: '2px' }}>R moyen</div></div>
-            <div style={{ background: '#f9f9f9', borderRadius: '8px', padding: '10px', textAlign: 'center' }}><div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace' }}>84%</div><div style={{ fontSize: '10px', color: '#aaa', marginTop: '2px' }}>Discipline</div></div>
-          </div>
-          <div style={{ fontSize: '11px', color: '#aaa', marginBottom: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Performance par setup</div>
-          {[
-            { name: 'Break & retest', wr: 78, r: '+2.4R', pos: true },
-            { name: 'Continuation', wr: 65, r: '+1.8R', pos: true },
-            { name: 'Mean reversion', wr: 35, r: '-0.4R', pos: false },
-          ].map((s, i) => (
-            <div key={i} className="setup-row">
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                <span style={{ fontSize: '13px', fontWeight: 600, color: '#111' }}>{s.name}</span>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: s.pos ? '#16a34a' : '#dc2626', fontFamily: 'monospace' }}>{s.r} · {s.wr}%</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div className="bar-bg"><div style={{ width: `${s.wr}%`, height: '100%', background: s.pos ? '#16a34a' : '#dc2626', borderRadius: '3px' }}></div></div>
-              </div>
+        <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.08)' }} className="float-3">
+          <div style={{ background: '#111', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>Briefing Macro IA</div>
+              <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>Généré pour votre profil · Order Flow · Futures US</div>
             </div>
-          ))}
-          <div style={{ background: '#fffbeb', border: '0.5px solid #fde68a', borderRadius: '8px', padding: '10px 12px', marginTop: '12px', fontSize: '12px', color: '#92400e' }}>
-            <strong>💡 Insight</strong> — Tu performes 2x mieux sur Break & retest. C'est ton edge — concentre-toi dessus.
+            <div style={{ background: 'rgba(255,255,255,0.1)', border: '0.5px solid rgba(255,255,255,0.15)', borderRadius: '6px', padding: '5px 12px', fontSize: '10px', color: 'rgba(255,255,255,0.6)' }}>↺ Actualiser</div>
           </div>
-        </div>
-      </div>
-
-      {/* Feature 4 — Briefing Macro */}
-      <div className="feat-section-bg">
-        <div className="feat-section" style={{ borderBottom: 'none' }}>
-          <div style={{ background: '#0A0E1A', borderRadius: '16px', padding: '1.75rem', boxShadow: '0 8px 40px rgba(0,0,0,0.15)' }} className="float-4">
-            <div style={{ color: '#10B981', fontSize: '10px', fontFamily: 'monospace', letterSpacing: '1.5px', marginBottom: '14px' }}>DAILY BRIEFING MACRO · FUTURES US</div>
-            <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '11px', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>🌍 Contexte macro</div>
-            <div style={{ color: 'rgba(229,231,235,0.85)', fontSize: '13px', lineHeight: 1.7, marginBottom: '16px' }}>Fed en attente prolongée · PMI Flash aujourd'hui 15h30 · DXY stable à 104 · Earnings season en cours</div>
-            <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '11px', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>📅 Catalyseurs du jour</div>
-            <div style={{ color: 'rgba(229,231,235,0.85)', fontSize: '13px', lineHeight: 1.7, marginBottom: '16px' }}>08h45 ET — PMI Flash Manufacturing ⚡ Haute importance<br />10h00 ET — Ventes de logements neufs</div>
-            <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '11px', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>🎯 Biais directionnel</div>
-            <div style={{ background: 'rgba(16,185,129,0.1)', border: '0.5px solid rgba(16,185,129,0.3)', borderRadius: '8px', padding: '10px 14px', color: '#10B981', fontSize: '13px', lineHeight: 1.6 }}>
-              Haussier si PMI &gt; 50 · Surveille la réaction à 08h45 ET avant d'engager
+          <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ paddingBottom: '10px', borderBottom: '0.5px solid #f0f0f0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px' }}>
+                <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#dc2626', flexShrink: 0 }}></div>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: '#111' }}>Fed hawkish — Contexte macro</span>
+              </div>
+              <div style={{ fontSize: '11px', color: '#555', lineHeight: 1.7, paddingLeft: '15px' }}>Les minutes du FOMC de juin confirment une majorité hawkish persistante. Les attentes de baisse révisées à une seule coupe fin 2026, comprimant l'appétit pour le risque.</div>
             </div>
-          </div>
-          <div>
-            <div style={{ background: '#111', color: '#fff', fontSize: '11px', padding: '4px 12px', borderRadius: '20px', display: 'inline-block', marginBottom: '1rem', fontWeight: 500 }}>Pro</div>
-            <div className="feat-label">Briefing Macro IA</div>
-            <h2 className="feat-h2">Le contexte macro.<br />Personnalisé à ton profil.</h2>
-            <p className="feat-desc">Un clic chaque matin et l'IA génère un briefing macro complet basé sur ton marché — Fed, données éco, catalyseurs du jour, biais directionnel sans niveaux techniques.</p>
-            <div className="feat-point"><div className="feat-check">✓</div>Adapté à ton marché (indices, forex, commodities)</div>
-            <div className="feat-point"><div className="feat-check">✓</div>Catalyseurs du jour avec horaires précis</div>
-            <div className="feat-point"><div className="feat-check">✓</div>Biais macro argumenté — sans niveaux techniques</div>
+            <div style={{ paddingBottom: '10px', borderBottom: '0.5px solid #f0f0f0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px' }}>
+                <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#f59e0b', flexShrink: 0 }}></div>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: '#111' }}>Rééquilibrage fin de trimestre</span>
+              </div>
+              <div style={{ fontSize: '11px', color: '#555', lineHeight: 1.7, paddingLeft: '15px' }}>J-3 avant la clôture du Q2. Le rééquilibrage institutionnel génère des flux atypiques. Restez discipliné, évitez les mean reversions.</div>
+            </div>
+            <div style={{ paddingBottom: '10px', borderBottom: '0.5px solid #f0f0f0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px' }}>
+                <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#3b82f6', flexShrink: 0 }}></div>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: '#111' }}>Catalyseurs du jour</span>
+              </div>
+              <div style={{ fontSize: '11px', color: '#555', lineHeight: 1.7, paddingLeft: '15px' }}>PCE Core à 14h30 (indicateur préféré de la Fed). Toute surprise à la hausse renforcera les craintes hawkish. UMich Sentiment Final à 16h00.</div>
+            </div>
+            <div style={{ background: '#fffbeb', border: '0.5px solid #fde68a', borderRadius: '10px', padding: '12px 14px' }}>
+              <div style={{ fontSize: '10px', color: '#d97706', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '5px' }}>Biais directionnel</div>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: '#92400e' }}>BAISSIER · Short uniquement · Évitez les mean reversions · Liquidité réduite après 19h00</div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+              <div style={{ background: '#f9f9f9', borderRadius: '8px', padding: '10px', textAlign: 'center' }}><div style={{ fontSize: '12px', fontWeight: 700, color: '#dc2626', fontFamily: 'monospace' }}>BAISSIER</div><div style={{ fontSize: '9px', color: '#aaa', marginTop: '3px' }}>Biais macro</div></div>
+              <div style={{ background: '#f9f9f9', borderRadius: '8px', padding: '10px', textAlign: 'center' }}><div style={{ fontSize: '12px', fontWeight: 700, color: '#111', fontFamily: 'monospace' }}>78%</div><div style={{ fontSize: '9px', color: '#aaa', marginTop: '3px' }}>Confiance IA</div></div>
+              <div style={{ background: '#f9f9f9', borderRadius: '8px', padding: '10px', textAlign: 'center' }}><div style={{ fontSize: '12px', fontWeight: 700, color: '#f59e0b', fontFamily: 'monospace' }}>2 données</div><div style={{ fontSize: '9px', color: '#aaa', marginTop: '3px' }}>Catalyseurs</div></div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* CTA final */}
-      <div style={{ textAlign: 'center', padding: '5rem 2rem', background: '#fff', borderTop: '0.5px solid #e8e8e8' }}>
+      <div style={{ textAlign: 'center', padding: '5rem 2rem', background: '#f9f9f9', borderTop: '0.5px solid #e8e8e8' }}>
         <h2 style={{ fontSize: '2rem', fontWeight: 700, color: '#111', letterSpacing: '-0.5px', marginBottom: '0.75rem' }}>Prêt à trader avec un plan ?</h2>
-        <p style={{ color: '#888', fontSize: '1rem', marginBottom: '2rem' }}>Commence gratuitement, upgrade quand tu es prêt.</p>
+        <p style={{ color: '#888', fontSize: '1rem', marginBottom: '2rem' }}>Commencez gratuitement, passez au Pro quand vous êtes prêt.</p>
         <a href="/register" className="btn-main" style={{ fontSize: '1rem', padding: '0.875rem 2rem' }}>Commencer gratuitement →</a>
       </div>
 
       {/* Footer */}
       <footer style={{ borderTop: '0.5px solid #e8e8e8', padding: '1.5rem 2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontWeight: 700, fontSize: '0.875rem', color: '#111' }}>MyTradePlan</span>
-        <span style={{ fontSize: '0.8rem', color: '#aaa' }}>© 2025 MyTradePlan · Tous droits réservés</span>
+        <span style={{ fontSize: '0.8rem', color: '#aaa' }}>© 2026 MyTradePlan · Tous droits réservés</span>
       </footer>
-
     </main>
   )
 }
