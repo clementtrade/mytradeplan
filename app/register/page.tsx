@@ -14,11 +14,17 @@ export default function RegisterPage() {
   async function handleRegister() {
     setLoading(true)
     setError('')
-    const { error } = await supabase.auth.signUp({ email, password })
+    const { data, error } = await supabase.auth.signUp({ email, password })
     if (error) {
       setError(error.message)
       setLoading(false)
     } else {
+      if (data.user) {
+        await supabase
+          .from('profiles')
+          .update({ email: email })
+          .eq('id', data.user.id)
+      }
       router.push('/onboarding')
     }
   }
@@ -69,14 +75,11 @@ export default function RegisterPage() {
         .register-btn:disabled { opacity: 0.5; cursor: not-allowed; }
       `}</style>
 
-      {/* Logo */}
       <a href="/" style={{ textDecoration: 'none', marginBottom: '2rem' }}>
         <span style={{ fontWeight: 700, fontSize: '1rem', color: '#111', letterSpacing: '-0.3px' }}>MyTradePlan</span>
       </a>
 
-      {/* Card */}
       <div className="register-card" style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '14px', padding: '2.25rem', width: '100%', maxWidth: '400px', boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
-
         <h1 style={{ color: '#111', fontSize: '22px', fontWeight: 700, marginBottom: '0.4rem', letterSpacing: '-0.5px' }}>Créer un compte</h1>
         <p style={{ color: '#888', fontSize: '14px', marginBottom: '1.75rem', lineHeight: 1.5 }}>Commence à structurer ton trading dès aujourd'hui.</p>
 
@@ -118,13 +121,11 @@ export default function RegisterPage() {
           Déjà un compte ?{' '}
           <Link href="/login" style={{ color: '#111', fontWeight: 600, textDecoration: 'none' }}>Se connecter</Link>
         </p>
-
       </div>
 
       <p style={{ color: '#ccc', fontSize: '12px', marginTop: '2rem' }}>
-        © 2025 MyTradePlan · Tous droits réservés
+        © 2026 MyTradePlan · Tous droits réservés
       </p>
-
     </main>
   )
 }
