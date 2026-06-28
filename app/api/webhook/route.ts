@@ -29,8 +29,11 @@ export async function POST(req: NextRequest) {
     const email = session.customer_details?.email
 
     if (email) {
-      // Vérifie si l'utilisateur existe déjà
-      const { data: existingUsers } = await supabase.auth.admin.listUsers()
+      // Cherche par email directement
+      const { data: existingUsers } = await supabase.auth.admin.listUsers({
+        page: 1,
+        perPage: 1000,
+      })
       const existingUser = existingUsers?.users?.find(u => u.email === email)
 
       if (existingUser) {
@@ -40,15 +43,17 @@ export async function POST(req: NextRequest) {
           .update({ is_pro: true, stripe_customer_id: customerId, email: email })
           .eq('id', existingUser.id)
       } else {
-        // Nouvel utilisateur → crée le compte
-        const { data: newUser } = await supabase.auth.admin.createUser({
+        // Nouvel utilisateur → crée le compte Auth
+        const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
           email: email,
           email_confirm: true,
         })
 
+        console.log('createUser result:', newUser, createError)
+
         if (newUser?.user) {
-          // Crée la ligne dans profiles
-          await supabase
+          // Crée le profil
+          const { error: insertError } = await supabase
             .from('profiles')
             .insert({
               id: newUser.user.id,
@@ -57,7 +62,9 @@ export async function POST(req: NextRequest) {
               stripe_customer_id: customerId,
             })
 
-          // Envoie email pour définir mot de passe
+          console.log('insert profile error:', insertError)
+
+          // Envoie email reset password
           await supabase.auth.admin.generateLink({
             type: 'recovery',
             email: email,
