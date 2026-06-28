@@ -100,9 +100,20 @@ export default function PricingPage() {
               <div className="plan-feature-on"><div className="plan-check">✓</div><strong>Briefing Macro IA</strong></div>
               <div className="plan-feature-on"><div className="plan-check">✓</div><strong>IA Insight calendrier</strong></div>
             </div>
-            <a href="/register" style={{ display: 'block', textAlign: 'center', padding: '0.875rem', background: '#111', color: '#fff', borderRadius: '8px', fontSize: '13px', textDecoration: 'none', fontWeight: 600 }}>
+            <button
+              onClick={async () => {
+                const res = await fetch('/api/checkout', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ plan: annual ? 'annual' : 'monthly' }),
+                })
+                const data = await res.json()
+                if (data.url) window.location.href = data.url
+              }}
+              style={{ display: 'block', width: '100%', textAlign: 'center', padding: '0.875rem', background: '#111', color: '#fff', borderRadius: '8px', fontSize: '13px', border: 'none', cursor: 'pointer', fontWeight: 600 }}
+            >
               Essayer 7 jours gratuitement →
-            </a>
+            </button>
           </div>
         </div>
 
