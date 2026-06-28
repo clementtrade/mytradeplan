@@ -29,10 +29,37 @@ export async function POST(req: NextRequest) {
     const email = session.customer_details?.email
 
     if (email) {
-      await supabase
-        .from('profiles')
-        .update({ is_pro: true, stripe_customer_id: customerId })
-        .eq('email', email)
+      // Vérifie si l'utilisateur existe déjà dans Supabase Auth
+      const { data: existingUsers } = await supabase.auth.admin.listUsers()
+      const existingUser = existingUsers?.users?.find(u => u.email === email)
+
+      if (existingUser) {
+        // Utilisateur existant → met à jour is_pro
+        await supabase
+          .from('profiles')
+          .update({ is_pro: true, stripe_customer_id: customerId, email: email })
+          .eq('id', existingUser.id)
+      } else {
+        // Nouvel utilisateur → crée le compte automatiquement
+        const { data: newUser } = await supabase.auth.admin.createUser({
+          email: email,
+          email_confirm: true,
+        })
+
+        if (newUser?.user) {
+          // Met à jour le profil
+          await supabase
+            .from('profiles')
+            .update({ is_pro: true, stripe_customer_id: customerId, email: email })
+            .eq('id', newUser.user.id)
+
+          // Envoie un email pour définir le mot de passe
+          await supabase.auth.admin.generateLink({
+            type: 'recovery',
+            email: email,
+          })
+        }
+      }
     }
   }
 
