@@ -477,7 +477,20 @@ export default function Home() {
               <div className="plan-feature-on"><div className="plan-check">✓</div><strong>Briefing Macro IA</strong></div>
               <div className="plan-feature-on"><div className="plan-check">✓</div><strong>Insight IA calendrier</strong></div>
             </div>
-            <a href="/register" style={{ display: 'block', textAlign: 'center', padding: '0.75rem', background: '#111', color: '#fff', borderRadius: '8px', fontSize: '0.875rem', textDecoration: 'none', fontWeight: 600 }}>Essayer gratuitement 7 jours →</a>
+            <button
+              onClick={async () => {
+                const res = await fetch('/api/checkout', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ plan: annual ? 'annual' : 'monthly' }),
+                })
+                const data = await res.json()
+                if (data.url) window.location.href = data.url
+              }}
+              style={{ display: 'block', width: '100%', textAlign: 'center', padding: '0.75rem', background: '#111', color: '#fff', borderRadius: '8px', fontSize: '0.875rem', border: 'none', cursor: 'pointer', fontWeight: 600 }}
+            >
+              Essayer gratuitement 7 jours →
+            </button>
           </div>
         </div>
         <div style={{ marginTop: '1.5rem', fontSize: '12px', color: '#aaa' }}>Sans carte bancaire · Résiliez à tout moment</div>
