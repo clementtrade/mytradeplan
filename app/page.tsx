@@ -437,7 +437,7 @@ export default function Home() {
             <div className="toggle-knob"></div>
           </button>
           <span className={`toggle-label${annual ? ' active' : ''}`}>Annuel</span>
-          {annual && <span className="save-badge">-17% · économisez 60€/an</span>}
+          {annual && <span className="save-badge">Économisez 60€/an</span>}
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', textAlign: 'left' }}>
           <div className="plan-card" style={{ border: '0.5px solid #e8e8e8' }}>
@@ -460,13 +460,13 @@ export default function Home() {
             <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '4px' }}>Pro</div>
             <div style={{ fontSize: '12px', color: '#888', marginBottom: '1rem' }}>Pour le trader sérieux</div>
             <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', marginBottom: '4px' }}>
-              <div style={{ fontSize: '2rem', fontWeight: 700, lineHeight: 1 }}>{annual ? '24,99€' : '29,99€'}</div>
+              <div style={{ fontSize: '2rem', fontWeight: 700, lineHeight: 1 }}>{annual ? '14,99€' : '19,99€'}</div>
               <div style={{ fontSize: '1rem', color: '#888', marginBottom: '2px' }}>/mois</div>
             </div>
             {annual ? (
-              <div style={{ fontSize: '11px', color: '#16a34a', fontWeight: 600, marginBottom: '4px' }}>299,88€/an · économisez 60€</div>
+              <div style={{ fontSize: '11px', color: '#16a34a', fontWeight: 600, marginBottom: '4px' }}>179,99€/an · économisez 60€</div>
             ) : (
-              <div style={{ fontSize: '11px', color: '#aaa', marginBottom: '4px' }}>ou 24,99€/mois facturé annuellement</div>
+              <div style={{ fontSize: '11px', color: '#aaa', marginBottom: '4px' }}>ou 14,99€/mois facturé annuellement</div>
             )}
             <div style={{ fontSize: '12px', color: '#aaa', marginBottom: '1.25rem' }}>7 jours gratuits · sans CB</div>
             <div style={{ borderTop: '0.5px solid #f0f0f0', paddingTop: '1rem', marginBottom: '1rem' }}>
@@ -495,48 +495,6 @@ export default function Home() {
         <span style={{ fontWeight: 700, fontSize: '0.875rem', color: '#111' }}>MyTradePlan</span>
         <span style={{ fontSize: '0.8rem', color: '#aaa' }}>© 2026 MyTradePlan · Tous droits réservés</span>
       </footer>
-
-      <script dangerouslySetInnerHTML={{ __html: `
-        (function() {
-          var cursor = document.getElementById('dash-cursor');
-          var modal = document.getElementById('dash-modal');
-          var target = document.getElementById('target-cell');
-          var wrap = document.getElementById('dash-wrap');
-          if(!cursor||!modal||!target||!wrap) return;
-          function animate() {
-            var wrapR = wrap.getBoundingClientRect();
-            var calCard = target.closest('[style*="position: relative"]');
-            if(!calCard) return;
-            var calR = calCard.getBoundingClientRect();
-            var targetR = target.getBoundingClientRect();
-            var startX = calR.left - wrapR.left + 20;
-            var startY = calR.top - wrapR.top + 60;
-            var endX = targetR.left - wrapR.left + targetR.width/2 - 2;
-            var endY = targetR.top - wrapR.top + targetR.height/2 - 2;
-            modal.style.display = 'none';
-            cursor.style.opacity = '1';
-            cursor.style.left = startX + 'px';
-            cursor.style.top = startY + 'px';
-            setTimeout(function() {
-              cursor.style.left = endX + 'px';
-              cursor.style.top = endY + 'px';
-            }, 300);
-            setTimeout(function() {
-              cursor.style.transform = 'scale(0.8)';
-              setTimeout(function() {
-                cursor.style.transform = 'scale(1)';
-                modal.style.display = 'block';
-                setTimeout(function() {
-                  modal.style.display = 'none';
-                  cursor.style.opacity = '0';
-                  setTimeout(animate, 1500);
-                }, 4000);
-              }, 150);
-            }, 1600);
-          }
-          setTimeout(animate, 1000);
-        })();
-      `}} />
     </main>
   )
 }

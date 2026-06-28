@@ -32,7 +32,7 @@ export default function PricingPage() {
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
           <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '0.5rem' }}>Tarifs</div>
           <h1 style={{ fontSize: '2rem', fontWeight: 700, color: '#111', letterSpacing: '-0.5px', marginBottom: '0.5rem' }}>Passe au niveau supérieur</h1>
-          <p style={{ fontSize: '14px', color: '#888' }}>Débrief Macro IA, IA Insight, analyses avancées — tout pour progresser.</p>
+          <p style={{ fontSize: '14px', color: '#888' }}>Briefing Macro IA, IA Insight, analyses avancées — tout pour progresser.</p>
         </div>
 
         {/* Toggle */}
@@ -44,7 +44,7 @@ export default function PricingPage() {
           <span style={{ fontSize: '13px', color: annual ? '#111' : '#888', fontWeight: annual ? 600 : 400 }}>Annuel</span>
           {annual && (
             <span style={{ background: '#f0fdf4', color: '#16a34a', border: '0.5px solid #86efac', borderRadius: '20px', padding: '2px 10px', fontSize: '11px', fontWeight: 600 }}>
-              -17% · économise 60€/an
+              Économisez 60€/an
             </span>
           )}
         </div>
@@ -78,17 +78,17 @@ export default function PricingPage() {
             <div style={{ fontSize: '12px', color: '#888', marginBottom: '1.25rem' }}>Pour le trader sérieux</div>
             <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', marginBottom: '4px' }}>
               <div style={{ fontSize: '2.2rem', fontWeight: 700, color: '#111', lineHeight: 1 }}>
-                {annual ? '24,99€' : '29,99€'}
+                {annual ? '14,99€' : '19,99€'}
               </div>
               <div style={{ fontSize: '1rem', color: '#888', marginBottom: '2px' }}>/mois</div>
             </div>
             {annual ? (
               <div style={{ fontSize: '11px', color: '#16a34a', fontWeight: 600, marginBottom: '4px' }}>
-                soit 299,88€ facturés annuellement · économise 60€
+                soit 179,99€ facturés annuellement · économisez 60€
               </div>
             ) : (
               <div style={{ fontSize: '11px', color: '#aaa', marginBottom: '4px' }}>
-                ou 24,99€/mois en choisissant l'annuel
+                ou 14,99€/mois en choisissant l'annuel
               </div>
             )}
             <div style={{ fontSize: '12px', color: '#aaa', marginBottom: '1.5rem' }}>7 jours gratuits · sans carte bancaire</div>
@@ -110,13 +110,13 @@ export default function PricingPage() {
           Pas de carte bancaire requise · Annule à tout moment · Support inclus
         </div>
 
-        {/* FAQ rapide */}
+        {/* FAQ */}
         <div style={{ marginTop: '3rem', borderTop: '0.5px solid #e8e8e8', paddingTop: '2rem' }}>
           <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#111', marginBottom: '1.25rem' }}>Questions fréquentes</h3>
           {[
-            { q: 'Puis-je annuler à tout moment ?', r: 'Oui, sans engagement ni frais. Tu gardes l\'accès Pro jusqu\'à la fin de la période payée.' },
-            { q: 'Que se passe-t-il après les 7 jours gratuits ?', r: 'Tu es automatiquement basculé sur le plan Gratuit, sans être débité. Tu choisis ensuite si tu veux continuer en Pro.' },
-            { q: 'La facturation annuelle, c\'est quoi ?', r: `Tu paies 299,88€ une fois par an au lieu de 29,99€ × 12 = 359,88€. Tu économises 60€.` },
+            { q: 'Puis-je annuler à tout moment ?', r: 'Oui, sans engagement ni frais. Vous gardez l\'accès Pro jusqu\'à la fin de la période payée.' },
+            { q: 'Que se passe-t-il après les 7 jours gratuits ?', r: 'Vous êtes automatiquement basculé sur le plan Gratuit, sans être débité. Vous choisissez ensuite si vous voulez continuer en Pro.' },
+            { q: 'La facturation annuelle, c\'est quoi ?', r: 'Vous payez 179,99€ une fois par an au lieu de 19,99€ × 12 = 239,88€. Vous économisez 60€.' },
           ].map((faq, i) => (
             <div key={i} style={{ marginBottom: '1rem', padding: '1rem', background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '10px' }}>
               <div style={{ fontSize: '13px', fontWeight: 600, color: '#111', marginBottom: '4px' }}>{faq.q}</div>
@@ -124,7 +124,6 @@ export default function PricingPage() {
             </div>
           ))}
         </div>
-
       </div>
     </main>
   )
