@@ -18,6 +18,7 @@ export default function AccountPage() {
   const [savingPassword, setSavingPassword] = useState(false)
   const [passwordSaved, setPasswordSaved] = useState(false)
   const [passwordError, setPasswordError] = useState('')
+  const [portalLoading, setPortalLoading] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -54,6 +55,18 @@ export default function AccountPage() {
     setConfirmPassword('')
     setSavingPassword(false)
     setTimeout(() => setPasswordSaved(false), 3000)
+  }
+
+  async function openPortal() {
+    setPortalLoading(true)
+    const res = await fetch('/api/portal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: user.id }),
+    })
+    const data = await res.json()
+    if (data.url) window.location.href = data.url
+    else setPortalLoading(false)
   }
 
   async function handleLogout() {
@@ -94,7 +107,6 @@ export default function AccountPage() {
         .acc-input { width: 100%; height: 36px; border: 0.5px solid #e0e0e0; border-radius: 8px; padding: 0 12px; font-size: 13px; color: #111; background: #fff; font-family: inherit; outline: none; transition: border-color 0.15s; }
         .acc-input:focus { border-color: #111; }
         .acc-input:disabled { background: #f9f9f9; color: #bbb; cursor: not-allowed; }
-        .acc-label { font-size: 12px; color: #666; margin-bottom: 5px; display: block; }
         .acc-hint { font-size: 11px; color: #bbb; margin-top: 4px; }
         .acc-tab { font-size: 13px; color: #888; padding: 8px 0; cursor: pointer; border-bottom: 1.5px solid transparent; margin-right: 1.5rem; margin-bottom: -0.5px; background: none; border-top: none; border-left: none; border-right: none; font-family: inherit; transition: color 0.15s, border-color 0.15s; }
         .acc-tab.active { color: #111; border-bottom-color: #111; font-weight: 600; }
@@ -102,7 +114,7 @@ export default function AccountPage() {
         .btn-save { height: 32px; padding: 0 16px; background: #111; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; transition: opacity 0.15s; }
         .btn-save:hover { opacity: 0.82; }
         .btn-save:disabled { opacity: 0.4; cursor: not-allowed; }
-        .btn-ghost { height: 32px; padding: 0 16px; background: transparent; color: #666; border: 0.5px solid #e0e0e0; border-radius: 8px; font-size: 13px; cursor: pointer; font-family: inherit; transition: border-color 0.15s, color 0.15s; }
+        .btn-ghost { height: 32px; padding: 0 16px; background: transparent; color: #666; border: 0.5px solid #e0e0e0; border-radius: 8px; font-size: 13px; cursor: pointer; font-family: inherit; transition: border-color 0.15s, color 0.15s; text-decoration: none; display: inline-flex; align-items: center; }
         .btn-ghost:hover { border-color: #111; color: #111; }
         .btn-danger { height: 32px; padding: 0 16px; background: transparent; color: #dc2626; border: 0.5px solid #fca5a5; border-radius: 8px; font-size: 13px; cursor: pointer; font-family: inherit; }
         .acc-section { padding-bottom: 1.5rem; margin-bottom: 1.5rem; border-bottom: 0.5px solid #f0f0f0; }
@@ -170,9 +182,7 @@ export default function AccountPage() {
           <>
             {/* HEADER */}
             <div style={{ height: '52px', display: 'flex', alignItems: 'center', borderBottom: '0.5px solid #e8e8e8', marginBottom: '1.75rem' }}>
-              <div>
-                <div style={{ fontSize: '17px', fontWeight: 700, color: '#111', letterSpacing: '-0.3px' }}>Mon compte</div>
-              </div>
+              <div style={{ fontSize: '17px', fontWeight: 700, color: '#111', letterSpacing: '-0.3px' }}>Mon compte</div>
             </div>
 
             {/* TABS */}
@@ -183,7 +193,7 @@ export default function AccountPage() {
                   className={`acc-tab${activeTab === tab ? ' active' : ''}`}
                   onClick={() => setActiveTab(tab)}
                 >
-                  {tab === 'profil' ? 'Profil' : tab === 'abonnement' ? 'Abonnement' : 'Sécurité'}
+                  {tab === 'profil' ? 'Profil' : tab === 'abonnement' ? 'Abonnement & facturation' : 'Sécurité'}
                 </button>
               ))}
             </div>
@@ -191,7 +201,6 @@ export default function AccountPage() {
             {/* PROFIL */}
             {activeTab === 'profil' && (
               <div>
-                {/* Avatar */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.75rem' }}>
                   <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#f5f5f5', border: '0.5px solid #e8e8e8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '15px', fontWeight: 600, color: '#555', flexShrink: 0 }}>
                     {initials}
@@ -205,20 +214,12 @@ export default function AccountPage() {
                 <div className="acc-section">
                   <div className="acc-section-title">Informations personnelles</div>
                   <div className="acc-section-desc">Votre nom est affiché dans l'application.</div>
-
                   <div className="field-row">
                     <div className="field-row-label">Nom complet</div>
                     <div className="field-row-input">
-                      <input
-                        className="acc-input"
-                        type="text"
-                        value={fullName}
-                        onChange={e => setFullName(e.target.value)}
-                        placeholder="Votre prénom et nom"
-                      />
+                      <input className="acc-input" type="text" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Votre prénom et nom" />
                     </div>
                   </div>
-
                   <div className="field-row">
                     <div className="field-row-label">Email</div>
                     <div className="field-row-input">
@@ -226,26 +227,22 @@ export default function AccountPage() {
                       <div className="acc-hint">L'adresse email ne peut pas être modifiée.</div>
                     </div>
                   </div>
-
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '1.25rem', paddingLeft: '145px' }}>
                     <button className="btn-save" onClick={saveProfile} disabled={savingProfile}>
                       {savingProfile ? 'Enregistrement...' : 'Enregistrer'}
                     </button>
-                    {profileSaved && (
-                      <span style={{ fontSize: '12px', color: '#16a34a' }}>✓ Enregistré</span>
-                    )}
+                    {profileSaved && <span style={{ fontSize: '12px', color: '#16a34a' }}>✓ Enregistré</span>}
                   </div>
                 </div>
               </div>
             )}
 
-            {/* ABONNEMENT */}
+            {/* ABONNEMENT & FACTURATION */}
             {activeTab === 'abonnement' && (
               <div>
                 <div className="acc-section">
                   <div className="acc-section-title">Plan actuel</div>
                   <div className="acc-section-desc">Votre plan et vos droits d'accès.</div>
-
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
                     <span style={{
                       display: 'inline-flex', alignItems: 'center', gap: '5px',
@@ -260,9 +257,8 @@ export default function AccountPage() {
                       {profile?.is_pro ? 'Toutes les fonctionnalités débloquées' : '5 trades · 5 plans par mois'}
                     </span>
                   </div>
-
                   {profile?.is_pro ? (
-                    <div style={{ fontSize: '13px', color: '#666', lineHeight: 1.7, marginBottom: '1rem' }}>
+                    <div style={{ fontSize: '13px', color: '#666', lineHeight: 1.7 }}>
                       Trades illimités · Plans illimités · Briefing Macro IA · Insight IA calendrier
                     </div>
                   ) : (
@@ -270,7 +266,7 @@ export default function AccountPage() {
                       <div style={{ fontSize: '13px', color: '#555', lineHeight: 1.7, marginBottom: '1.25rem' }}>
                         Passez au plan Pro pour débloquer le Briefing Macro IA, l'Insight IA sur chaque session et les trades illimités.
                       </div>
-                      <a href="/pricing" className="btn-save" style={{ display: 'inline-block', textDecoration: 'none', lineHeight: '32px' }}>
+                      <a href="/pricing" className="btn-save" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
                         Passer au Pro →
                       </a>
                     </>
@@ -279,11 +275,11 @@ export default function AccountPage() {
 
                 {profile?.is_pro && (
                   <div className="acc-section">
-                    <div className="acc-section-title">Gestion de l'abonnement</div>
-                    <div className="acc-section-desc">Pour annuler ou modifier votre moyen de paiement.</div>
-                    <a href="mailto:support@mytradeplan.app" className="btn-ghost" style={{ display: 'inline-block', textDecoration: 'none', lineHeight: '32px' }}>
-                      Contacter le support
-                    </a>
+                    <div className="acc-section-title">Gérer l'abonnement</div>
+                    <div className="acc-section-desc">Modifiez votre plan, votre moyen de paiement ou consultez vos factures.</div>
+                    <button className="btn-save" onClick={openPortal} disabled={portalLoading}>
+                      {portalLoading ? 'Chargement...' : 'Gérer mon abonnement →'}
+                    </button>
                   </div>
                 )}
               </div>
@@ -295,34 +291,28 @@ export default function AccountPage() {
                 <div className="acc-section">
                   <div className="acc-section-title">Changer le mot de passe</div>
                   <div className="acc-section-desc">Choisissez un mot de passe d'au moins 6 caractères.</div>
-
                   {passwordError && (
                     <div style={{ background: '#fff5f5', border: '0.5px solid #fca5a5', borderRadius: '8px', padding: '9px 12px', color: '#dc2626', fontSize: '12px', marginBottom: '1rem' }}>
                       {passwordError}
                     </div>
                   )}
-
                   <div className="field-row">
                     <div className="field-row-label">Nouveau mot de passe</div>
                     <div className="field-row-input">
                       <input className="acc-input" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="••••••••" />
                     </div>
                   </div>
-
                   <div className="field-row">
                     <div className="field-row-label">Confirmer</div>
                     <div className="field-row-input">
                       <input className="acc-input" type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="••••••••" onKeyDown={e => e.key === 'Enter' && savePassword()} />
                     </div>
                   </div>
-
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '1.25rem', paddingLeft: '145px' }}>
                     <button className="btn-save" onClick={savePassword} disabled={savingPassword || !newPassword || !confirmPassword}>
                       {savingPassword ? 'Mise à jour...' : 'Mettre à jour'}
                     </button>
-                    {passwordSaved && (
-                      <span style={{ fontSize: '12px', color: '#16a34a' }}>✓ Mot de passe mis à jour</span>
-                    )}
+                    {passwordSaved && <span style={{ fontSize: '12px', color: '#16a34a' }}>✓ Mot de passe mis à jour</span>}
                   </div>
                 </div>
 
