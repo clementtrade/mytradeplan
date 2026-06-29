@@ -10,13 +10,9 @@ export default function AccountPage() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'profil' | 'abonnement' | 'securite'>('profil')
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
-
-  // Profil
   const [fullName, setFullName] = useState('')
   const [savingProfile, setSavingProfile] = useState(false)
   const [profileSaved, setProfileSaved] = useState(false)
-
-  // Sécurité
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [savingPassword, setSavingPassword] = useState(false)
@@ -71,11 +67,6 @@ export default function AccountPage() {
 
   const sidebarW = sidebarExpanded ? 200 : 52
 
-  const planLabel = profile?.is_pro ? 'Pro' : 'Gratuit'
-  const planColor = profile?.is_pro ? '#16a34a' : '#888'
-  const planBg = profile?.is_pro ? '#f0fdf4' : '#f5f5f5'
-  const planBorder = profile?.is_pro ? '#bbf7d0' : '#e8e8e8'
-
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#fff', fontFamily: 'Inter, sans-serif' }}>
       <style>{`
@@ -100,18 +91,27 @@ export default function AccountPage() {
         .nav-icon { font-size: 14px; min-width: 24px; display: flex; align-items: center; justify-content: center; }
         .nav-lbl { font-size: 12.5px; font-weight: 500; margin-left: 8px; opacity: 0; transition: opacity 0.1s 0.07s; white-space: nowrap; }
         .sidebar.exp .nav-lbl { opacity: 1; }
-        .tab { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; background: transparent; color: #888; transition: all 0.15s; font-family: inherit; }
-        .tab.active { background: #111; color: #fff; }
-        .tab:hover:not(.active) { background: #f5f5f5; color: #111; }
-        .input { width: 100%; background: #fff; border: 0.5px solid #e0e0e0; border-radius: 8px; padding: 10px 14px; color: #111; font-size: 14px; outline: none; font-family: inherit; transition: border-color 0.15s; box-sizing: border-box; }
-        .input:focus { border-color: #111; box-shadow: 0 0 0 3px rgba(0,0,0,0.05); }
-        .btn-save { background: #111; color: #fff; border: none; border-radius: 8px; padding: 10px 20px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: opacity 0.2s; }
-        .btn-save:hover { opacity: 0.85; }
+        .acc-input { width: 100%; height: 36px; border: 0.5px solid #e0e0e0; border-radius: 8px; padding: 0 12px; font-size: 13px; color: #111; background: #fff; font-family: inherit; outline: none; transition: border-color 0.15s; }
+        .acc-input:focus { border-color: #111; }
+        .acc-input:disabled { background: #f9f9f9; color: #bbb; cursor: not-allowed; }
+        .acc-label { font-size: 12px; color: #666; margin-bottom: 5px; display: block; }
+        .acc-hint { font-size: 11px; color: #bbb; margin-top: 4px; }
+        .acc-tab { font-size: 13px; color: #888; padding: 8px 0; cursor: pointer; border-bottom: 1.5px solid transparent; margin-right: 1.5rem; margin-bottom: -0.5px; background: none; border-top: none; border-left: none; border-right: none; font-family: inherit; transition: color 0.15s, border-color 0.15s; }
+        .acc-tab.active { color: #111; border-bottom-color: #111; font-weight: 600; }
+        .acc-tab:hover:not(.active) { color: #111; }
+        .btn-save { height: 32px; padding: 0 16px; background: #111; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; transition: opacity 0.15s; }
+        .btn-save:hover { opacity: 0.82; }
         .btn-save:disabled { opacity: 0.4; cursor: not-allowed; }
-        .label { font-size: 12px; font-weight: 500; color: #555; margin-bottom: 6px; display: block; }
-        .section-title { font-size: 15px; font-weight: 700; color: #111; margin-bottom: 4px; }
-        .section-desc { font-size: 13px; color: #888; margin-bottom: 1.5rem; }
-        .divider { height: 0.5px; background: #f0f0f0; margin: 1.5rem 0; }
+        .btn-ghost { height: 32px; padding: 0 16px; background: transparent; color: #666; border: 0.5px solid #e0e0e0; border-radius: 8px; font-size: 13px; cursor: pointer; font-family: inherit; transition: border-color 0.15s, color 0.15s; }
+        .btn-ghost:hover { border-color: #111; color: #111; }
+        .btn-danger { height: 32px; padding: 0 16px; background: transparent; color: #dc2626; border: 0.5px solid #fca5a5; border-radius: 8px; font-size: 13px; cursor: pointer; font-family: inherit; }
+        .acc-section { padding-bottom: 1.5rem; margin-bottom: 1.5rem; border-bottom: 0.5px solid #f0f0f0; }
+        .acc-section:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+        .acc-section-title { font-size: 13px; font-weight: 600; color: #111; margin-bottom: 3px; }
+        .acc-section-desc { font-size: 12px; color: #aaa; margin-bottom: 1rem; }
+        .field-row { display: flex; align-items: flex-start; gap: 1.5rem; margin-bottom: 0.875rem; }
+        .field-row-label { width: 130px; flex-shrink: 0; font-size: 13px; color: #666; line-height: 36px; }
+        .field-row-input { flex: 1; }
       `}</style>
 
       {/* SIDEBAR */}
@@ -160,111 +160,128 @@ export default function AccountPage() {
             <span className="nav-lbl">Mon compte</span>
           </a>
         </nav>
-        <div style={{ marginTop: 'auto', padding: '12px 6px' }}>
-          <button onClick={handleLogout} className="nav-item" style={{ width: '100%', border: 'none', background: 'none', cursor: 'pointer', color: '#dc2626' }}>
-            <span className="nav-icon">↩</span>
-            <span className="nav-lbl">Déconnexion</span>
-          </button>
-        </div>
       </div>
 
       {/* MAIN */}
-      <main style={{ marginLeft: sidebarW, flex: 1, padding: '0 2rem 3rem', transition: 'margin-left 0.2s cubic-bezier(0.4,0,0.2,1)' }}>
+      <main style={{ marginLeft: sidebarW, flex: 1, padding: '0 2.5rem 3rem', transition: 'margin-left 0.2s cubic-bezier(0.4,0,0.2,1)', maxWidth: '780px' }}>
         {loading ? (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh', color: '#ccc', fontSize: '13px' }}>Chargement...</div>
         ) : (
-          <div style={{ maxWidth: '640px', margin: '0 auto' }}>
-
+          <>
             {/* HEADER */}
-            <div style={{ height: '52px', display: 'flex', alignItems: 'center', borderBottom: '0.5px solid #e8e8e8', marginBottom: '2rem' }}>
-              <span style={{ fontSize: '20px', fontWeight: 700, color: '#111', letterSpacing: '-0.5px' }}>Mon compte</span>
+            <div style={{ height: '52px', display: 'flex', alignItems: 'center', borderBottom: '0.5px solid #e8e8e8', marginBottom: '1.75rem' }}>
+              <div>
+                <div style={{ fontSize: '17px', fontWeight: 700, color: '#111', letterSpacing: '-0.3px' }}>Mon compte</div>
+              </div>
             </div>
 
             {/* TABS */}
-            <div style={{ display: 'flex', gap: '6px', marginBottom: '2rem', background: '#f5f5f5', padding: '4px', borderRadius: '10px', width: 'fit-content' }}>
+            <div style={{ display: 'flex', borderBottom: '0.5px solid #e8e8e8', marginBottom: '1.75rem' }}>
               {(['profil', 'abonnement', 'securite'] as const).map(tab => (
-                <button key={tab} className={`tab${activeTab === tab ? ' active' : ''}`} onClick={() => setActiveTab(tab)}>
-                  {tab === 'profil' ? '👤 Profil' : tab === 'abonnement' ? '💳 Abonnement' : '🔒 Sécurité'}
+                <button
+                  key={tab}
+                  className={`acc-tab${activeTab === tab ? ' active' : ''}`}
+                  onClick={() => setActiveTab(tab)}
+                >
+                  {tab === 'profil' ? 'Profil' : tab === 'abonnement' ? 'Abonnement' : 'Sécurité'}
                 </button>
               ))}
             </div>
 
             {/* PROFIL */}
             {activeTab === 'profil' && (
-              <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '14px', padding: '1.75rem' }}>
-                <div className="section-title">Informations du profil</div>
-                <div className="section-desc">Gérez votre nom et vos informations de compte.</div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', padding: '1rem', background: '#f9f9f9', borderRadius: '10px' }}>
-                  <div style={{ width: '52px', height: '52px', background: '#111', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '18px', fontWeight: 700, flexShrink: 0 }}>
+              <div>
+                {/* Avatar */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.75rem' }}>
+                  <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#f5f5f5', border: '0.5px solid #e8e8e8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '15px', fontWeight: 600, color: '#555', flexShrink: 0 }}>
                     {initials}
                   </div>
                   <div>
-                    <div style={{ fontSize: '15px', fontWeight: 700, color: '#111' }}>{profile?.full_name || 'Nom non défini'}</div>
-                    <div style={{ fontSize: '13px', color: '#888', marginTop: '2px' }}>{user?.email}</div>
+                    <div style={{ fontSize: '14px', fontWeight: 600, color: '#111' }}>{profile?.full_name || 'Nom non défini'}</div>
+                    <div style={{ fontSize: '12px', color: '#aaa', marginTop: '2px' }}>{user?.email}</div>
                   </div>
                 </div>
 
-                <div style={{ marginBottom: '1rem' }}>
-                  <label className="label">Nom complet</label>
-                  <input className="input" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Ton prénom et nom" />
-                </div>
+                <div className="acc-section">
+                  <div className="acc-section-title">Informations personnelles</div>
+                  <div className="acc-section-desc">Votre nom est affiché dans l'application.</div>
 
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <label className="label">Email</label>
-                  <input className="input" value={user?.email || ''} disabled style={{ background: '#f9f9f9', color: '#aaa', cursor: 'not-allowed' }} />
-                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '5px' }}>L'email ne peut pas être modifié.</div>
-                </div>
+                  <div className="field-row">
+                    <div className="field-row-label">Nom complet</div>
+                    <div className="field-row-input">
+                      <input
+                        className="acc-input"
+                        type="text"
+                        value={fullName}
+                        onChange={e => setFullName(e.target.value)}
+                        placeholder="Votre prénom et nom"
+                      />
+                    </div>
+                  </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <button className="btn-save" onClick={saveProfile} disabled={savingProfile}>
-                    {savingProfile ? 'Enregistrement...' : 'Enregistrer'}
-                  </button>
-                  {profileSaved && <span style={{ fontSize: '13px', color: '#16a34a', fontWeight: 500 }}>✓ Enregistré !</span>}
+                  <div className="field-row">
+                    <div className="field-row-label">Email</div>
+                    <div className="field-row-input">
+                      <input className="acc-input" type="text" value={user?.email || ''} disabled />
+                      <div className="acc-hint">L'adresse email ne peut pas être modifiée.</div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '1.25rem', paddingLeft: '145px' }}>
+                    <button className="btn-save" onClick={saveProfile} disabled={savingProfile}>
+                      {savingProfile ? 'Enregistrement...' : 'Enregistrer'}
+                    </button>
+                    {profileSaved && (
+                      <span style={{ fontSize: '12px', color: '#16a34a' }}>✓ Enregistré</span>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
 
             {/* ABONNEMENT */}
             {activeTab === 'abonnement' && (
-              <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '14px', padding: '1.75rem' }}>
-                <div className="section-title">Abonnement</div>
-                <div className="section-desc">Gérez votre plan et votre facturation.</div>
+              <div>
+                <div className="acc-section">
+                  <div className="acc-section-title">Plan actuel</div>
+                  <div className="acc-section-desc">Votre plan et vos droits d'accès.</div>
 
-                {/* Plan actuel */}
-                <div style={{ background: planBg, border: `0.5px solid ${planBorder}`, borderRadius: '12px', padding: '1.25rem', marginBottom: '1.5rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <div style={{ fontSize: '13px', color: '#888', marginBottom: '4px' }}>Plan actuel</div>
-                      <div style={{ fontSize: '22px', fontWeight: 700, color: planColor }}>{planLabel}</div>
-                    </div>
-                    <div style={{ background: planBg, border: `0.5px solid ${planBorder}`, borderRadius: '20px', padding: '4px 14px', fontSize: '12px', fontWeight: 600, color: planColor }}>
-                      {profile?.is_pro ? '✓ Actif' : 'Gratuit'}
-                    </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
+                    <span style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '5px',
+                      padding: '3px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 600,
+                      background: profile?.is_pro ? '#f0fdf4' : '#f5f5f5',
+                      color: profile?.is_pro ? '#16a34a' : '#888',
+                      border: `0.5px solid ${profile?.is_pro ? '#bbf7d0' : '#e8e8e8'}`
+                    }}>
+                      {profile?.is_pro ? '✓ Pro' : 'Gratuit'}
+                    </span>
+                    <span style={{ fontSize: '12px', color: '#aaa' }}>
+                      {profile?.is_pro ? 'Toutes les fonctionnalités débloquées' : '5 trades · 5 plans par mois'}
+                    </span>
                   </div>
-                  {profile?.is_pro && (
-                    <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: `0.5px solid ${planBorder}`, fontSize: '12px', color: '#888' }}>
-                      Accès à toutes les fonctionnalités Pro — Briefing Macro IA, IA Insight calendrier, trades illimités.
+
+                  {profile?.is_pro ? (
+                    <div style={{ fontSize: '13px', color: '#666', lineHeight: 1.7, marginBottom: '1rem' }}>
+                      Trades illimités · Plans illimités · Briefing Macro IA · Insight IA calendrier
                     </div>
+                  ) : (
+                    <>
+                      <div style={{ fontSize: '13px', color: '#555', lineHeight: 1.7, marginBottom: '1.25rem' }}>
+                        Passez au plan Pro pour débloquer le Briefing Macro IA, l'Insight IA sur chaque session et les trades illimités.
+                      </div>
+                      <a href="/pricing" className="btn-save" style={{ display: 'inline-block', textDecoration: 'none', lineHeight: '32px' }}>
+                        Passer au Pro →
+                      </a>
+                    </>
                   )}
                 </div>
 
-                {!profile?.is_pro ? (
-                  <div>
-                    <div style={{ fontSize: '13px', color: '#444', lineHeight: 1.7, marginBottom: '1.25rem' }}>
-                      Passez au plan <strong>Pro</strong> pour débloquer le Briefing Macro IA, l'IA Insight sur chaque session, les trades illimités et bien plus.
-                    </div>
-                    <a href="/pricing" style={{ display: 'inline-block', background: '#111', color: '#fff', borderRadius: '8px', padding: '10px 22px', fontSize: '13px', fontWeight: 600, textDecoration: 'none' }}>
-                      Passer au Pro →
-                    </a>
-                  </div>
-                ) : (
-                  <div>
-                    <div className="divider"></div>
-                    <div style={{ fontSize: '13px', color: '#888', marginBottom: '1rem' }}>
-                      Pour annuler votre abonnement ou modifier votre moyen de paiement, contactez-nous.
-                    </div>
-                    <a href="mailto:support@mytradeplan.app" style={{ display: 'inline-block', background: '#fff', color: '#111', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '10px 22px', fontSize: '13px', fontWeight: 600, textDecoration: 'none' }}>
+                {profile?.is_pro && (
+                  <div className="acc-section">
+                    <div className="acc-section-title">Gestion de l'abonnement</div>
+                    <div className="acc-section-desc">Pour annuler ou modifier votre moyen de paiement.</div>
+                    <a href="mailto:support@mytradeplan.app" className="btn-ghost" style={{ display: 'inline-block', textDecoration: 'none', lineHeight: '32px' }}>
                       Contacter le support
                     </a>
                   </div>
@@ -274,46 +291,49 @@ export default function AccountPage() {
 
             {/* SÉCURITÉ */}
             {activeTab === 'securite' && (
-              <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '14px', padding: '1.75rem' }}>
-                <div className="section-title">Sécurité</div>
-                <div className="section-desc">Modifiez votre mot de passe.</div>
+              <div>
+                <div className="acc-section">
+                  <div className="acc-section-title">Changer le mot de passe</div>
+                  <div className="acc-section-desc">Choisissez un mot de passe d'au moins 6 caractères.</div>
 
-                {passwordError && (
-                  <div style={{ background: '#fff5f5', border: '0.5px solid #fca5a5', borderRadius: '8px', padding: '10px 14px', color: '#dc2626', fontSize: '13px', marginBottom: '1rem' }}>
-                    {passwordError}
+                  {passwordError && (
+                    <div style={{ background: '#fff5f5', border: '0.5px solid #fca5a5', borderRadius: '8px', padding: '9px 12px', color: '#dc2626', fontSize: '12px', marginBottom: '1rem' }}>
+                      {passwordError}
+                    </div>
+                  )}
+
+                  <div className="field-row">
+                    <div className="field-row-label">Nouveau mot de passe</div>
+                    <div className="field-row-input">
+                      <input className="acc-input" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="••••••••" />
+                    </div>
                   </div>
-                )}
 
-                <div style={{ marginBottom: '1rem' }}>
-                  <label className="label">Nouveau mot de passe</label>
-                  <input className="input" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="••••••••" />
+                  <div className="field-row">
+                    <div className="field-row-label">Confirmer</div>
+                    <div className="field-row-input">
+                      <input className="acc-input" type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="••••••••" onKeyDown={e => e.key === 'Enter' && savePassword()} />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '1.25rem', paddingLeft: '145px' }}>
+                    <button className="btn-save" onClick={savePassword} disabled={savingPassword || !newPassword || !confirmPassword}>
+                      {savingPassword ? 'Mise à jour...' : 'Mettre à jour'}
+                    </button>
+                    {passwordSaved && (
+                      <span style={{ fontSize: '12px', color: '#16a34a' }}>✓ Mot de passe mis à jour</span>
+                    )}
+                  </div>
                 </div>
 
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <label className="label">Confirmer le mot de passe</label>
-                  <input className="input" type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="••••••••" onKeyDown={e => e.key === 'Enter' && savePassword()} />
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <button className="btn-save" onClick={savePassword} disabled={savingPassword || !newPassword || !confirmPassword}>
-                    {savingPassword ? 'Mise à jour...' : 'Mettre à jour'}
-                  </button>
-                  {passwordSaved && <span style={{ fontSize: '13px', color: '#16a34a', fontWeight: 500 }}>✓ Mot de passe mis à jour !</span>}
-                </div>
-
-                <div className="divider"></div>
-
-                <div>
-                  <div style={{ fontSize: '14px', fontWeight: 600, color: '#111', marginBottom: '4px' }}>Déconnexion</div>
-                  <div style={{ fontSize: '13px', color: '#888', marginBottom: '1rem' }}>Déconnectez-vous de votre compte sur cet appareil.</div>
-                  <button onClick={handleLogout} style={{ background: '#fff', color: '#dc2626', border: '0.5px solid #fca5a5', borderRadius: '8px', padding: '10px 20px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
-                    Se déconnecter
-                  </button>
+                <div className="acc-section">
+                  <div className="acc-section-title">Déconnexion</div>
+                  <div className="acc-section-desc">Déconnectez-vous de votre compte sur cet appareil.</div>
+                  <button className="btn-danger" onClick={handleLogout}>Se déconnecter</button>
                 </div>
               </div>
             )}
-
-          </div>
+          </>
         )}
       </main>
     </div>
