@@ -82,6 +82,7 @@ export default function Home() {
           <a href="/features" className="nav-link">Fonctionnalités</a>
           <a href="#pricing" className="nav-link">Tarifs</a>
           <a href="/login" className="nav-link">Connexion</a>
+          <a href="/account" className="nav-link">Mon compte</a>
           <a href="/register" className="btn-main" style={{ fontSize: '0.875rem', padding: '0.5rem 1.25rem' }}>Essai gratuit</a>
         </div>
       </nav>

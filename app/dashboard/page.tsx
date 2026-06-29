@@ -331,7 +331,7 @@ export default function DashboardPage() {
           <div className="sb-dot">M</div>
           <span className="sb-brand">MyTradePlan</span>
         </div>
-        <a href="/settings" className="profile-btn">
+        <a href="/account" className="profile-btn">
           <div className="profile-avatar">{initials}</div>
           <div className="profile-info">
             <div className="profile-name">{profile?.full_name || 'Mon profil'}</div>
@@ -361,9 +361,9 @@ export default function DashboardPage() {
         <div className="sb-divider"></div>
         <div className="sb-section">Compte</div>
         <nav style={{ paddingTop: '2px' }}>
-          <a href="/settings" className="nav-item">
+          <a href="/account" className="nav-item">
             <span className="nav-icon">⚙</span>
-            <span className="nav-lbl">Paramètres</span>
+            <span className="nav-lbl">Mon compte</span>
           </a>
         </nav>
       </div>
