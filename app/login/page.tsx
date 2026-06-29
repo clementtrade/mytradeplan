@@ -85,7 +85,9 @@ export default function LoginPage() {
         )}
 
         <div style={{ marginBottom: '1rem' }}>
-          <div style={{ color: '#555', fontSize: '12px', fontWeight: 500, marginBottom: '6px' }}>Email</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+            <div style={{ color: '#555', fontSize: '12px', fontWeight: 500 }}>Email</div>
+          </div>
           <input
             type="email"
             placeholder="ton@email.com"
@@ -97,7 +99,15 @@ export default function LoginPage() {
         </div>
 
         <div style={{ marginBottom: '1.75rem' }}>
-          <div style={{ color: '#555', fontSize: '12px', fontWeight: 500, marginBottom: '6px' }}>Mot de passe</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+            <div style={{ color: '#555', fontSize: '12px', fontWeight: 500 }}>Mot de passe</div>
+            <Link href="/forgot-password" style={{ color: '#888', fontSize: '12px', textDecoration: 'none', transition: 'color 0.15s' }}
+              onMouseEnter={e => (e.target as HTMLElement).style.color = '#111'}
+              onMouseLeave={e => (e.target as HTMLElement).style.color = '#888'}
+            >
+              Mot de passe oublié ?
+            </Link>
+          </div>
           <input
             type="password"
             placeholder="••••••••"
@@ -120,7 +130,7 @@ export default function LoginPage() {
       </div>
 
       <p style={{ color: '#ccc', fontSize: '12px', marginTop: '2rem' }}>
-        © 2025 MyTradePlan · Tous droits réservés
+        © 2026 MyTradePlan · Tous droits réservés
       </p>
 
     </main>
