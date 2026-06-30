@@ -1,6 +1,7 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
+import Papa from 'papaparse'
 
 type Trade = {
   id: string
@@ -15,11 +16,52 @@ type Trade = {
   result_r: number
   followed_plan: boolean
   notes: string
+  is_imported?: boolean
+}
+
+type ParsedRow = Record<string, string>
+
+const FIELD_DEFS = [
+  { key: 'instrument', label: 'Instrument', required: true, aliases: ['instrument', 'symbol', 'ticker', 'contract', 'pair'] },
+  { key: 'direction', label: 'Direction', required: true, aliases: ['direction', 'side', 'type', 'b/s', 'action'] },
+  { key: 'result_r', label: 'Résultat (R ou PnL)', required: true, aliases: ['result_r', 'pnl', 'p&l', 'p/l', 'profit', 'résultat', 'net pnl', 'realized pnl'] },
+  { key: 'created_at', label: 'Date', required: false, aliases: ['date', 'time', 'datetime', 'entry date', 'open time', 'close time'] },
+]
+
+function normalize(s: string) {
+  return s.toLowerCase().trim().replace(/[_\-\s]+/g, ' ')
+}
+
+function autoDetectColumn(headers: string[], aliases: string[]): string {
+  const normalizedHeaders = headers.map(h => ({ raw: h, norm: normalize(h) }))
+  for (const alias of aliases) {
+    const exact = normalizedHeaders.find(h => h.norm === alias)
+    if (exact) return exact.raw
+  }
+  for (const alias of aliases) {
+    const partial = normalizedHeaders.find(h => h.norm.includes(alias))
+    if (partial) return partial.raw
+  }
+  return ''
+}
+
+function normalizeDirection(val: string): string {
+  const v = val.toLowerCase().trim()
+  if (['long', 'buy', 'b', '1', 'achat'].includes(v)) return 'long'
+  if (['short', 'sell', 's', '-1', 'vente'].includes(v)) return 'short'
+  return v || 'long'
+}
+
+function parseResultR(val: string): number {
+  const cleaned = val.replace(/[^0-9.,\-]/g, '').replace(',', '.')
+  const num = parseFloat(cleaned)
+  return isNaN(num) ? 0 : num
 }
 
 export default function JournalPage() {
   const [trades, setTrades] = useState<Trade[]>([])
   const [showForm, setShowForm] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [expanded, setExpanded] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -37,6 +79,13 @@ export default function JournalPage() {
     followed_plan: true,
     notes: '',
   })
+
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [importStep, setImportStep] = useState<'closed' | 'mapping' | 'preview' | 'importing'>('closed')
+  const [csvHeaders, setCsvHeaders] = useState<string[]>([])
+  const [csvRows, setCsvRows] = useState<ParsedRow[]>([])
+  const [mapping, setMapping] = useState<Record<string, string>>({})
+  const [importError, setImportError] = useState('')
 
   useEffect(() => {
     loadTrades()
@@ -62,12 +111,40 @@ export default function JournalPage() {
     setLoading(false)
   }
 
+  function resetForm() {
+    setForm({ instrument: '', direction: 'long', setup_type: '', contexte: '', zone: '', cible: '', confirmation: '', result_r: '', followed_plan: true, notes: '' })
+  }
+
+  function startNewTrade() {
+    resetForm()
+    setEditingId(null)
+    setShowForm(true)
+  }
+
+  function startEditTrade(trade: Trade) {
+    setForm({
+      instrument: trade.instrument || '',
+      direction: trade.direction || 'long',
+      setup_type: trade.setup_type || '',
+      contexte: trade.contexte || '',
+      zone: trade.zone || '',
+      cible: trade.cible || '',
+      confirmation: trade.confirmation || '',
+      result_r: trade.result_r?.toString() || '',
+      followed_plan: trade.followed_plan,
+      notes: trade.notes || '',
+    })
+    setEditingId(trade.id)
+    setShowForm(true)
+    setExpanded(null)
+  }
+
   async function saveTrade() {
     if (!form.instrument || !form.result_r) return
     setSaving(true)
     const { data: { user } } = await supabase.auth.getUser()
-    const { error } = await supabase.from('trades').insert({
-      user_id: user?.id,
+
+    const payload = {
       instrument: form.instrument,
       direction: form.direction,
       setup_type: form.setup_type,
@@ -78,18 +155,118 @@ export default function JournalPage() {
       result_r: parseFloat(form.result_r),
       followed_plan: form.followed_plan,
       notes: form.notes,
-    })
-    if (!error) {
-      setForm({ instrument: '', direction: 'long', setup_type: '', contexte: '', zone: '', cible: '', confirmation: '', result_r: '', followed_plan: true, notes: '' })
-      setShowForm(false)
-      loadTrades()
     }
+
+    if (editingId) {
+      const isComplete = form.setup_type && form.contexte
+      await supabase.from('trades').update({ ...payload, is_imported: !isComplete }).eq('id', editingId)
+    } else {
+      await supabase.from('trades').insert({ user_id: user?.id, ...payload })
+    }
+
+    resetForm()
+    setShowForm(false)
+    setEditingId(null)
+    loadTrades()
     setSaving(false)
   }
+
+  function openFilePicker() {
+    fileInputRef.current?.click()
+  }
+
+  function handleFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImportError('')
+
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (results) => {
+        const headers = results.meta.fields || []
+        const rows = results.data as ParsedRow[]
+        if (headers.length === 0 || rows.length === 0) {
+          setImportError('Le fichier CSV est vide ou illisible.')
+          return
+        }
+        const autoMapping: Record<string, string> = {}
+        for (const field of FIELD_DEFS) {
+          autoMapping[field.key] = autoDetectColumn(headers, field.aliases)
+        }
+        setCsvHeaders(headers)
+        setCsvRows(rows)
+        setMapping(autoMapping)
+        setImportStep('mapping')
+      },
+      error: () => {
+        setImportError('Impossible de lire ce fichier. Vérifie le format CSV.')
+      }
+    })
+    e.target.value = ''
+  }
+
+  function buildPreviewTrades() {
+    return csvRows.map(row => {
+      const instrument = mapping.instrument ? row[mapping.instrument] || '' : ''
+      const directionRaw = mapping.direction ? row[mapping.direction] || '' : ''
+      const resultRaw = mapping.result_r ? row[mapping.result_r] || '0' : '0'
+      const dateRaw = mapping.created_at ? row[mapping.created_at] || '' : ''
+      return {
+        instrument: instrument.trim(),
+        direction: normalizeDirection(directionRaw),
+        result_r: parseResultR(resultRaw),
+        created_at: dateRaw,
+      }
+    }).filter(t => t.instrument)
+  }
+
+  async function confirmImport() {
+    setImportStep('importing')
+    const { data: { user } } = await supabase.auth.getUser()
+    const preview = buildPreviewTrades()
+
+    const rowsToInsert = preview.map(t => ({
+      user_id: user?.id,
+      instrument: t.instrument,
+      direction: t.direction,
+      result_r: t.result_r,
+      setup_type: '',
+      contexte: '',
+      zone: '',
+      cible: '',
+      confirmation: '',
+      followed_plan: false,
+      notes: '',
+      is_imported: true,
+    }))
+
+    const { error } = await supabase.from('trades').insert(rowsToInsert)
+    if (error) {
+      setImportError("Erreur lors de l'import. Vérifie le mapping des colonnes.")
+      setImportStep('preview')
+      return
+    }
+
+    closeImport()
+    loadTrades()
+  }
+
+  function closeImport() {
+    setImportStep('closed')
+    setCsvHeaders([])
+    setCsvRows([])
+    setMapping({})
+    setImportError('')
+  }
+
+  const previewTrades = importStep === 'preview' || importStep === 'importing' ? buildPreviewTrades() : []
+  const missingRequired = FIELD_DEFS.filter(f => f.required && !mapping[f.key])
 
   const totalR = trades.reduce((sum, t) => sum + t.result_r, 0)
   const wins = trades.filter(t => t.result_r > 0)
   const winRate = trades.length > 0 ? Math.round((wins.length / trades.length) * 100) : 0
+  const toCompleteCount = trades.filter(t => t.is_imported).length
 
   const sidebarW = sidebarExpanded ? 200 : 52
   const initials = profile?.full_name
@@ -135,15 +312,131 @@ export default function JournalPage() {
 
         .trade-card { background: #fff; border: 0.5px solid #e8e8e8; border-radius: 10px; overflow: hidden; transition: box-shadow 0.2s, transform 0.2s; }
         .trade-card:hover { box-shadow: 0 4px 18px rgba(0,0,0,0.08); transform: translateY(-1px); }
+        .trade-card.incomplete { border-color: #fde68a; }
         .stat-card { background: #fff; border: 0.5px solid #e8e8e8; border-radius: 10px; padding: 1rem 1.25rem; }
         .btn-primary { background: #111; color: #fff; border: none; border-radius: 8px; padding: 10px 20px; font-weight: 600; font-size: 13px; cursor: pointer; transition: opacity 0.15s; font-family: inherit; }
         .btn-primary:hover { opacity: 0.85; }
+        .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
         .btn-secondary { background: transparent; color: #666; border: 0.5px solid #e0e0e0; border-radius: 8px; padding: 10px 20px; font-size: 13px; cursor: pointer; font-family: inherit; transition: background 0.15s; }
         .btn-secondary:hover { background: #f5f5f5; }
         .form-input:focus { border-color: #111 !important; }
+        .badge-incomplete { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; background: #fffbeb; color: #d97706; border: 0.5px solid #fde68a; white-space: nowrap; }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; z-index: 300; padding: 2rem; }
+        .modal-box { background: #fff; border-radius: 16px; padding: 1.75rem; width: 640px; max-width: 95vw; max-height: 88vh; overflow-y: auto; }
+        .map-row { display: grid; grid-template-columns: 160px 1fr; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 0.5px solid #f2f2f2; }
+        .map-row:last-child { border-bottom: none; }
+        .map-select { width: 100%; background: #fff; border: 0.5px solid #e0e0e0; border-radius: 6px; padding: 7px 10px; color: #111; font-size: 13px; font-family: inherit; }
       `}</style>
 
-      {/* SIDEBAR */}
+      <input ref={fileInputRef} type="file" accept=".csv" style={{ display: 'none' }} onChange={handleFileSelected} />
+
+      {importStep === 'mapping' && (
+        <div className="modal-overlay" onClick={closeImport}>
+          <div className="modal-box" onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+              <div>
+                <div style={{ fontSize: '17px', fontWeight: 700, color: '#111' }}>Importer un CSV</div>
+                <div style={{ fontSize: '12px', color: '#aaa', marginTop: '2px' }}>{csvRows.length} ligne{csvRows.length > 1 ? 's' : ''} détectée{csvRows.length > 1 ? 's' : ''}</div>
+              </div>
+              <button onClick={closeImport} style={{ background: '#f5f5f5', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '5px 12px', fontSize: '12px', color: '#666', cursor: 'pointer' }}>✕</button>
+            </div>
+
+            <div style={{ fontSize: '12.5px', color: '#888', lineHeight: 1.6, marginBottom: '1.25rem' }}>
+              Associe les colonnes de ton fichier aux champs MyTradePlan. Les colonnes ont été pré-détectées automatiquement — vérifie et corrige si besoin.
+              Les champs d'analyse (setup, contexte, zone...) seront à compléter manuellement après l'import.
+            </div>
+
+            <div style={{ marginBottom: '1.25rem' }}>
+              {FIELD_DEFS.map(field => (
+                <div key={field.key} className="map-row">
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#111' }}>
+                    {field.label}{field.required && <span style={{ color: '#dc2626' }}> *</span>}
+                  </div>
+                  <select
+                    className="map-select"
+                    value={mapping[field.key] || ''}
+                    onChange={e => setMapping({ ...mapping, [field.key]: e.target.value })}
+                  >
+                    <option value="">— Aucune colonne —</option>
+                    {csvHeaders.map(h => <option key={h} value={h}>{h}</option>)}
+                  </select>
+                </div>
+              ))}
+            </div>
+
+            {missingRequired.length > 0 && (
+              <div style={{ background: '#fff5f5', border: '0.5px solid #fca5a5', borderRadius: '8px', padding: '10px 14px', color: '#dc2626', fontSize: '12px', marginBottom: '1rem' }}>
+                Champs obligatoires manquants : {missingRequired.map(f => f.label).join(', ')}
+              </div>
+            )}
+            {importError && (
+              <div style={{ background: '#fff5f5', border: '0.5px solid #fca5a5', borderRadius: '8px', padding: '10px 14px', color: '#dc2626', fontSize: '12px', marginBottom: '1rem' }}>
+                {importError}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button className="btn-primary" disabled={missingRequired.length > 0} onClick={() => setImportStep('preview')}>
+                Voir l'aperçu →
+              </button>
+              <button className="btn-secondary" onClick={closeImport}>Annuler</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {(importStep === 'preview' || importStep === 'importing') && (
+        <div className="modal-overlay" onClick={() => importStep === 'preview' && closeImport()}>
+          <div className="modal-box" onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+              <div>
+                <div style={{ fontSize: '17px', fontWeight: 700, color: '#111' }}>Aperçu de l'import</div>
+                <div style={{ fontSize: '12px', color: '#aaa', marginTop: '2px' }}>{previewTrades.length} trade{previewTrades.length > 1 ? 's' : ''} prêt{previewTrades.length > 1 ? 's' : ''} à importer</div>
+              </div>
+              {importStep === 'preview' && (
+                <button onClick={() => setImportStep('mapping')} style={{ background: '#f5f5f5', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '5px 12px', fontSize: '12px', color: '#666', cursor: 'pointer' }}>← Mapping</button>
+              )}
+            </div>
+
+            <div style={{ border: '0.5px solid #e8e8e8', borderRadius: '8px', overflow: 'hidden', marginBottom: '1.25rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 90px 1fr', background: '#f9f9f9', padding: '8px 12px', fontSize: '11px', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                <div>Instrument</div><div>Direction</div><div>Résultat</div><div>Date</div>
+              </div>
+              {previewTrades.slice(0, 6).map((t, i) => (
+                <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 80px 90px 1fr', padding: '8px 12px', fontSize: '13px', borderTop: '0.5px solid #f2f2f2' }}>
+                  <div style={{ color: '#111', fontWeight: 500 }}>{t.instrument}</div>
+                  <div style={{ color: t.direction === 'long' ? '#16a34a' : '#dc2626', fontWeight: 600 }}>{t.direction}</div>
+                  <div style={{ fontFamily: 'monospace', fontWeight: 700, color: t.result_r >= 0 ? '#16a34a' : '#dc2626' }}>{t.result_r >= 0 ? '+' : ''}{t.result_r}</div>
+                  <div style={{ color: '#888' }}>{t.created_at || '—'}</div>
+                </div>
+              ))}
+              {previewTrades.length > 6 && (
+                <div style={{ padding: '8px 12px', fontSize: '12px', color: '#aaa', borderTop: '0.5px solid #f2f2f2' }}>
+                  + {previewTrades.length - 6} autres trades...
+                </div>
+              )}
+            </div>
+
+            <div style={{ background: '#fffbeb', border: '0.5px solid #fde68a', borderRadius: '8px', padding: '10px 14px', fontSize: '12px', color: '#92400e', marginBottom: '1.25rem', lineHeight: 1.6 }}>
+              Ces trades seront marqués "À compléter" — tu pourras ajouter le setup, le contexte et tes notes ensuite directement dans le journal.
+            </div>
+
+            {importError && (
+              <div style={{ background: '#fff5f5', border: '0.5px solid #fca5a5', borderRadius: '8px', padding: '10px 14px', color: '#dc2626', fontSize: '12px', marginBottom: '1rem' }}>
+                {importError}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button className="btn-primary" onClick={confirmImport} disabled={importStep === 'importing'}>
+                {importStep === 'importing' ? 'Import en cours...' : `Importer ${previewTrades.length} trade${previewTrades.length > 1 ? 's' : ''}`}
+              </button>
+              <button className="btn-secondary" onClick={closeImport} disabled={importStep === 'importing'}>Annuler</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div
         className={`sidebar${sidebarExpanded ? ' exp' : ''}`}
         style={{ width: sidebarW }}
@@ -191,18 +484,18 @@ export default function JournalPage() {
         </nav>
       </div>
 
-      {/* MAIN */}
       <main style={{ marginLeft: sidebarW, flex: 1, minWidth: 0, transition: 'margin-left 0.2s cubic-bezier(0.4,0,0.2,1)', padding: '0 2rem 3rem' }}>
         <div style={{ maxWidth: '960px', margin: '0 auto' }}>
 
-          {/* HEADER */}
           <div className="journal-anim" style={{ height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '0.5px solid #e8e8e8', marginBottom: '2rem' }}>
             <span style={{ fontSize: '20px', fontWeight: 700, color: '#111', letterSpacing: '-0.5px' }}>Journal de trades</span>
-            <button className="btn-primary" onClick={() => setShowForm(!showForm)}>+ Nouveau trade</button>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button className="btn-secondary" onClick={openFilePicker}>↑ Importer CSV</button>
+              <button className="btn-primary" onClick={() => { setShowForm(!showForm); if (!showForm) startNewTrade() }}>+ Nouveau trade</button>
+            </div>
           </div>
 
-          {/* STATS */}
-          <div className="journal-anim" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '1.5rem' }}>
+          <div className="journal-anim" style={{ display: 'grid', gridTemplateColumns: toCompleteCount > 0 ? 'repeat(4, 1fr)' : 'repeat(3, 1fr)', gap: '12px', marginBottom: '1.5rem' }}>
             <div className="stat-card">
               <div style={{ color: '#888', fontSize: '12px', marginBottom: '4px' }}>Total R</div>
               <div style={{ fontSize: '22px', fontWeight: 700, color: totalR >= 0 ? '#16a34a' : '#dc2626', fontFamily: 'monospace' }}>{totalR >= 0 ? '+' : ''}{totalR.toFixed(2)}R</div>
@@ -215,12 +508,22 @@ export default function JournalPage() {
               <div style={{ color: '#888', fontSize: '12px', marginBottom: '4px' }}>Trades</div>
               <div style={{ fontSize: '22px', fontWeight: 700, color: '#111', fontFamily: 'monospace' }}>{trades.length}</div>
             </div>
+            {toCompleteCount > 0 && (
+              <div className="stat-card" style={{ borderColor: '#fde68a', background: '#fffbeb' }}>
+                <div style={{ color: '#d97706', fontSize: '12px', marginBottom: '4px' }}>À compléter</div>
+                <div style={{ fontSize: '22px', fontWeight: 700, color: '#d97706', fontFamily: 'monospace' }}>{toCompleteCount}</div>
+              </div>
+            )}
           </div>
 
-          {/* FORMULAIRE */}
           {showForm && (
             <div className="journal-anim" style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '1.5rem', marginBottom: '1.5rem' }}>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: '#111', marginBottom: '1.25rem' }}>Nouveau trade</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.25rem' }}>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: '#111' }}>{editingId ? 'Modifier le trade' : 'Nouveau trade'}</div>
+                {editingId && trades.find(t => t.id === editingId)?.is_imported && (
+                  <span className="badge-incomplete">Importé du broker</span>
+                )}
+              </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                 <div>
@@ -284,29 +587,30 @@ export default function JournalPage() {
 
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button className="btn-primary" onClick={saveTrade} disabled={saving} style={{ opacity: saving ? 0.6 : 1 }}>
-                  {saving ? 'Sauvegarde...' : 'Sauvegarder'}
+                  {saving ? 'Sauvegarde...' : editingId ? 'Mettre à jour' : 'Sauvegarder'}
                 </button>
-                <button className="btn-secondary" onClick={() => setShowForm(false)}>Annuler</button>
+                <button className="btn-secondary" onClick={() => { setShowForm(false); setEditingId(null); resetForm() }}>Annuler</button>
               </div>
             </div>
           )}
 
-          {/* LISTE */}
           {loading ? (
             <div style={{ textAlign: 'center', padding: '4rem 0', color: '#aaa', fontSize: '14px' }}>Chargement...</div>
           ) : trades.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '4rem 0', color: '#aaa', fontSize: '14px' }}>Aucun trade encore. Clique sur "+ Nouveau trade" pour commencer.</div>
+            <div style={{ textAlign: 'center', padding: '4rem 0', color: '#aaa', fontSize: '14px' }}>Aucun trade encore. Clique sur "+ Nouveau trade" ou importe ton historique en CSV.</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {trades.map(trade => (
-                <div key={trade.id} className="trade-card">
-                  <div onClick={() => setExpanded(expanded === trade.id ? null : trade.id)} style={{ padding: '1rem 1.25rem', display: 'grid', gridTemplateColumns: '90px 70px 80px 120px 1fr 110px 80px', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
+                <div key={trade.id} className={`trade-card${trade.is_imported ? ' incomplete' : ''}`}>
+                  <div onClick={() => setExpanded(expanded === trade.id ? null : trade.id)} style={{ padding: '1rem 1.25rem', display: 'grid', gridTemplateColumns: '90px 70px 80px 110px 1fr 110px 80px', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
                     <div style={{ color: '#aaa', fontSize: '12px' }}>{new Date(trade.created_at).toLocaleDateString('fr-FR')}</div>
                     <div style={{ color: '#111', fontWeight: 600, fontSize: '14px' }}>{trade.instrument}</div>
                     <div style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', background: trade.direction === 'long' ? '#dcfce7' : '#fee2e2', color: trade.direction === 'long' ? '#16a34a' : '#dc2626', fontWeight: 600, textAlign: 'center' }}>
                       {trade.direction.toUpperCase()}
                     </div>
-                    <div style={{ fontSize: '12px', color: '#555', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{trade.setup_type || '—'}</div>
+                    <div style={{ fontSize: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {trade.is_imported ? <span className="badge-incomplete">À compléter</span> : <span style={{ color: '#555' }}>{trade.setup_type || '—'}</span>}
+                    </div>
                     <div style={{ color: '#666', fontSize: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{trade.contexte}</div>
                     <div style={{ fontSize: '12px', color: trade.followed_plan ? '#16a34a' : '#d97706' }}>{trade.followed_plan ? '✓ Plan suivi' : '⚠ Hors plan'}</div>
                     <div style={{ textAlign: 'right', fontFamily: 'monospace', fontWeight: 700, fontSize: '16px', color: trade.result_r >= 0 ? '#16a34a' : '#dc2626' }}>
@@ -315,13 +619,18 @@ export default function JournalPage() {
                   </div>
 
                   {expanded === trade.id && (
-                    <div style={{ padding: '0 1.25rem 1.25rem', borderTop: '0.5px solid #f0f0f0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '12px' }}>
-                      <div><div style={labelStyle}>Setup</div><div style={{ color: '#444', fontSize: '13px', lineHeight: 1.6 }}>{trade.setup_type || '—'}</div></div>
-                      <div><div style={labelStyle}>Contexte</div><div style={{ color: '#444', fontSize: '13px', lineHeight: 1.6 }}>{trade.contexte || '—'}</div></div>
-                      <div><div style={labelStyle}>Zone</div><div style={{ color: '#444', fontSize: '13px', lineHeight: 1.6 }}>{trade.zone || '—'}</div></div>
-                      <div><div style={labelStyle}>Cible</div><div style={{ color: '#444', fontSize: '13px', lineHeight: 1.6 }}>{trade.cible || '—'}</div></div>
-                      <div><div style={labelStyle}>Confirmation</div><div style={{ color: '#444', fontSize: '13px', lineHeight: 1.6 }}>{trade.confirmation || '—'}</div></div>
-                      {trade.notes && <div><div style={labelStyle}>Notes</div><div style={{ color: '#444', fontSize: '13px', lineHeight: 1.6 }}>{trade.notes}</div></div>}
+                    <div style={{ padding: '0 1.25rem 1.25rem', borderTop: '0.5px solid #f0f0f0', marginTop: '12px' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', paddingTop: '12px', marginBottom: '1rem' }}>
+                        <div><div style={labelStyle}>Setup</div><div style={{ color: '#444', fontSize: '13px', lineHeight: 1.6 }}>{trade.setup_type || '—'}</div></div>
+                        <div><div style={labelStyle}>Contexte</div><div style={{ color: '#444', fontSize: '13px', lineHeight: 1.6 }}>{trade.contexte || '—'}</div></div>
+                        <div><div style={labelStyle}>Zone</div><div style={{ color: '#444', fontSize: '13px', lineHeight: 1.6 }}>{trade.zone || '—'}</div></div>
+                        <div><div style={labelStyle}>Cible</div><div style={{ color: '#444', fontSize: '13px', lineHeight: 1.6 }}>{trade.cible || '—'}</div></div>
+                        <div><div style={labelStyle}>Confirmation</div><div style={{ color: '#444', fontSize: '13px', lineHeight: 1.6 }}>{trade.confirmation || '—'}</div></div>
+                        {trade.notes && <div><div style={labelStyle}>Notes</div><div style={{ color: '#444', fontSize: '13px', lineHeight: 1.6 }}>{trade.notes}</div></div>}
+                      </div>
+                      <button className="btn-primary" onClick={() => startEditTrade(trade)}>
+                        {trade.is_imported ? 'Compléter ce trade' : 'Modifier'}
+                      </button>
                     </div>
                   )}
                 </div>
