@@ -22,10 +22,10 @@ type Trade = {
 type ParsedRow = Record<string, string>
 
 const FIELD_DEFS = [
-  { key: 'instrument', label: 'Instrument', required: true, aliases: ['instrument', 'symbol', 'ticker', 'contract', 'pair'] },
-  { key: 'direction', label: 'Direction', required: true, aliases: ['direction', 'side', 'type', 'b/s', 'action'] },
-  { key: 'result_r', label: 'Résultat (R ou PnL)', required: true, aliases: ['result_r', 'pnl', 'p&l', 'p/l', 'profit', 'résultat', 'net pnl', 'realized pnl'] },
-  { key: 'created_at', label: 'Date / Entry', required: false, aliases: ['date', 'time', 'datetime', 'entry date', 'open time', 'entry time'] },
+  { key: 'instrument', label: "l'instrument", hint: 'le contrat ou symbole tradé', required: true, aliases: ['instrument', 'symbol', 'ticker', 'contract', 'pair'] },
+  { key: 'direction', label: 'le sens du trade', hint: 'achat ou vente', required: true, aliases: ['direction', 'side', 'type', 'b/s', 'action'] },
+  { key: 'result_r', label: 'les résultats', hint: 'profit ou perte', required: true, aliases: ['result_r', 'pnl', 'p&l', 'p/l', 'profit', 'résultat', 'net pnl', 'realized pnl'] },
+  { key: 'created_at', label: 'les dates', hint: 'optionnel', required: false, aliases: ['date', 'time', 'datetime', 'entry date', 'open time', 'entry time'] },
 ]
 
 function normalize(s: string) {
@@ -133,6 +133,7 @@ export default function JournalPage() {
   const [csvRows, setCsvRows] = useState<ParsedRow[]>([])
   const [mapping, setMapping] = useState<Record<string, string>>({})
   const [importError, setImportError] = useState('')
+  const [importedCount, setImportedCount] = useState<number | null>(null)
 
   useEffect(() => {
     loadTrades()
@@ -219,6 +220,7 @@ export default function JournalPage() {
   }
 
   function openImportModal() {
+    setImportedCount(null)
     setImportStep('drop')
   }
 
@@ -250,7 +252,9 @@ export default function JournalPage() {
         setCsvHeaders(headers)
         setCsvRows(rows)
         setMapping(autoMapping)
-        setImportStep('mapping')
+
+        const stillMissing = FIELD_DEFS.filter(f => f.required && !autoMapping[f.key])
+        setImportStep(stillMissing.length === 0 ? 'preview' : 'mapping')
       },
       error: () => {
         setImportError('Impossible de lire ce fichier. Vérifie le format CSV.')
@@ -329,8 +333,14 @@ export default function JournalPage() {
       return
     }
 
-    closeImport()
+    setImportedCount(rowsToInsert.length)
+    setImportStep('closed')
+    setCsvHeaders([])
+    setCsvRows([])
+    setMapping({})
+    setImportError('')
     loadTrades()
+    setTimeout(() => setImportedCount(null), 4000)
   }
 
   function closeImport() {
@@ -342,9 +352,8 @@ export default function JournalPage() {
     setImportError('')
   }
 
-  const rawFillsCount = importStep === 'mapping' ? buildRawFills().length : 0
+  const rawFillsCount = (importStep === 'mapping' || importStep === 'preview' || importStep === 'importing') ? buildRawFills().length : 0
   const previewTrades = importStep === 'preview' || importStep === 'importing' ? buildPreviewTrades() : []
-  const fillsMergedCount = rawFillsCount - previewTrades.length
   const missingRequired = FIELD_DEFS.filter(f => f.required && !mapping[f.key])
 
   const totalR = trades.reduce((sum, t) => sum + t.result_r, 0)
@@ -406,11 +415,11 @@ export default function JournalPage() {
         .form-input:focus { border-color: #111 !important; }
         .badge-incomplete { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; background: #fffbeb; color: #d97706; border: 0.5px solid #fde68a; white-space: nowrap; }
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; z-index: 300; padding: 2rem; }
-        .modal-box { background: #fff; border-radius: 16px; padding: 1.75rem; width: 640px; max-width: 95vw; max-height: 88vh; overflow-y: auto; }
-        .modal-box-sm { background: #fff; border-radius: 16px; padding: 1.75rem; width: 520px; max-width: 95vw; }
-        .map-row { display: grid; grid-template-columns: 160px 1fr; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 0.5px solid #f2f2f2; }
+        .modal-box { background: #fff; border-radius: 16px; padding: 1.75rem; width: 600px; max-width: 95vw; max-height: 88vh; overflow-y: auto; }
+        .modal-box-sm { background: #fff; border-radius: 16px; padding: 1.75rem; width: 480px; max-width: 95vw; }
+        .map-row { display: grid; grid-template-columns: 150px 1fr; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 0.5px solid #f2f2f2; }
         .map-row:last-child { border-bottom: none; }
-        .map-select { width: 100%; background: #fff; border: 0.5px solid #e0e0e0; border-radius: 6px; padding: 7px 10px; color: #111; font-size: 13px; font-family: inherit; }
+        .map-select { width: 100%; background: #f0fdf4; border: 0.5px solid #bbf7d0; border-radius: 6px; padding: 7px 10px; color: #15803d; font-size: 13px; font-family: inherit; }
         .dropzone { border: 1.5px dashed #d0d0d0; border-radius: 12px; padding: 2.5rem 1.5rem; text-align: center; background: #fafafa; transition: border-color 0.15s, background 0.15s; cursor: pointer; }
         .dropzone.dragging { border-color: #111; background: #f5f5f5; }
         .dropzone-icon { width: 44px; height: 44px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 20px; transition: background 0.15s; }
@@ -455,7 +464,7 @@ export default function JournalPage() {
               </div>
             )}
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#aaa', marginTop: '1rem' }}>
+            <div style={{ fontSize: '12px', color: '#aaa', marginTop: '1rem' }}>
               Format accepté : .csv, exporté depuis ta plateforme de trading
             </div>
           </div>
@@ -465,24 +474,19 @@ export default function JournalPage() {
       {importStep === 'mapping' && (
         <div className="modal-overlay" onClick={closeImport}>
           <div className="modal-box" onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-              <div>
-                <div style={{ fontSize: '17px', fontWeight: 700, color: '#111' }}>Importer un CSV</div>
-                <div style={{ fontSize: '12px', color: '#aaa', marginTop: '2px' }}>{csvRows.length} ligne{csvRows.length > 1 ? 's' : ''} détectée{csvRows.length > 1 ? 's' : ''}</div>
-              </div>
-              <button onClick={closeImport} style={{ background: '#f5f5f5', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '5px 12px', fontSize: '12px', color: '#666', cursor: 'pointer' }}>✕</button>
-            </div>
+            <div style={{ fontSize: '16px', fontWeight: 700, color: '#111', marginBottom: '4px' }}>Où se trouvent tes données dans le fichier ?</div>
+            <div style={{ fontSize: '12px', color: '#aaa', marginBottom: '1.25rem' }}>{csvRows.length} ligne{csvRows.length > 1 ? 's' : ''} détectée{csvRows.length > 1 ? 's' : ''} — indique la colonne, pas le chiffre</div>
 
-            <div style={{ fontSize: '12.5px', color: '#888', lineHeight: 1.6, marginBottom: '1.25rem' }}>
-              Associe les colonnes de ton fichier aux champs MyTradePlan. Les lignes du même contrat et de la même direction seront automatiquement fusionnées en un seul trade.
-              Les champs d'analyse (setup, contexte, zone...) seront à compléter manuellement après l'import.
+            <div style={{ background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '10px', padding: '12px 14px', marginBottom: '1.25rem', fontSize: '12.5px', color: '#15803d', lineHeight: 1.6 }}>
+              Certaines colonnes n'ont pas pu être devinées automatiquement. Indique-les ci-dessous, une seule fois pour tout le fichier.
             </div>
 
             <div style={{ marginBottom: '1.25rem' }}>
               {FIELD_DEFS.map(field => (
                 <div key={field.key} className="map-row">
-                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#111' }}>
-                    {field.label}{field.required && <span style={{ color: '#dc2626' }}> *</span>}
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#111' }}>{field.label}{field.required && <span style={{ color: '#dc2626' }}> *</span>}</div>
+                    <div style={{ fontSize: '11px', color: '#aaa' }}>{field.hint}</div>
                   </div>
                   <select
                     className="map-select"
@@ -498,7 +502,7 @@ export default function JournalPage() {
 
             {missingRequired.length > 0 && (
               <div style={{ background: '#fff5f5', border: '0.5px solid #fca5a5', borderRadius: '8px', padding: '10px 14px', color: '#dc2626', fontSize: '12px', marginBottom: '1rem' }}>
-                Champs obligatoires manquants : {missingRequired.map(f => f.label).join(', ')}
+                Il manque encore : {missingRequired.map(f => f.label).join(', ')}
               </div>
             )}
             {importError && (
@@ -509,7 +513,7 @@ export default function JournalPage() {
 
             <div style={{ display: 'flex', gap: '8px' }}>
               <button className="btn-primary" disabled={missingRequired.length > 0} onClick={() => setImportStep('preview')}>
-                Voir l'aperçu →
+                C'est bon, continuer →
               </button>
               <button className="btn-secondary" onClick={() => setImportStep('drop')}>← Retour</button>
             </div>
@@ -520,40 +524,36 @@ export default function JournalPage() {
       {(importStep === 'preview' || importStep === 'importing') && (
         <div className="modal-overlay" onClick={() => importStep === 'preview' && closeImport()}>
           <div className="modal-box" onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-              <div>
-                <div style={{ fontSize: '17px', fontWeight: 700, color: '#111' }}>Aperçu de l'import</div>
-                <div style={{ fontSize: '12px', color: '#aaa', marginTop: '2px' }}>
-                  {previewTrades.length} trade{previewTrades.length > 1 ? 's' : ''} prêt{previewTrades.length > 1 ? 's' : ''} à importer
-                  {fillsMergedCount > 0 && ` · ${rawFillsCount} fills fusionnés`}
-                </div>
+            <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#f0fdf4', border: '0.5px solid #bbf7d0', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+                <span style={{ color: '#16a34a', fontSize: '20px' }}>✓</span>
               </div>
-              {importStep === 'preview' && (
-                <button onClick={() => setImportStep('mapping')} style={{ background: '#f5f5f5', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '5px 12px', fontSize: '12px', color: '#666', cursor: 'pointer' }}>← Mapping</button>
-              )}
+              <div style={{ fontSize: '16px', fontWeight: 700, color: '#111', marginBottom: '4px' }}>Ton fichier a bien été lu</div>
+              <div style={{ fontSize: '13px', color: '#888' }}>
+                {rawFillsCount} ligne{rawFillsCount > 1 ? 's' : ''} trouvée{rawFillsCount > 1 ? 's' : ''}, regroupée{rawFillsCount > 1 ? 's' : ''} en {previewTrades.length} trade{previewTrades.length > 1 ? 's' : ''}
+              </div>
             </div>
 
-            <div style={{ border: '0.5px solid #e8e8e8', borderRadius: '8px', overflow: 'hidden', marginBottom: '1.25rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 90px 1fr', background: '#f9f9f9', padding: '8px 12px', fontSize: '11px', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
-                <div>Instrument</div><div>Direction</div><div>Résultat</div><div>Date</div>
+            <div style={{ border: '0.5px solid #e8e8e8', borderRadius: '10px', overflow: 'hidden', marginBottom: '1.25rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 70px 80px', background: '#f9f9f9', padding: '8px 12px', fontSize: '11px', fontWeight: 500, color: '#888' }}>
+                <div>Instrument</div><div>Sens</div><div>Résultat</div>
               </div>
               {previewTrades.slice(0, 6).map((t, i) => (
-                <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 80px 90px 1fr', padding: '8px 12px', fontSize: '13px', borderTop: '0.5px solid #f2f2f2' }}>
-                  <div style={{ color: '#111', fontWeight: 500 }}>{t.instrument}</div>
-                  <div style={{ color: t.direction === 'long' ? '#16a34a' : '#dc2626', fontWeight: 600 }}>{t.direction}</div>
-                  <div style={{ fontFamily: 'monospace', fontWeight: 700, color: t.result_r >= 0 ? '#16a34a' : '#dc2626' }}>{t.result_r >= 0 ? '+' : ''}{t.result_r}</div>
-                  <div style={{ color: '#888' }}>{t.created_at || '—'}</div>
+                <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 70px 80px', padding: '8px 12px', fontSize: '13px', borderTop: '0.5px solid #f2f2f2' }}>
+                  <div style={{ color: '#111' }}>{t.instrument}</div>
+                  <div style={{ color: t.direction === 'long' ? '#16a34a' : '#dc2626' }}>{t.direction === 'long' ? 'Achat' : 'Vente'}</div>
+                  <div style={{ fontFamily: 'monospace', color: t.result_r >= 0 ? '#16a34a' : '#dc2626' }}>{t.result_r >= 0 ? '+' : ''}{t.result_r}</div>
                 </div>
               ))}
               {previewTrades.length > 6 && (
                 <div style={{ padding: '8px 12px', fontSize: '12px', color: '#aaa', borderTop: '0.5px solid #f2f2f2' }}>
-                  + {previewTrades.length - 6} autres trades...
+                  et {previewTrades.length - 6} autres trades...
                 </div>
               )}
             </div>
 
-            <div style={{ background: '#fffbeb', border: '0.5px solid #fde68a', borderRadius: '8px', padding: '10px 14px', fontSize: '12px', color: '#92400e', marginBottom: '1.25rem', lineHeight: 1.6 }}>
-              Ces trades seront marqués "À compléter" — tu pourras ajouter le setup, le contexte et tes notes ensuite directement dans le journal.
+            <div style={{ fontSize: '12px', color: '#aaa', textAlign: 'center', marginBottom: '1.25rem' }}>
+              Ça ne correspond pas à tes trades ? <span onClick={() => setImportStep('mapping')} style={{ color: '#111', textDecoration: 'underline', cursor: 'pointer' }}>Corriger</span>
             </div>
 
             {importError && (
@@ -562,12 +562,9 @@ export default function JournalPage() {
               </div>
             )}
 
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button className="btn-primary" onClick={confirmImport} disabled={importStep === 'importing'}>
-                {importStep === 'importing' ? 'Import en cours...' : `Importer ${previewTrades.length} trade${previewTrades.length > 1 ? 's' : ''}`}
-              </button>
-              <button className="btn-secondary" onClick={closeImport} disabled={importStep === 'importing'}>Annuler</button>
-            </div>
+            <button className="btn-primary" onClick={confirmImport} disabled={importStep === 'importing'} style={{ width: '100%' }}>
+              {importStep === 'importing' ? 'Import en cours...' : `Importer les ${previewTrades.length} trade${previewTrades.length > 1 ? 's' : ''}`}
+            </button>
           </div>
         </div>
       )}
@@ -629,6 +626,12 @@ export default function JournalPage() {
               <button className="btn-primary" onClick={() => { setShowForm(!showForm); if (!showForm) startNewTrade() }}>+ Nouveau trade</button>
             </div>
           </div>
+
+          {importedCount !== null && (
+            <div className="journal-anim" style={{ background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '10px', padding: '10px 14px', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#15803d' }}>
+              ✓ {importedCount} trade{importedCount > 1 ? 's' : ''} importé{importedCount > 1 ? 's' : ''}
+            </div>
+          )}
 
           <div className="journal-anim" style={{ display: 'grid', gridTemplateColumns: toCompleteCount > 0 ? 'repeat(4, 1fr)' : 'repeat(3, 1fr)', gap: '12px', marginBottom: '1.5rem' }}>
             <div className="stat-card">
