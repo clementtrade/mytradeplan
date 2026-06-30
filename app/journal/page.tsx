@@ -25,7 +25,7 @@ const FIELD_DEFS = [
   { key: 'instrument', label: 'Instrument', required: true, aliases: ['instrument', 'symbol', 'ticker', 'contract', 'pair'] },
   { key: 'direction', label: 'Direction', required: true, aliases: ['direction', 'side', 'type', 'b/s', 'action'] },
   { key: 'result_r', label: 'Résultat (R ou PnL)', required: true, aliases: ['result_r', 'pnl', 'p&l', 'p/l', 'profit', 'résultat', 'net pnl', 'realized pnl'] },
-  { key: 'created_at', label: 'Date', required: false, aliases: ['date', 'time', 'datetime', 'entry date', 'open time', 'close time'] },
+  { key: 'created_at', label: 'Date', required: false, aliases: ['date', 'time', 'datetime', 'entry date', 'open time', 'close time', 'entry time'] },
 ]
 
 function normalize(s: string) {
@@ -81,7 +81,8 @@ export default function JournalPage() {
   })
 
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [importStep, setImportStep] = useState<'closed' | 'mapping' | 'preview' | 'importing'>('closed')
+  const [importStep, setImportStep] = useState<'closed' | 'drop' | 'mapping' | 'preview' | 'importing'>('closed')
+  const [isDragging, setIsDragging] = useState(false)
   const [csvHeaders, setCsvHeaders] = useState<string[]>([])
   const [csvRows, setCsvRows] = useState<ParsedRow[]>([])
   const [mapping, setMapping] = useState<Record<string, string>>({})
@@ -171,14 +172,22 @@ export default function JournalPage() {
     setSaving(false)
   }
 
+  // --- CSV Import logic ---
+
+  function openImportModal() {
+    setImportStep('drop')
+  }
+
   function openFilePicker() {
     fileInputRef.current?.click()
   }
 
-  function handleFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
+  function processFile(file: File) {
     setImportError('')
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      setImportError('Le fichier doit être au format .csv')
+      return
+    }
 
     Papa.parse(file, {
       header: true,
@@ -203,7 +212,29 @@ export default function JournalPage() {
         setImportError('Impossible de lire ce fichier. Vérifie le format CSV.')
       }
     })
+  }
+
+  function handleFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (file) processFile(file)
     e.target.value = ''
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  function handleDragLeave(e: React.DragEvent) {
+    e.preventDefault()
+    setIsDragging(false)
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault()
+    setIsDragging(false)
+    const file = e.dataTransfer.files?.[0]
+    if (file) processFile(file)
   }
 
   function buildPreviewTrades() {
@@ -254,6 +285,7 @@ export default function JournalPage() {
 
   function closeImport() {
     setImportStep('closed')
+    setIsDragging(false)
     setCsvHeaders([])
     setCsvRows([])
     setMapping({})
@@ -323,13 +355,63 @@ export default function JournalPage() {
         .badge-incomplete { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; background: #fffbeb; color: #d97706; border: 0.5px solid #fde68a; white-space: nowrap; }
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; z-index: 300; padding: 2rem; }
         .modal-box { background: #fff; border-radius: 16px; padding: 1.75rem; width: 640px; max-width: 95vw; max-height: 88vh; overflow-y: auto; }
+        .modal-box-sm { background: #fff; border-radius: 16px; padding: 1.75rem; width: 520px; max-width: 95vw; }
         .map-row { display: grid; grid-template-columns: 160px 1fr; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 0.5px solid #f2f2f2; }
         .map-row:last-child { border-bottom: none; }
         .map-select { width: 100%; background: #fff; border: 0.5px solid #e0e0e0; border-radius: 6px; padding: 7px 10px; color: #111; font-size: 13px; font-family: inherit; }
+        .dropzone { border: 1.5px dashed #d0d0d0; border-radius: 12px; padding: 2.5rem 1.5rem; text-align: center; background: #fafafa; transition: border-color 0.15s, background 0.15s; cursor: pointer; }
+        .dropzone.dragging { border-color: #111; background: #f5f5f5; }
+        .dropzone-icon { width: 44px; height: 44px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 20px; transition: background 0.15s; }
+        .dropzone.dragging .dropzone-icon { background: #111; color: #fff; }
       `}</style>
 
       <input ref={fileInputRef} type="file" accept=".csv" style={{ display: 'none' }} onChange={handleFileSelected} />
 
+      {/* MODAL IMPORT — DROPZONE */}
+      {importStep === 'drop' && (
+        <div className="modal-overlay" onClick={closeImport}>
+          <div className="modal-box-sm" onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+              <div>
+                <div style={{ fontSize: '16px', fontWeight: 700, color: '#111' }}>Importer un CSV</div>
+                <div style={{ fontSize: '12px', color: '#aaa', marginTop: '2px' }}>Export de ta plateforme broker</div>
+              </div>
+              <button onClick={closeImport} style={{ background: '#f5f5f5', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '5px 12px', fontSize: '12px', color: '#666', cursor: 'pointer' }}>✕</button>
+            </div>
+
+            <div
+              className={`dropzone${isDragging ? ' dragging' : ''}`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={openFilePicker}
+            >
+              <div className="dropzone-icon">{isDragging ? '⬇' : '↑'}</div>
+              {isDragging ? (
+                <div style={{ fontSize: '14px', fontWeight: 600, color: '#111' }}>Relâche pour importer</div>
+              ) : (
+                <>
+                  <div style={{ fontSize: '14px', fontWeight: 600, color: '#111', marginBottom: '4px' }}>Glisse ton fichier CSV ici</div>
+                  <div style={{ fontSize: '12.5px', color: '#aaa', marginBottom: '1.25rem' }}>ou clique pour parcourir tes fichiers</div>
+                  <button className="btn-primary" onClick={(e) => { e.stopPropagation(); openFilePicker() }}>Choisir un fichier</button>
+                </>
+              )}
+            </div>
+
+            {importError && (
+              <div style={{ background: '#fff5f5', border: '0.5px solid #fca5a5', borderRadius: '8px', padding: '10px 14px', color: '#dc2626', fontSize: '12px', marginTop: '1rem' }}>
+                {importError}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#aaa', marginTop: '1rem' }}>
+              Format accepté : .csv, exporté depuis ta plateforme de trading
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL IMPORT — MAPPING */}
       {importStep === 'mapping' && (
         <div className="modal-overlay" onClick={closeImport}>
           <div className="modal-box" onClick={e => e.stopPropagation()}>
@@ -379,12 +461,13 @@ export default function JournalPage() {
               <button className="btn-primary" disabled={missingRequired.length > 0} onClick={() => setImportStep('preview')}>
                 Voir l'aperçu →
               </button>
-              <button className="btn-secondary" onClick={closeImport}>Annuler</button>
+              <button className="btn-secondary" onClick={() => setImportStep('drop')}>← Retour</button>
             </div>
           </div>
         </div>
       )}
 
+      {/* MODAL IMPORT — PREVIEW */}
       {(importStep === 'preview' || importStep === 'importing') && (
         <div className="modal-overlay" onClick={() => importStep === 'preview' && closeImport()}>
           <div className="modal-box" onClick={e => e.stopPropagation()}>
@@ -437,6 +520,7 @@ export default function JournalPage() {
         </div>
       )}
 
+      {/* SIDEBAR */}
       <div
         className={`sidebar${sidebarExpanded ? ' exp' : ''}`}
         style={{ width: sidebarW }}
@@ -484,17 +568,20 @@ export default function JournalPage() {
         </nav>
       </div>
 
+      {/* MAIN */}
       <main style={{ marginLeft: sidebarW, flex: 1, minWidth: 0, transition: 'margin-left 0.2s cubic-bezier(0.4,0,0.2,1)', padding: '0 2rem 3rem' }}>
         <div style={{ maxWidth: '960px', margin: '0 auto' }}>
 
+          {/* HEADER */}
           <div className="journal-anim" style={{ height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '0.5px solid #e8e8e8', marginBottom: '2rem' }}>
             <span style={{ fontSize: '20px', fontWeight: 700, color: '#111', letterSpacing: '-0.5px' }}>Journal de trades</span>
             <div style={{ display: 'flex', gap: '8px' }}>
-              <button className="btn-secondary" onClick={openFilePicker}>↑ Importer CSV</button>
+              <button className="btn-secondary" onClick={openImportModal}>↑ Importer CSV</button>
               <button className="btn-primary" onClick={() => { setShowForm(!showForm); if (!showForm) startNewTrade() }}>+ Nouveau trade</button>
             </div>
           </div>
 
+          {/* STATS */}
           <div className="journal-anim" style={{ display: 'grid', gridTemplateColumns: toCompleteCount > 0 ? 'repeat(4, 1fr)' : 'repeat(3, 1fr)', gap: '12px', marginBottom: '1.5rem' }}>
             <div className="stat-card">
               <div style={{ color: '#888', fontSize: '12px', marginBottom: '4px' }}>Total R</div>
@@ -516,6 +603,7 @@ export default function JournalPage() {
             )}
           </div>
 
+          {/* FORMULAIRE */}
           {showForm && (
             <div className="journal-anim" style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '1.5rem', marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.25rem' }}>
@@ -594,6 +682,7 @@ export default function JournalPage() {
             </div>
           )}
 
+          {/* LISTE */}
           {loading ? (
             <div style={{ textAlign: 'center', padding: '4rem 0', color: '#aaa', fontSize: '14px' }}>Chargement...</div>
           ) : trades.length === 0 ? (
