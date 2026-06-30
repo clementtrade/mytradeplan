@@ -10,7 +10,6 @@ type Trade = {
   direction: string
   setup_type: string
   contexte: string
-  result_r: number
   followed_plan: boolean
   notes: string
 }
@@ -25,7 +24,6 @@ type DayModal = {
   date: string
   dateKey: string
   trades: Trade[]
-  totalR: number
   pnl: number | null
   insight: string
   insightLoading: boolean
@@ -121,15 +119,14 @@ export default function DashboardPage() {
   }
 
   async function openDayModal(day: number, dayTrades: Trade[], dateKey: string, pnl: number | null) {
-    const totalR = parseFloat(dayTrades.reduce((s, t) => s + t.result_r, 0).toFixed(2))
     const dateStr = `${day} ${monthNames[calMonthIdx]} ${calYear}`
 
     if (!profile?.is_pro) {
-      setDayModal({ day, date: dateStr, dateKey, trades: dayTrades, totalR, pnl, insight: 'PRO_LOCKED', insightLoading: false })
+      setDayModal({ day, date: dateStr, dateKey, trades: dayTrades, pnl, insight: 'PRO_LOCKED', insightLoading: false })
       return
     }
 
-    setDayModal({ day, date: dateStr, dateKey, trades: dayTrades, totalR, pnl, insight: '', insightLoading: dayTrades.length > 0 })
+    setDayModal({ day, date: dateStr, dateKey, trades: dayTrades, pnl, insight: '', insightLoading: dayTrades.length > 0 })
     if (dayTrades.length === 0) return
     try {
       const res = await fetch('/api/day-insight', {
@@ -150,7 +147,7 @@ export default function DashboardPage() {
     setDeleteConfirmId(null)
     if (dayModal) {
       const remainingTrades = dayModal.trades.filter(t => t.id !== id)
-      setDayModal({ ...dayModal, trades: remainingTrades, totalR: parseFloat(remainingTrades.reduce((s, t) => s + t.result_r, 0).toFixed(2)) })
+      setDayModal({ ...dayModal, trades: remainingTrades })
     }
     loadAll()
     setDeleting(false)
@@ -296,45 +293,7 @@ export default function DashboardPage() {
   const previewTotals = (importStep === 'preview' || importStep === 'importing') ? buildDailyTotals() : []
   const missingRequired = FIELD_DEFS.filter(f => f.required && !mapping[f.key])
 
-  const wins = trades.filter(t => t.result_r > 0)
-  const losses = trades.filter(t => t.result_r <= 0)
-  const winRate = trades.length > 0 ? Math.round((wins.length / trades.length) * 100) : 0
-  const avgWin = wins.length > 0 ? wins.reduce((s, t) => s + t.result_r, 0) / wins.length : 0
-  const avgLoss = losses.length > 0 ? Math.abs(losses.reduce((s, t) => s + t.result_r, 0) / losses.length) : 0
-  const profitFactor = avgLoss > 0 ? parseFloat((avgWin / avgLoss).toFixed(1)) : 0
-  const followedPlan = trades.length > 0 ? Math.round((trades.filter(t => t.followed_plan).length / trades.length) * 100) : 0
-  const avgR = trades.length > 0 ? parseFloat((trades.reduce((s, t) => s + t.result_r, 0) / trades.length).toFixed(1)) : 0
   const recentTrades = trades.slice(0, 4)
-
-  const setupStats = trades.reduce((acc: Record<string, { wins: number; total: number; totalR: number }>, t) => {
-    const setup = t.setup_type || 'Non défini'
-    if (!acc[setup]) acc[setup] = { wins: 0, total: 0, totalR: 0 }
-    acc[setup].total++
-    acc[setup].totalR += t.result_r
-    if (t.result_r > 0) acc[setup].wins++
-    return acc
-  }, {})
-  const setupList = Object.entries(setupStats)
-    .map(([name, s]) => ({ name, winRate: Math.round((s.wins / s.total) * 100), avgR: parseFloat((s.totalR / s.total).toFixed(1)), total: s.total }))
-    .sort((a, b) => b.avgR - a.avgR).slice(0, 3)
-
-  const tradesAsc = [...trades].reverse()
-  const equityCurve = tradesAsc.reduce((acc: { x: number; r: number }[], t, i) => {
-    const prev = acc[i - 1]?.r ?? 0
-    return [...acc, { x: i + 1, r: parseFloat((prev + t.result_r).toFixed(2)) }]
-  }, [])
-  const totalR = equityCurve.length > 0 ? equityCurve[equityCurve.length - 1].r : 0
-  const maxR = Math.max(...equityCurve.map(p => p.r), 0.1)
-  const minR = Math.min(...equityCurve.map(p => p.r), -0.1)
-  const range = maxR - minR || 1
-  const chartH = 80
-  function getY(r: number) { return chartH - ((r - minR) / range) * (chartH - 10) }
-  const points = equityCurve.map((p, i) => {
-    const x = equityCurve.length > 1 ? (i / (equityCurve.length - 1)) * 540 + 20 : 20
-    return `${x},${getY(p.r)}`
-  }).join(' ')
-  const lastX = equityCurve.length > 1 ? 560 : 20
-  const lastY = equityCurve.length > 0 ? getY(equityCurve[equityCurve.length - 1].r) : chartH / 2
 
   const calYear = calMonth.getFullYear()
   const calMonthIdx = calMonth.getMonth()
@@ -362,11 +321,21 @@ export default function DashboardPage() {
 
   const monthNames = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre']
   const today = new Date()
-  const calTrades = Object.values(tradesByDay)
-  const calWinDays = calTrades.filter(ts => ts.reduce((s, t) => s + t.result_r, 0) > 0).length
-  const calTotalR = parseFloat(Object.values(tradesByDay).flat().reduce((s, t) => s + t.result_r, 0).toFixed(1))
-  const calWR = calTrades.length > 0 ? Math.round((calWinDays / calTrades.length) * 100) : 0
-  const calTotalPnl = parseFloat(Object.values(pnlByDay).reduce((s, p) => s + p, 0).toFixed(2))
+
+  const monthPnlValues = Object.values(pnlByDay)
+  const tradedDaysCount = monthPnlValues.length
+  const winningDays = monthPnlValues.filter(p => p > 0)
+  const losingDays = monthPnlValues.filter(p => p < 0)
+  const winRatePnl = tradedDaysCount > 0 ? Math.round((winningDays.length / tradedDaysCount) * 100) : 0
+  const avgWinDay = winningDays.length > 0 ? parseFloat((winningDays.reduce((s, p) => s + p, 0) / winningDays.length).toFixed(2)) : 0
+  const avgLossDay = losingDays.length > 0 ? parseFloat((losingDays.reduce((s, p) => s + p, 0) / losingDays.length).toFixed(2)) : 0
+  const profitFactorPnl = avgLossDay !== 0 ? parseFloat((Math.abs(winningDays.reduce((s, p) => s + p, 0)) / Math.abs(losingDays.reduce((s, p) => s + p, 0) || 1)).toFixed(1)) : 0
+  const calTotalPnl = parseFloat(monthPnlValues.reduce((s, p) => s + p, 0).toFixed(2))
+
+  const profitFactorLabel = profitFactorPnl >= 2 ? 'Excellent' : profitFactorPnl >= 1.5 ? 'Bon' : profitFactorPnl >= 1 ? 'Correct' : 'À améliorer'
+  const winRateCircumference = 2 * Math.PI * 22
+  const profitFactorOffset = Math.max(0, winRateCircumference - (Math.min(profitFactorPnl / 5, 1) * winRateCircumference))
+  const winGaugeOffset = 88 - (winRatePnl / 100) * 88
 
   const sidebarW = sidebarExpanded ? 200 : 52
   const dateStr = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
@@ -406,7 +375,7 @@ export default function DashboardPage() {
         .nav-lbl { font-size: 12.5px; font-weight: 500; margin-left: 8px; opacity: 0; transition: opacity 0.1s 0.07s; white-space: nowrap; }
         .sidebar.exp .nav-lbl { opacity: 1; }
         .nav-item.active .nav-lbl { color: #fff; }
-        .kpi-card { background: #1a1a1a; border-radius: 14px; padding: 1.25rem 1.4rem; transition: transform 0.15s; }
+        .kpi-card { background: #1a1a1a; border-radius: 14px; padding: 1.1rem; transition: transform 0.15s; }
         .kpi-card:hover { transform: translateY(-2px); }
         .mid-card { background: #fff; border: 0.5px solid #e8e8e8; border-radius: 14px; padding: 1.25rem; }
         .trade-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 0.5px solid #f2f2f2; }
@@ -414,12 +383,10 @@ export default function DashboardPage() {
         .badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.4px; }
         .badge-long { background: #dcfce7; color: #16a34a; }
         .badge-short { background: #fee2e2; color: #dc2626; }
-        .setup-row { padding: 8px 0; border-bottom: 0.5px solid #f2f2f2; }
-        .setup-row:last-child { border-bottom: none; }
         .macro-btn { display: flex; align-items: center; justify-content: center; gap: 8px; background: #111; color: #fff; border: none; border-radius: 10px; padding: 10px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; width: 100%; }
         .macro-btn:hover { background: #333; }
         .macro-btn:disabled { background: #555; cursor: wait; }
-        .cal-day { aspect-ratio: 1; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; transition: all 0.15s; cursor: default; padding: 4px; }
+        .cal-day { aspect-ratio: 1; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; transition: all 0.15s; cursor: default; padding: 4px; }
         .cal-win { background: #c8f0d8; color: #15803d; cursor: pointer; }
         .cal-win:hover { transform: scale(1.06); box-shadow: 0 4px 12px rgba(22,163,74,0.2); }
         .cal-loss { background: #fdd0d0; color: #dc2626; cursor: pointer; }
@@ -429,8 +396,7 @@ export default function DashboardPage() {
         .cal-empty { background: transparent; cursor: default; }
         .cal-future { background: #f5f5f5; color: #ddd; }
         .cal-today { outline: 2px solid #888; outline-offset: -2px; }
-        .cal-r { font-size: 9px; margin-top: 1px; opacity: 0.85; }
-        .cal-pnl { font-size: 8px; margin-top: 1px; opacity: 0.7; font-family: monospace; }
+        .cal-pnl { font-size: 12px; margin-top: 3px; font-family: monospace; font-weight: 700; }
         .cal-weekend { opacity: 0.3; }
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 2rem; }
         .modal-box { background: #fff; border: 0.5px solid #e8e8e8; border-radius: 16px; padding: 1.5rem; width: 520px; max-width: 92vw; max-height: 85vh; overflow-y: auto; }
@@ -606,8 +572,8 @@ export default function DashboardPage() {
               <div>
                 <div style={{ fontSize: '16px', fontWeight: 700, color: '#111' }}>{dayModal.date}</div>
                 <div style={{ fontSize: '12px', color: '#bbb', marginTop: '2px' }}>
-                  {dayModal.trades.length} trade{dayModal.trades.length > 1 ? 's' : ''} journalisé{dayModal.trades.length > 1 ? 's' : ''} · {dayModal.totalR >= 0 ? '+' : ''}{dayModal.totalR}R
-                  {dayModal.pnl !== null && <> · PnL broker {dayModal.pnl >= 0 ? '+' : ''}{dayModal.pnl}$</>}
+                  {dayModal.trades.length} trade{dayModal.trades.length > 1 ? 's' : ''} journalisé{dayModal.trades.length > 1 ? 's' : ''}
+                  {dayModal.pnl !== null && <> · PnL {dayModal.pnl >= 0 ? '+' : ''}{dayModal.pnl}$</>}
                 </div>
               </div>
               <button onClick={() => setDayModal(null)} style={{ background: '#f5f5f5', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '5px 12px', fontSize: '12px', color: '#666', cursor: 'pointer' }}>
@@ -628,13 +594,8 @@ export default function DashboardPage() {
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '13px', fontWeight: 700, fontFamily: 'monospace', color: t.result_r > 0 ? '#16a34a' : '#dc2626' }}>
-                          {t.result_r > 0 ? '+' : ''}{t.result_r}R
-                        </div>
-                        <div style={{ fontSize: '10px', color: t.followed_plan ? '#16a34a' : '#d97706' }}>
-                          {t.followed_plan ? '✓ plan' : '✗ plan'}
-                        </div>
+                      <div style={{ fontSize: '11px', color: t.followed_plan ? '#16a34a' : '#d97706' }}>
+                        {t.followed_plan ? '✓ plan' : '✗ plan'}
                       </div>
                       <button className="delete-icon-btn" onClick={() => setDeleteConfirmId(t.id)} title="Supprimer ce trade">✕</button>
                     </div>
@@ -761,123 +722,77 @@ export default function DashboardPage() {
 
             <div className="sa sa2" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '12px', marginBottom: '1.5rem' }}>
               <div className="kpi-card">
-                <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px', fontWeight: 500 }}>Win rate</div>
-                <div style={{ fontSize: '2.4rem', fontWeight: 700, color: winRate >= 50 ? '#4ade80' : '#f87171', fontFamily: 'monospace', letterSpacing: '-2px', lineHeight: 1 }}>
-                  {trades.length === 0 ? '—' : `${winRate}%`}
+                <div style={{ fontSize: '11px', color: '#999', marginBottom: '10px' }}>Win rate</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <svg width="50" height="32" viewBox="0 0 64 40">
+                    <path d="M 4 36 A 28 28 0 0 1 60 36" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="6" strokeLinecap="round"/>
+                    <path d="M 4 36 A 28 28 0 0 1 60 36" fill="none" stroke="#4ade80" strokeWidth="6" strokeLinecap="round" strokeDasharray="88" strokeDashoffset={tradedDaysCount === 0 ? 88 : winGaugeOffset}/>
+                  </svg>
+                  <div style={{ fontSize: '22px', fontWeight: 700, color: '#fff', fontFamily: 'monospace' }}>{tradedDaysCount === 0 ? '—' : `${winRatePnl}%`}</div>
                 </div>
-                <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>{trades.length} trades</div>
               </div>
               <div className="kpi-card">
-                <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px', fontWeight: 500 }}>R moyen</div>
-                <div style={{ fontSize: '2.4rem', fontWeight: 700, color: avgR >= 0 ? '#4ade80' : '#f87171', fontFamily: 'monospace', letterSpacing: '-2px', lineHeight: 1 }}>
-                  {trades.length === 0 ? '—' : `${avgR >= 0 ? '+' : ''}${avgR}R`}
-                </div>
-                <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>trades gagnants</div>
+                <div style={{ fontSize: '11px', color: '#999', marginBottom: '10px' }}>Gain moyen / jour</div>
+                <div style={{ fontSize: '22px', fontWeight: 700, color: '#4ade80', fontFamily: 'monospace' }}>{winningDays.length === 0 ? '—' : `+${avgWinDay}$`}</div>
+                <div style={{ fontSize: '11px', color: '#777', marginTop: '6px' }}>jours gagnants</div>
               </div>
               <div className="kpi-card">
-                <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px', fontWeight: 500 }}>Profit factor</div>
-                <div style={{ fontSize: '2.4rem', fontWeight: 700, color: '#fff', fontFamily: 'monospace', letterSpacing: '-2px', lineHeight: 1 }}>
-                  {trades.length === 0 ? '—' : (profitFactor || '—')}
-                </div>
-                <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>ce mois</div>
+                <div style={{ fontSize: '11px', color: '#999', marginBottom: '10px' }}>Perte moyenne / jour</div>
+                <div style={{ fontSize: '22px', fontWeight: 700, color: '#f87171', fontFamily: 'monospace' }}>{losingDays.length === 0 ? '—' : `${avgLossDay}$`}</div>
+                <div style={{ fontSize: '11px', color: '#777', marginTop: '6px' }}>jours perdants</div>
               </div>
               <div className="kpi-card">
-                <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px', fontWeight: 500 }}>Discipline</div>
-                <div style={{ fontSize: '2.4rem', fontWeight: 700, color: followedPlan >= 70 ? '#4ade80' : '#facc15', fontFamily: 'monospace', letterSpacing: '-2px', lineHeight: 1 }}>
-                  {trades.length === 0 ? '—' : `${followedPlan}%`}
+                <div style={{ fontSize: '11px', color: '#999', marginBottom: '10px' }}>Profit factor</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <svg width="42" height="42" viewBox="0 0 52 52">
+                    <circle cx="26" cy="26" r="22" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="6"/>
+                    <circle cx="26" cy="26" r="22" fill="none" stroke="#4ade80" strokeWidth="6" strokeLinecap="round" strokeDasharray="138" strokeDashoffset={tradedDaysCount === 0 ? 138 : profitFactorOffset} transform="rotate(-90 26 26)"/>
+                  </svg>
+                  <div>
+                    <div style={{ fontSize: '20px', fontWeight: 700, color: '#fff', fontFamily: 'monospace' }}>{tradedDaysCount === 0 ? '—' : profitFactorPnl}</div>
+                    {tradedDaysCount > 0 && <div style={{ fontSize: '10px', color: '#4ade80' }}>{profitFactorLabel}</div>}
+                  </div>
                 </div>
-                <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>plan respecté</div>
               </div>
             </div>
 
-            {trades.length === 0 ? (
-              <div className="sa sa3 mid-card" style={{ textAlign: 'center', padding: '2rem', marginBottom: '1.5rem' }}>
-                <div style={{ fontSize: '24px', marginBottom: '10px' }}>▤</div>
-                <div style={{ color: '#bbb', fontSize: '14px', marginBottom: '8px' }}>Aucun trade encore enregistré.</div>
-                <a href="/journal" style={{ color: '#111', fontSize: '13px', fontWeight: 600, textDecoration: 'none' }}>Ajouter un trade →</a>
+            <div className="sa sa3 mid-card" style={{ marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <div>
+                  <div style={{ fontSize: '12px', color: '#888', marginBottom: '4px' }}>PnL total ce mois</div>
+                  <div style={{ fontSize: '26px', fontWeight: 700, color: calTotalPnl >= 0 ? '#16a34a' : '#dc2626', fontFamily: 'monospace' }}>
+                    {tradedDaysCount === 0 ? '—' : `${calTotalPnl >= 0 ? '+' : ''}${calTotalPnl}$`}
+                  </div>
+                </div>
+                <div style={{ fontSize: '12px', color: '#aaa' }}>{tradedDaysCount > 0 ? `sur ${tradedDaysCount} jour${tradedDaysCount > 1 ? 's' : ''} tradé${tradedDaysCount > 1 ? 's' : ''}` : 'aucune donnée importée'}</div>
               </div>
-            ) : (
-              <>
-                <div className="sa sa3" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '1.5rem' }}>
-                  <div className="mid-card">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1rem' }}>
-                      <span style={{ fontSize: '13px', fontWeight: 700, color: '#888' }}>Journal récent</span>
-                      <a href="/journal" style={{ fontSize: '12px', color: '#aaa', textDecoration: 'none', fontWeight: 500 }}>Voir tout →</a>
+            </div>
+
+            {trades.length > 0 && (
+              <div className="sa sa4 mid-card" style={{ marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1rem' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#888' }}>Journal récent</span>
+                  <a href="/journal" style={{ fontSize: '12px', color: '#aaa', textDecoration: 'none', fontWeight: 500 }}>Voir tout →</a>
+                </div>
+                {recentTrades.map(t => {
+                  const d = new Date(t.created_at)
+                  const ds = `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}`
+                  return (
+                    <div key={t.id} className="trade-row">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                        <span className={`badge badge-${t.direction === 'long' ? 'long' : 'short'}`}>{t.direction}</span>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontSize: '13px', fontWeight: 600, color: '#111' }}>{t.setup_type || t.instrument}</div>
+                          <div style={{ fontSize: '11px', color: '#bbb' }}>{ds}</div>
+                        </div>
+                      </div>
+                      <span style={{ fontSize: '12px', color: t.followed_plan ? '#16a34a' : '#d97706' }}>
+                        {t.followed_plan ? '✓ Plan suivi' : '⚠ Hors plan'}
+                      </span>
                     </div>
-                    {recentTrades.map(t => {
-                      const d = new Date(t.created_at)
-                      const ds = `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}`
-                      return (
-                        <div key={t.id} className="trade-row">
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
-                            <span className={`badge badge-${t.direction === 'long' ? 'long' : 'short'}`}>{t.direction}</span>
-                            <div style={{ minWidth: 0 }}>
-                              <div style={{ fontSize: '13px', fontWeight: 600, color: '#111' }}>{t.setup_type || t.instrument}</div>
-                              <div style={{ fontSize: '11px', color: '#bbb' }}>{ds}</div>
-                            </div>
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
-                            <span style={{ fontSize: '13.5px', fontWeight: 700, fontFamily: 'monospace', color: t.result_r > 0 ? '#16a34a' : '#dc2626' }}>
-                              {t.result_r > 0 ? '+' : ''}{t.result_r}R
-                            </span>
-                            <span style={{ fontSize: '11px', color: t.followed_plan ? '#16a34a' : '#d97706', minWidth: '40px' }}>
-                              {t.followed_plan ? '✓ plan' : '✗ plan'}
-                            </span>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-
-                  <div className="mid-card">
-                    <div style={{ fontSize: '13px', fontWeight: 700, color: '#888', marginBottom: '1rem' }}>Performances par setup</div>
-                    {setupList.map((s) => (
-                      <div key={s.name} className="setup-row">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                          <span style={{ fontSize: '13px', fontWeight: 600, color: '#111' }}>{s.name}</span>
-                          <span style={{ fontSize: '12px', fontWeight: 700, fontFamily: 'monospace', color: s.avgR >= 0 ? '#16a34a' : '#dc2626' }}>
-                            {s.avgR >= 0 ? '+' : ''}{s.avgR}R · {s.winRate}%
-                          </span>
-                        </div>
-                        <div style={{ height: '7px', background: '#f0f0f0', borderRadius: '4px' }}>
-                          <div style={{ width: `${s.winRate}%`, height: '100%', background: s.winRate >= 50 ? '#111' : '#dc2626', borderRadius: '4px', transition: 'width 0.6s ease' }}></div>
-                        </div>
-                      </div>
-                    ))}
-                    {setupList.length >= 2 && (
-                      <div style={{ background: '#fffbeb', border: '0.5px solid #fde68a', borderRadius: '10px', padding: '10px 12px', marginTop: '14px', fontSize: '12px', color: '#92400e', lineHeight: 1.6, display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-                        <span>□</span>
-                        <span>Ton edge est sur <strong>{setupList[0].name}</strong> — {Math.round(setupList[0].avgR / Math.abs(setupList[setupList.length-1].avgR || 1))}× mieux que {setupList[setupList.length-1].name}.</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="sa sa4 mid-card" style={{ marginBottom: '1.5rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 600, color: '#888' }}>Capital cumulé (R)</span>
-                    <span style={{ fontSize: '13px', fontWeight: 700, fontFamily: 'monospace', color: totalR >= 0 ? '#16a34a' : '#dc2626' }}>
-                      {totalR >= 0 ? '+' : ''}{totalR}R ce mois
-                    </span>
-                  </div>
-                  {equityCurve.length > 1 ? (
-                    <svg width="100%" viewBox="0 0 580 90" style={{ overflow: 'visible', display: 'block' }}>
-                      <defs>
-                        <linearGradient id="gEq" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor={totalR >= 0 ? '#16a34a' : '#dc2626'} stopOpacity="0.18"/>
-                          <stop offset="100%" stopColor={totalR >= 0 ? '#16a34a' : '#dc2626'} stopOpacity="0"/>
-                        </linearGradient>
-                      </defs>
-                      <line x1="20" y1={getY(0)} x2="560" y2={getY(0)} stroke="#f0f0f0" strokeWidth="1" strokeDasharray="4,3"/>
-                      <polygon points={`${points} ${lastX},${chartH + 5} 20,${chartH + 5}`} fill="url(#gEq)"/>
-                      <polyline points={points} fill="none" stroke={totalR >= 0 ? '#16a34a' : '#dc2626'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <circle cx={lastX} cy={lastY} r="4" fill={totalR >= 0 ? '#16a34a' : '#dc2626'}/>
-                    </svg>
-                  ) : (
-                    <div style={{ height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ddd', fontSize: '12px' }}>Pas assez de données</div>
-                  )}
-                </div>
-              </>
+                  )
+                })}
+              </div>
             )}
 
             <div className="sa sa5 mid-card" style={{ marginBottom: '1.5rem' }}>
@@ -921,10 +836,6 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: '14px', fontSize: '11px', color: '#aaa', marginBottom: '10px' }}>
-                <span>Ligne du haut : R (journal)</span>
-                <span>Ligne du bas : PnL $ (broker)</span>
-              </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '6px', marginBottom: '6px' }}>
                 {['L','M','M','J','V','S','D'].map((d, i) => (
                   <div key={`${d}${i}`} style={{ textAlign: 'center', fontSize: '12px', fontWeight: 600, color: i >= 5 ? '#ddd' : '#aaa', paddingBottom: '4px' }}>{d}</div>
@@ -939,15 +850,13 @@ export default function DashboardPage() {
                   const key = day.toString()
                   const dayTrades = tradesByDay[key] || []
                   const pnl = pnlByDay[key] !== undefined ? pnlByDay[key] : null
-                  const r = dayTrades.length > 0 ? dayTrades.reduce((s, t) => s + t.result_r, 0) : undefined
                   const isFuture = new Date(calYear, calMonthIdx, day) > today
                   const isToday = day === today.getDate() && calMonthIdx === today.getMonth() && calYear === today.getFullYear()
                   const isWeekend = (() => { const d = new Date(calYear, calMonthIdx, day).getDay(); return d === 0 || d === 6 })()
-                  const hasData = r !== undefined || pnl !== null
-                  const refValue = r !== undefined ? r : pnl
+                  const hasData = pnl !== null
                   let cls = 'cal-day '
                   if (isFuture) cls += 'cal-future'
-                  else if (hasData) cls += (refValue! > 0 ? 'cal-win' : refValue! < 0 ? 'cal-loss' : 'cal-neutral')
+                  else if (hasData) cls += (pnl! > 0 ? 'cal-win' : pnl! < 0 ? 'cal-loss' : 'cal-neutral')
                   else cls += 'cal-neutral'
                   if (isToday) cls += ' cal-today'
                   if (isWeekend && !hasData) cls += ' cal-weekend'
@@ -958,9 +867,6 @@ export default function DashboardPage() {
                       onClick={() => !isFuture ? openDayModal(day, dayTrades, `${calYear}-${(calMonthIdx+1).toString().padStart(2,'0')}-${day.toString().padStart(2,'0')}`, pnl) : undefined}
                     >
                       {day}
-                      {r !== undefined && (
-                        <span className="cal-r">{r >= 0 ? '+' : ''}{r.toFixed(1)}R</span>
-                      )}
                       {pnl !== null && (
                         <span className="cal-pnl">{pnl >= 0 ? '+' : ''}{pnl}$</span>
                       )}
@@ -968,21 +874,17 @@ export default function DashboardPage() {
                   )
                 })}
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '10px', marginTop: '1.25rem', paddingTop: '1rem', borderTop: '0.5px solid #f0f0f0' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '10px', marginTop: '1.25rem', paddingTop: '1rem', borderTop: '0.5px solid #f0f0f0' }}>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: calTotalR >= 0 ? '#16a34a' : '#dc2626' }}>{calTotalR >= 0 ? '+' : ''}{calTotalR}R</div>
-                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '3px' }}>Total R (journal)</div>
+                  <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: calTotalPnl >= 0 ? '#16a34a' : '#dc2626' }}>{tradedDaysCount === 0 ? '—' : `${calTotalPnl >= 0 ? '+' : ''}${calTotalPnl}$`}</div>
+                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '3px' }}>Total PnL</div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: calTotalPnl >= 0 ? '#16a34a' : '#dc2626' }}>{calTotalPnl >= 0 ? '+' : ''}{calTotalPnl}$</div>
-                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '3px' }}>Total PnL (broker)</div>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: '#111' }}>{calTrades.length}</div>
+                  <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: '#111' }}>{tradedDaysCount}</div>
                   <div style={{ fontSize: '11px', color: '#bbb', marginTop: '3px' }}>Jours tradés</div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: calWR >= 50 ? '#16a34a' : '#dc2626' }}>{calWR}%</div>
+                  <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: winRatePnl >= 50 ? '#16a34a' : '#dc2626' }}>{tradedDaysCount === 0 ? '—' : `${winRatePnl}%`}</div>
                   <div style={{ fontSize: '11px', color: '#bbb', marginTop: '3px' }}>Win rate mensuel</div>
                 </div>
               </div>
