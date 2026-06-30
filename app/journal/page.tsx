@@ -25,7 +25,7 @@ const FIELD_DEFS = [
   { key: 'instrument', label: 'Instrument', required: true, aliases: ['instrument', 'symbol', 'ticker', 'contract', 'pair'] },
   { key: 'direction', label: 'Direction', required: true, aliases: ['direction', 'side', 'type', 'b/s', 'action'] },
   { key: 'result_r', label: 'Résultat (R ou PnL)', required: true, aliases: ['result_r', 'pnl', 'p&l', 'p/l', 'profit', 'résultat', 'net pnl', 'realized pnl'] },
-  { key: 'created_at', label: 'Date', required: false, aliases: ['date', 'time', 'datetime', 'entry date', 'open time', 'close time', 'entry time'] },
+  { key: 'created_at', label: 'Date / Entry', required: false, aliases: ['date', 'time', 'datetime', 'entry date', 'open time', 'entry time'] },
 ]
 
 function normalize(s: string) {
@@ -56,6 +56,52 @@ function parseResultR(val: string): number {
   const cleaned = val.replace(/[^0-9.,\-]/g, '').replace(',', '.')
   const num = parseFloat(cleaned)
   return isNaN(num) ? 0 : num
+}
+
+function parseDateLoose(val: string): number {
+  if (!val) return 0
+  const cleaned = val.replace(' @ ', ' ')
+  const t = Date.parse(cleaned)
+  return isNaN(t) ? 0 : t
+}
+
+type RawFill = {
+  instrument: string
+  direction: string
+  result_r: number
+  created_at: string
+  sortKey: number
+}
+
+function mergeFills(fills: RawFill[]): RawFill[] {
+  const grouped: Record<string, RawFill[]> = {}
+  for (const fill of fills) {
+    const key = fill.instrument
+    if (!grouped[key]) grouped[key] = []
+    grouped[key].push(fill)
+  }
+
+  const merged: RawFill[] = []
+
+  for (const instrument of Object.keys(grouped)) {
+    const sorted = [...grouped[instrument]].sort((a, b) => a.sortKey - b.sortKey)
+    let current: RawFill | null = null
+
+    for (const fill of sorted) {
+      if (current && current.direction === fill.direction) {
+        current.result_r = parseFloat((current.result_r + fill.result_r).toFixed(2))
+        if (fill.sortKey > current.sortKey) {
+          current.sortKey = fill.sortKey
+        }
+      } else {
+        if (current) merged.push(current)
+        current = { ...fill }
+      }
+    }
+    if (current) merged.push(current)
+  }
+
+  return merged.sort((a, b) => b.sortKey - a.sortKey)
 }
 
 export default function JournalPage() {
@@ -172,8 +218,6 @@ export default function JournalPage() {
     setSaving(false)
   }
 
-  // --- CSV Import logic ---
-
   function openImportModal() {
     setImportStep('drop')
   }
@@ -237,7 +281,7 @@ export default function JournalPage() {
     if (file) processFile(file)
   }
 
-  function buildPreviewTrades() {
+  function buildRawFills(): RawFill[] {
     return csvRows.map(row => {
       const instrument = mapping.instrument ? row[mapping.instrument] || '' : ''
       const directionRaw = mapping.direction ? row[mapping.direction] || '' : ''
@@ -248,8 +292,14 @@ export default function JournalPage() {
         direction: normalizeDirection(directionRaw),
         result_r: parseResultR(resultRaw),
         created_at: dateRaw,
+        sortKey: parseDateLoose(dateRaw),
       }
     }).filter(t => t.instrument)
+  }
+
+  function buildPreviewTrades() {
+    const rawFills = buildRawFills()
+    return mergeFills(rawFills)
   }
 
   async function confirmImport() {
@@ -292,7 +342,9 @@ export default function JournalPage() {
     setImportError('')
   }
 
+  const rawFillsCount = importStep === 'mapping' ? buildRawFills().length : 0
   const previewTrades = importStep === 'preview' || importStep === 'importing' ? buildPreviewTrades() : []
+  const fillsMergedCount = rawFillsCount - previewTrades.length
   const missingRequired = FIELD_DEFS.filter(f => f.required && !mapping[f.key])
 
   const totalR = trades.reduce((sum, t) => sum + t.result_r, 0)
@@ -367,7 +419,6 @@ export default function JournalPage() {
 
       <input ref={fileInputRef} type="file" accept=".csv" style={{ display: 'none' }} onChange={handleFileSelected} />
 
-      {/* MODAL IMPORT — DROPZONE */}
       {importStep === 'drop' && (
         <div className="modal-overlay" onClick={closeImport}>
           <div className="modal-box-sm" onClick={e => e.stopPropagation()}>
@@ -411,7 +462,6 @@ export default function JournalPage() {
         </div>
       )}
 
-      {/* MODAL IMPORT — MAPPING */}
       {importStep === 'mapping' && (
         <div className="modal-overlay" onClick={closeImport}>
           <div className="modal-box" onClick={e => e.stopPropagation()}>
@@ -424,7 +474,7 @@ export default function JournalPage() {
             </div>
 
             <div style={{ fontSize: '12.5px', color: '#888', lineHeight: 1.6, marginBottom: '1.25rem' }}>
-              Associe les colonnes de ton fichier aux champs MyTradePlan. Les colonnes ont été pré-détectées automatiquement — vérifie et corrige si besoin.
+              Associe les colonnes de ton fichier aux champs MyTradePlan. Les lignes du même contrat et de la même direction seront automatiquement fusionnées en un seul trade.
               Les champs d'analyse (setup, contexte, zone...) seront à compléter manuellement après l'import.
             </div>
 
@@ -467,14 +517,16 @@ export default function JournalPage() {
         </div>
       )}
 
-      {/* MODAL IMPORT — PREVIEW */}
       {(importStep === 'preview' || importStep === 'importing') && (
         <div className="modal-overlay" onClick={() => importStep === 'preview' && closeImport()}>
           <div className="modal-box" onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
               <div>
                 <div style={{ fontSize: '17px', fontWeight: 700, color: '#111' }}>Aperçu de l'import</div>
-                <div style={{ fontSize: '12px', color: '#aaa', marginTop: '2px' }}>{previewTrades.length} trade{previewTrades.length > 1 ? 's' : ''} prêt{previewTrades.length > 1 ? 's' : ''} à importer</div>
+                <div style={{ fontSize: '12px', color: '#aaa', marginTop: '2px' }}>
+                  {previewTrades.length} trade{previewTrades.length > 1 ? 's' : ''} prêt{previewTrades.length > 1 ? 's' : ''} à importer
+                  {fillsMergedCount > 0 && ` · ${rawFillsCount} fills fusionnés`}
+                </div>
               </div>
               {importStep === 'preview' && (
                 <button onClick={() => setImportStep('mapping')} style={{ background: '#f5f5f5', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '5px 12px', fontSize: '12px', color: '#666', cursor: 'pointer' }}>← Mapping</button>
@@ -520,7 +572,6 @@ export default function JournalPage() {
         </div>
       )}
 
-      {/* SIDEBAR */}
       <div
         className={`sidebar${sidebarExpanded ? ' exp' : ''}`}
         style={{ width: sidebarW }}
@@ -568,11 +619,9 @@ export default function JournalPage() {
         </nav>
       </div>
 
-      {/* MAIN */}
       <main style={{ marginLeft: sidebarW, flex: 1, minWidth: 0, transition: 'margin-left 0.2s cubic-bezier(0.4,0,0.2,1)', padding: '0 2rem 3rem' }}>
         <div style={{ maxWidth: '960px', margin: '0 auto' }}>
 
-          {/* HEADER */}
           <div className="journal-anim" style={{ height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '0.5px solid #e8e8e8', marginBottom: '2rem' }}>
             <span style={{ fontSize: '20px', fontWeight: 700, color: '#111', letterSpacing: '-0.5px' }}>Journal de trades</span>
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -581,7 +630,6 @@ export default function JournalPage() {
             </div>
           </div>
 
-          {/* STATS */}
           <div className="journal-anim" style={{ display: 'grid', gridTemplateColumns: toCompleteCount > 0 ? 'repeat(4, 1fr)' : 'repeat(3, 1fr)', gap: '12px', marginBottom: '1.5rem' }}>
             <div className="stat-card">
               <div style={{ color: '#888', fontSize: '12px', marginBottom: '4px' }}>Total R</div>
@@ -603,7 +651,6 @@ export default function JournalPage() {
             )}
           </div>
 
-          {/* FORMULAIRE */}
           {showForm && (
             <div className="journal-anim" style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '1.5rem', marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.25rem' }}>
@@ -682,7 +729,6 @@ export default function JournalPage() {
             </div>
           )}
 
-          {/* LISTE */}
           {loading ? (
             <div style={{ textAlign: 'center', padding: '4rem 0', color: '#aaa', fontSize: '14px' }}>Chargement...</div>
           ) : trades.length === 0 ? (
