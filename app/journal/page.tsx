@@ -1,7 +1,7 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { supabase } from '../lib/supabase'
-import Papa from 'papaparse'
 
 type Trade = {
   id: string
@@ -16,95 +16,12 @@ type Trade = {
   result_r: number
   followed_plan: boolean
   notes: string
-  is_imported?: boolean
-}
-
-type ParsedRow = Record<string, string>
-
-const FIELD_DEFS = [
-  { key: 'instrument', label: "l'instrument", hint: 'le contrat ou symbole tradé', required: true, aliases: ['instrument', 'symbol', 'ticker', 'contract', 'pair'] },
-  { key: 'direction', label: 'le sens du trade', hint: 'achat ou vente', required: true, aliases: ['direction', 'side', 'type', 'b/s', 'action'] },
-  { key: 'result_r', label: 'les résultats', hint: 'profit ou perte', required: true, aliases: ['result_r', 'pnl', 'p&l', 'p/l', 'profit', 'résultat', 'net pnl', 'realized pnl'] },
-  { key: 'created_at', label: 'les dates', hint: 'optionnel', required: false, aliases: ['date', 'time', 'datetime', 'entry date', 'open time', 'entry time'] },
-]
-
-function normalize(s: string) {
-  return s.toLowerCase().trim().replace(/[_\-\s]+/g, ' ')
-}
-
-function autoDetectColumn(headers: string[], aliases: string[]): string {
-  const normalizedHeaders = headers.map(h => ({ raw: h, norm: normalize(h) }))
-  for (const alias of aliases) {
-    const exact = normalizedHeaders.find(h => h.norm === alias)
-    if (exact) return exact.raw
-  }
-  for (const alias of aliases) {
-    const partial = normalizedHeaders.find(h => h.norm.includes(alias))
-    if (partial) return partial.raw
-  }
-  return ''
-}
-
-function normalizeDirection(val: string): string {
-  const v = val.toLowerCase().trim()
-  if (['long', 'buy', 'b', '1', 'achat'].includes(v)) return 'long'
-  if (['short', 'sell', 's', '-1', 'vente'].includes(v)) return 'short'
-  return v || 'long'
-}
-
-function parseResultR(val: string): number {
-  const cleaned = val.replace(/[^0-9.,\-]/g, '').replace(',', '.')
-  const num = parseFloat(cleaned)
-  return isNaN(num) ? 0 : num
-}
-
-function parseDateLoose(val: string): number {
-  if (!val) return 0
-  const cleaned = val.replace(' @ ', ' ')
-  const t = Date.parse(cleaned)
-  return isNaN(t) ? 0 : t
-}
-
-type RawFill = {
-  instrument: string
-  direction: string
-  result_r: number
-  created_at: string
-  sortKey: number
-}
-
-function mergeFills(fills: RawFill[]): RawFill[] {
-  const grouped: Record<string, RawFill[]> = {}
-  for (const fill of fills) {
-    const key = fill.instrument
-    if (!grouped[key]) grouped[key] = []
-    grouped[key].push(fill)
-  }
-
-  const merged: RawFill[] = []
-
-  for (const instrument of Object.keys(grouped)) {
-    const sorted = [...grouped[instrument]].sort((a, b) => a.sortKey - b.sortKey)
-    let current: RawFill | null = null
-
-    for (const fill of sorted) {
-      if (current && current.direction === fill.direction) {
-        current.result_r = parseFloat((current.result_r + fill.result_r).toFixed(2))
-        if (fill.sortKey > current.sortKey) {
-          current.sortKey = fill.sortKey
-        }
-      } else {
-        if (current) merged.push(current)
-        current = { ...fill }
-      }
-    }
-    if (current) merged.push(current)
-  }
-
-  return merged.sort((a, b) => b.sortKey - a.sortKey)
 }
 
 export default function JournalPage() {
+  const searchParams = useSearchParams()
+  const prefilledDate = searchParams.get('date')
+
   const [trades, setTrades] = useState<Trade[]>([])
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -124,21 +41,22 @@ export default function JournalPage() {
     result_r: '',
     followed_plan: true,
     notes: '',
+    trade_date: '',
   })
-
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [importStep, setImportStep] = useState<'closed' | 'drop' | 'mapping' | 'preview' | 'importing'>('closed')
-  const [isDragging, setIsDragging] = useState(false)
-  const [csvHeaders, setCsvHeaders] = useState<string[]>([])
-  const [csvRows, setCsvRows] = useState<ParsedRow[]>([])
-  const [mapping, setMapping] = useState<Record<string, string>>({})
-  const [importError, setImportError] = useState('')
-  const [importedCount, setImportedCount] = useState<number | null>(null)
 
   useEffect(() => {
     loadTrades()
     loadProfile()
   }, [])
+
+  useEffect(() => {
+    if (prefilledDate) {
+      resetForm()
+      setForm(f => ({ ...f, trade_date: prefilledDate }))
+      setEditingId(null)
+      setShowForm(true)
+    }
+  }, [prefilledDate])
 
   async function loadProfile() {
     const { data: { user } } = await supabase.auth.getUser()
@@ -160,7 +78,7 @@ export default function JournalPage() {
   }
 
   function resetForm() {
-    setForm({ instrument: '', direction: 'long', setup_type: '', contexte: '', zone: '', cible: '', confirmation: '', result_r: '', followed_plan: true, notes: '' })
+    setForm({ instrument: '', direction: 'long', setup_type: '', contexte: '', zone: '', cible: '', confirmation: '', result_r: '', followed_plan: true, notes: '', trade_date: '' })
   }
 
   function startNewTrade() {
@@ -181,6 +99,7 @@ export default function JournalPage() {
       result_r: trade.result_r?.toString() || '',
       followed_plan: trade.followed_plan,
       notes: trade.notes || '',
+      trade_date: '',
     })
     setEditingId(trade.id)
     setShowForm(true)
@@ -192,7 +111,7 @@ export default function JournalPage() {
     setSaving(true)
     const { data: { user } } = await supabase.auth.getUser()
 
-    const payload = {
+    const payload: any = {
       instrument: form.instrument,
       direction: form.direction,
       setup_type: form.setup_type,
@@ -205,9 +124,12 @@ export default function JournalPage() {
       notes: form.notes,
     }
 
+    if (!editingId && form.trade_date) {
+      payload.created_at = new Date(form.trade_date + 'T12:00:00').toISOString()
+    }
+
     if (editingId) {
-      const isComplete = form.setup_type && form.contexte
-      await supabase.from('trades').update({ ...payload, is_imported: !isComplete }).eq('id', editingId)
+      await supabase.from('trades').update(payload).eq('id', editingId)
     } else {
       await supabase.from('trades').insert({ user_id: user?.id, ...payload })
     }
@@ -219,147 +141,9 @@ export default function JournalPage() {
     setSaving(false)
   }
 
-  function openImportModal() {
-    setImportedCount(null)
-    setImportStep('drop')
-  }
-
-  function openFilePicker() {
-    fileInputRef.current?.click()
-  }
-
-  function processFile(file: File) {
-    setImportError('')
-    if (!file.name.toLowerCase().endsWith('.csv')) {
-      setImportError('Le fichier doit être au format .csv')
-      return
-    }
-
-    Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
-      complete: (results) => {
-        const headers = results.meta.fields || []
-        const rows = results.data as ParsedRow[]
-        if (headers.length === 0 || rows.length === 0) {
-          setImportError('Le fichier CSV est vide ou illisible.')
-          return
-        }
-        const autoMapping: Record<string, string> = {}
-        for (const field of FIELD_DEFS) {
-          autoMapping[field.key] = autoDetectColumn(headers, field.aliases)
-        }
-        setCsvHeaders(headers)
-        setCsvRows(rows)
-        setMapping(autoMapping)
-
-        const stillMissing = FIELD_DEFS.filter(f => f.required && !autoMapping[f.key])
-        setImportStep(stillMissing.length === 0 ? 'preview' : 'mapping')
-      },
-      error: () => {
-        setImportError('Impossible de lire ce fichier. Vérifie le format CSV.')
-      }
-    })
-  }
-
-  function handleFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (file) processFile(file)
-    e.target.value = ''
-  }
-
-  function handleDragOver(e: React.DragEvent) {
-    e.preventDefault()
-    setIsDragging(true)
-  }
-
-  function handleDragLeave(e: React.DragEvent) {
-    e.preventDefault()
-    setIsDragging(false)
-  }
-
-  function handleDrop(e: React.DragEvent) {
-    e.preventDefault()
-    setIsDragging(false)
-    const file = e.dataTransfer.files?.[0]
-    if (file) processFile(file)
-  }
-
-  function buildRawFills(): RawFill[] {
-    return csvRows.map(row => {
-      const instrument = mapping.instrument ? row[mapping.instrument] || '' : ''
-      const directionRaw = mapping.direction ? row[mapping.direction] || '' : ''
-      const resultRaw = mapping.result_r ? row[mapping.result_r] || '0' : '0'
-      const dateRaw = mapping.created_at ? row[mapping.created_at] || '' : ''
-      return {
-        instrument: instrument.trim(),
-        direction: normalizeDirection(directionRaw),
-        result_r: parseResultR(resultRaw),
-        created_at: dateRaw,
-        sortKey: parseDateLoose(dateRaw),
-      }
-    }).filter(t => t.instrument)
-  }
-
-  function buildPreviewTrades() {
-    const rawFills = buildRawFills()
-    return mergeFills(rawFills)
-  }
-
-  async function confirmImport() {
-    setImportStep('importing')
-    const { data: { user } } = await supabase.auth.getUser()
-    const preview = buildPreviewTrades()
-
-    const rowsToInsert = preview.map(t => ({
-      user_id: user?.id,
-      instrument: t.instrument,
-      direction: t.direction,
-      result_r: t.result_r,
-      setup_type: '',
-      contexte: '',
-      zone: '',
-      cible: '',
-      confirmation: '',
-      followed_plan: false,
-      notes: '',
-      is_imported: true,
-    }))
-
-    const { error } = await supabase.from('trades').insert(rowsToInsert)
-    if (error) {
-      setImportError("Erreur lors de l'import. Vérifie le mapping des colonnes.")
-      setImportStep('preview')
-      return
-    }
-
-    setImportedCount(rowsToInsert.length)
-    setImportStep('closed')
-    setCsvHeaders([])
-    setCsvRows([])
-    setMapping({})
-    setImportError('')
-    loadTrades()
-    setTimeout(() => setImportedCount(null), 4000)
-  }
-
-  function closeImport() {
-    setImportStep('closed')
-    setIsDragging(false)
-    setCsvHeaders([])
-    setCsvRows([])
-    setMapping({})
-    setImportError('')
-  }
-
-  const rawFillsCount = (importStep === 'mapping' || importStep === 'preview' || importStep === 'importing') ? buildRawFills().length : 0
-  const previewTrades = importStep === 'preview' || importStep === 'importing' ? buildPreviewTrades() : []
-  const missingRequired = FIELD_DEFS.filter(f => f.required && !mapping[f.key])
-
   const totalR = trades.reduce((sum, t) => sum + t.result_r, 0)
   const wins = trades.filter(t => t.result_r > 0)
   const winRate = trades.length > 0 ? Math.round((wins.length / trades.length) * 100) : 0
-  const toCompleteCount = trades.filter(t => t.is_imported).length
 
   const sidebarW = sidebarExpanded ? 200 : 52
   const initials = profile?.full_name
@@ -405,169 +189,13 @@ export default function JournalPage() {
 
         .trade-card { background: #fff; border: 0.5px solid #e8e8e8; border-radius: 10px; overflow: hidden; transition: box-shadow 0.2s, transform 0.2s; }
         .trade-card:hover { box-shadow: 0 4px 18px rgba(0,0,0,0.08); transform: translateY(-1px); }
-        .trade-card.incomplete { border-color: #fde68a; }
         .stat-card { background: #fff; border: 0.5px solid #e8e8e8; border-radius: 10px; padding: 1rem 1.25rem; }
         .btn-primary { background: #111; color: #fff; border: none; border-radius: 8px; padding: 10px 20px; font-weight: 600; font-size: 13px; cursor: pointer; transition: opacity 0.15s; font-family: inherit; }
         .btn-primary:hover { opacity: 0.85; }
-        .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
         .btn-secondary { background: transparent; color: #666; border: 0.5px solid #e0e0e0; border-radius: 8px; padding: 10px 20px; font-size: 13px; cursor: pointer; font-family: inherit; transition: background 0.15s; }
         .btn-secondary:hover { background: #f5f5f5; }
         .form-input:focus { border-color: #111 !important; }
-        .badge-incomplete { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; background: #fffbeb; color: #d97706; border: 0.5px solid #fde68a; white-space: nowrap; }
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; z-index: 300; padding: 2rem; }
-        .modal-box { background: #fff; border-radius: 16px; padding: 1.75rem; width: 600px; max-width: 95vw; max-height: 88vh; overflow-y: auto; }
-        .modal-box-sm { background: #fff; border-radius: 16px; padding: 1.75rem; width: 480px; max-width: 95vw; }
-        .map-row { display: grid; grid-template-columns: 150px 1fr; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 0.5px solid #f2f2f2; }
-        .map-row:last-child { border-bottom: none; }
-        .map-select { width: 100%; background: #f0fdf4; border: 0.5px solid #bbf7d0; border-radius: 6px; padding: 7px 10px; color: #15803d; font-size: 13px; font-family: inherit; }
-        .dropzone { border: 1.5px dashed #d0d0d0; border-radius: 12px; padding: 2.5rem 1.5rem; text-align: center; background: #fafafa; transition: border-color 0.15s, background 0.15s; cursor: pointer; }
-        .dropzone.dragging { border-color: #111; background: #f5f5f5; }
-        .dropzone-icon { width: 44px; height: 44px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 20px; transition: background 0.15s; }
-        .dropzone.dragging .dropzone-icon { background: #111; color: #fff; }
       `}</style>
-
-      <input ref={fileInputRef} type="file" accept=".csv" style={{ display: 'none' }} onChange={handleFileSelected} />
-
-      {importStep === 'drop' && (
-        <div className="modal-overlay" onClick={closeImport}>
-          <div className="modal-box-sm" onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
-              <div>
-                <div style={{ fontSize: '16px', fontWeight: 700, color: '#111' }}>Importer un CSV</div>
-                <div style={{ fontSize: '12px', color: '#aaa', marginTop: '2px' }}>Export de ta plateforme broker</div>
-              </div>
-              <button onClick={closeImport} style={{ background: '#f5f5f5', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '5px 12px', fontSize: '12px', color: '#666', cursor: 'pointer' }}>✕</button>
-            </div>
-
-            <div
-              className={`dropzone${isDragging ? ' dragging' : ''}`}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              onClick={openFilePicker}
-            >
-              <div className="dropzone-icon">{isDragging ? '⬇' : '↑'}</div>
-              {isDragging ? (
-                <div style={{ fontSize: '14px', fontWeight: 600, color: '#111' }}>Relâche pour importer</div>
-              ) : (
-                <>
-                  <div style={{ fontSize: '14px', fontWeight: 600, color: '#111', marginBottom: '4px' }}>Glisse ton fichier CSV ici</div>
-                  <div style={{ fontSize: '12.5px', color: '#aaa', marginBottom: '1.25rem' }}>ou clique pour parcourir tes fichiers</div>
-                  <button className="btn-primary" onClick={(e) => { e.stopPropagation(); openFilePicker() }}>Choisir un fichier</button>
-                </>
-              )}
-            </div>
-
-            {importError && (
-              <div style={{ background: '#fff5f5', border: '0.5px solid #fca5a5', borderRadius: '8px', padding: '10px 14px', color: '#dc2626', fontSize: '12px', marginTop: '1rem' }}>
-                {importError}
-              </div>
-            )}
-
-            <div style={{ fontSize: '12px', color: '#aaa', marginTop: '1rem' }}>
-              Format accepté : .csv, exporté depuis ta plateforme de trading
-            </div>
-          </div>
-        </div>
-      )}
-
-      {importStep === 'mapping' && (
-        <div className="modal-overlay" onClick={closeImport}>
-          <div className="modal-box" onClick={e => e.stopPropagation()}>
-            <div style={{ fontSize: '16px', fontWeight: 700, color: '#111', marginBottom: '4px' }}>Où se trouvent tes données dans le fichier ?</div>
-            <div style={{ fontSize: '12px', color: '#aaa', marginBottom: '1.25rem' }}>{csvRows.length} ligne{csvRows.length > 1 ? 's' : ''} détectée{csvRows.length > 1 ? 's' : ''} — indique la colonne, pas le chiffre</div>
-
-            <div style={{ background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '10px', padding: '12px 14px', marginBottom: '1.25rem', fontSize: '12.5px', color: '#15803d', lineHeight: 1.6 }}>
-              Certaines colonnes n'ont pas pu être devinées automatiquement. Indique-les ci-dessous, une seule fois pour tout le fichier.
-            </div>
-
-            <div style={{ marginBottom: '1.25rem' }}>
-              {FIELD_DEFS.map(field => (
-                <div key={field.key} className="map-row">
-                  <div>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#111' }}>{field.label}{field.required && <span style={{ color: '#dc2626' }}> *</span>}</div>
-                    <div style={{ fontSize: '11px', color: '#aaa' }}>{field.hint}</div>
-                  </div>
-                  <select
-                    className="map-select"
-                    value={mapping[field.key] || ''}
-                    onChange={e => setMapping({ ...mapping, [field.key]: e.target.value })}
-                  >
-                    <option value="">— Aucune colonne —</option>
-                    {csvHeaders.map(h => <option key={h} value={h}>{h}</option>)}
-                  </select>
-                </div>
-              ))}
-            </div>
-
-            {missingRequired.length > 0 && (
-              <div style={{ background: '#fff5f5', border: '0.5px solid #fca5a5', borderRadius: '8px', padding: '10px 14px', color: '#dc2626', fontSize: '12px', marginBottom: '1rem' }}>
-                Il manque encore : {missingRequired.map(f => f.label).join(', ')}
-              </div>
-            )}
-            {importError && (
-              <div style={{ background: '#fff5f5', border: '0.5px solid #fca5a5', borderRadius: '8px', padding: '10px 14px', color: '#dc2626', fontSize: '12px', marginBottom: '1rem' }}>
-                {importError}
-              </div>
-            )}
-
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button className="btn-primary" disabled={missingRequired.length > 0} onClick={() => setImportStep('preview')}>
-                C'est bon, continuer →
-              </button>
-              <button className="btn-secondary" onClick={() => setImportStep('drop')}>← Retour</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {(importStep === 'preview' || importStep === 'importing') && (
-        <div className="modal-overlay" onClick={() => importStep === 'preview' && closeImport()}>
-          <div className="modal-box" onClick={e => e.stopPropagation()}>
-            <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#f0fdf4', border: '0.5px solid #bbf7d0', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
-                <span style={{ color: '#16a34a', fontSize: '20px' }}>✓</span>
-              </div>
-              <div style={{ fontSize: '16px', fontWeight: 700, color: '#111', marginBottom: '4px' }}>Ton fichier a bien été lu</div>
-              <div style={{ fontSize: '13px', color: '#888' }}>
-                {rawFillsCount} ligne{rawFillsCount > 1 ? 's' : ''} trouvée{rawFillsCount > 1 ? 's' : ''}, regroupée{rawFillsCount > 1 ? 's' : ''} en {previewTrades.length} trade{previewTrades.length > 1 ? 's' : ''}
-              </div>
-            </div>
-
-            <div style={{ border: '0.5px solid #e8e8e8', borderRadius: '10px', overflow: 'hidden', marginBottom: '1.25rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 70px 80px', background: '#f9f9f9', padding: '8px 12px', fontSize: '11px', fontWeight: 500, color: '#888' }}>
-                <div>Instrument</div><div>Sens</div><div>Résultat</div>
-              </div>
-              {previewTrades.slice(0, 6).map((t, i) => (
-                <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 70px 80px', padding: '8px 12px', fontSize: '13px', borderTop: '0.5px solid #f2f2f2' }}>
-                  <div style={{ color: '#111' }}>{t.instrument}</div>
-                  <div style={{ color: t.direction === 'long' ? '#16a34a' : '#dc2626' }}>{t.direction === 'long' ? 'Achat' : 'Vente'}</div>
-                  <div style={{ fontFamily: 'monospace', color: t.result_r >= 0 ? '#16a34a' : '#dc2626' }}>{t.result_r >= 0 ? '+' : ''}{t.result_r}</div>
-                </div>
-              ))}
-              {previewTrades.length > 6 && (
-                <div style={{ padding: '8px 12px', fontSize: '12px', color: '#aaa', borderTop: '0.5px solid #f2f2f2' }}>
-                  et {previewTrades.length - 6} autres trades...
-                </div>
-              )}
-            </div>
-
-            <div style={{ fontSize: '12px', color: '#aaa', textAlign: 'center', marginBottom: '1.25rem' }}>
-              Ça ne correspond pas à tes trades ? <span onClick={() => setImportStep('mapping')} style={{ color: '#111', textDecoration: 'underline', cursor: 'pointer' }}>Corriger</span>
-            </div>
-
-            {importError && (
-              <div style={{ background: '#fff5f5', border: '0.5px solid #fca5a5', borderRadius: '8px', padding: '10px 14px', color: '#dc2626', fontSize: '12px', marginBottom: '1rem' }}>
-                {importError}
-              </div>
-            )}
-
-            <button className="btn-primary" onClick={confirmImport} disabled={importStep === 'importing'} style={{ width: '100%' }}>
-              {importStep === 'importing' ? 'Import en cours...' : `Importer les ${previewTrades.length} trade${previewTrades.length > 1 ? 's' : ''}`}
-            </button>
-          </div>
-        </div>
-      )}
 
       <div
         className={`sidebar${sidebarExpanded ? ' exp' : ''}`}
@@ -621,19 +249,10 @@ export default function JournalPage() {
 
           <div className="journal-anim" style={{ height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '0.5px solid #e8e8e8', marginBottom: '2rem' }}>
             <span style={{ fontSize: '20px', fontWeight: 700, color: '#111', letterSpacing: '-0.5px' }}>Journal de trades</span>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button className="btn-secondary" onClick={openImportModal}>↑ Importer CSV</button>
-              <button className="btn-primary" onClick={() => { setShowForm(!showForm); if (!showForm) startNewTrade() }}>+ Nouveau trade</button>
-            </div>
+            <button className="btn-primary" onClick={() => { setShowForm(!showForm); if (!showForm) startNewTrade() }}>+ Nouveau trade</button>
           </div>
 
-          {importedCount !== null && (
-            <div className="journal-anim" style={{ background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '10px', padding: '10px 14px', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#15803d' }}>
-              ✓ {importedCount} trade{importedCount > 1 ? 's' : ''} importé{importedCount > 1 ? 's' : ''}
-            </div>
-          )}
-
-          <div className="journal-anim" style={{ display: 'grid', gridTemplateColumns: toCompleteCount > 0 ? 'repeat(4, 1fr)' : 'repeat(3, 1fr)', gap: '12px', marginBottom: '1.5rem' }}>
+          <div className="journal-anim" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '1.5rem' }}>
             <div className="stat-card">
               <div style={{ color: '#888', fontSize: '12px', marginBottom: '4px' }}>Total R</div>
               <div style={{ fontSize: '22px', fontWeight: 700, color: totalR >= 0 ? '#16a34a' : '#dc2626', fontFamily: 'monospace' }}>{totalR >= 0 ? '+' : ''}{totalR.toFixed(2)}R</div>
@@ -646,20 +265,16 @@ export default function JournalPage() {
               <div style={{ color: '#888', fontSize: '12px', marginBottom: '4px' }}>Trades</div>
               <div style={{ fontSize: '22px', fontWeight: 700, color: '#111', fontFamily: 'monospace' }}>{trades.length}</div>
             </div>
-            {toCompleteCount > 0 && (
-              <div className="stat-card" style={{ borderColor: '#fde68a', background: '#fffbeb' }}>
-                <div style={{ color: '#d97706', fontSize: '12px', marginBottom: '4px' }}>À compléter</div>
-                <div style={{ fontSize: '22px', fontWeight: 700, color: '#d97706', fontFamily: 'monospace' }}>{toCompleteCount}</div>
-              </div>
-            )}
           </div>
 
           {showForm && (
             <div className="journal-anim" style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '1.5rem', marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.25rem' }}>
                 <div style={{ fontSize: '13px', fontWeight: 600, color: '#111' }}>{editingId ? 'Modifier le trade' : 'Nouveau trade'}</div>
-                {editingId && trades.find(t => t.id === editingId)?.is_imported && (
-                  <span className="badge-incomplete">Importé du broker</span>
+                {!editingId && form.trade_date && (
+                  <span style={{ fontSize: '11px', fontWeight: 600, padding: '3px 10px', borderRadius: '20px', background: '#f0fdf4', color: '#16a34a', border: '0.5px solid #bbf7d0' }}>
+                    {new Date(form.trade_date + 'T12:00:00').toLocaleDateString('fr-FR')}
+                  </span>
                 )}
               </div>
 
@@ -735,20 +350,18 @@ export default function JournalPage() {
           {loading ? (
             <div style={{ textAlign: 'center', padding: '4rem 0', color: '#aaa', fontSize: '14px' }}>Chargement...</div>
           ) : trades.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '4rem 0', color: '#aaa', fontSize: '14px' }}>Aucun trade encore. Clique sur "+ Nouveau trade" ou importe ton historique en CSV.</div>
+            <div style={{ textAlign: 'center', padding: '4rem 0', color: '#aaa', fontSize: '14px' }}>Aucun trade encore. Clique sur "+ Nouveau trade" pour commencer.</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {trades.map(trade => (
-                <div key={trade.id} className={`trade-card${trade.is_imported ? ' incomplete' : ''}`}>
-                  <div onClick={() => setExpanded(expanded === trade.id ? null : trade.id)} style={{ padding: '1rem 1.25rem', display: 'grid', gridTemplateColumns: '90px 70px 80px 110px 1fr 110px 80px', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
+                <div key={trade.id} className="trade-card">
+                  <div onClick={() => setExpanded(expanded === trade.id ? null : trade.id)} style={{ padding: '1rem 1.25rem', display: 'grid', gridTemplateColumns: '90px 70px 80px 120px 1fr 110px 80px', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
                     <div style={{ color: '#aaa', fontSize: '12px' }}>{new Date(trade.created_at).toLocaleDateString('fr-FR')}</div>
                     <div style={{ color: '#111', fontWeight: 600, fontSize: '14px' }}>{trade.instrument}</div>
                     <div style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', background: trade.direction === 'long' ? '#dcfce7' : '#fee2e2', color: trade.direction === 'long' ? '#16a34a' : '#dc2626', fontWeight: 600, textAlign: 'center' }}>
                       {trade.direction.toUpperCase()}
                     </div>
-                    <div style={{ fontSize: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {trade.is_imported ? <span className="badge-incomplete">À compléter</span> : <span style={{ color: '#555' }}>{trade.setup_type || '—'}</span>}
-                    </div>
+                    <div style={{ fontSize: '12px', color: '#555', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{trade.setup_type || '—'}</div>
                     <div style={{ color: '#666', fontSize: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{trade.contexte}</div>
                     <div style={{ fontSize: '12px', color: trade.followed_plan ? '#16a34a' : '#d97706' }}>{trade.followed_plan ? '✓ Plan suivi' : '⚠ Hors plan'}</div>
                     <div style={{ textAlign: 'right', fontFamily: 'monospace', fontWeight: 700, fontSize: '16px', color: trade.result_r >= 0 ? '#16a34a' : '#dc2626' }}>
@@ -766,9 +379,7 @@ export default function JournalPage() {
                         <div><div style={labelStyle}>Confirmation</div><div style={{ color: '#444', fontSize: '13px', lineHeight: 1.6 }}>{trade.confirmation || '—'}</div></div>
                         {trade.notes && <div><div style={labelStyle}>Notes</div><div style={{ color: '#444', fontSize: '13px', lineHeight: 1.6 }}>{trade.notes}</div></div>}
                       </div>
-                      <button className="btn-primary" onClick={() => startEditTrade(trade)}>
-                        {trade.is_imported ? 'Compléter ce trade' : 'Modifier'}
-                      </button>
+                      <button className="btn-primary" onClick={() => startEditTrade(trade)}>Modifier</button>
                     </div>
                   )}
                 </div>

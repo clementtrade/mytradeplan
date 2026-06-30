@@ -1,6 +1,7 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
+import Papa from 'papaparse'
 
 type Trade = {
   id: string
@@ -14,17 +15,63 @@ type Trade = {
   notes: string
 }
 
+type DailyPnl = {
+  date: string
+  pnl: number
+}
+
 type DayModal = {
   day: number
   date: string
+  dateKey: string
   trades: Trade[]
   totalR: number
+  pnl: number | null
   insight: string
   insightLoading: boolean
 }
 
+type ParsedRow = Record<string, string>
+
+const FIELD_DEFS = [
+  { key: 'date', label: 'les dates', hint: 'une ligne par transaction', required: true, aliases: ['date', 'time', 'datetime', 'entry date', 'open time', 'entry time'] },
+  { key: 'pnl', label: 'les résultats', hint: 'profit ou perte', required: true, aliases: ['pnl', 'p&l', 'p/l', 'profit', 'résultat', 'net pnl', 'realized pnl', 'result_r'] },
+]
+
+function normalize(s: string) {
+  return s.toLowerCase().trim().replace(/[_\-\s]+/g, ' ')
+}
+
+function autoDetectColumn(headers: string[], aliases: string[]): string {
+  const normalizedHeaders = headers.map(h => ({ raw: h, norm: normalize(h) }))
+  for (const alias of aliases) {
+    const exact = normalizedHeaders.find(h => h.norm === alias)
+    if (exact) return exact.raw
+  }
+  for (const alias of aliases) {
+    const partial = normalizedHeaders.find(h => h.norm.includes(alias))
+    if (partial) return partial.raw
+  }
+  return ''
+}
+
+function parsePnl(val: string): number {
+  const cleaned = val.replace(/[^0-9.,\-]/g, '').replace(',', '.')
+  const num = parseFloat(cleaned)
+  return isNaN(num) ? 0 : num
+}
+
+function parseDateToKey(val: string): string {
+  if (!val) return ''
+  const cleaned = val.replace(' @ ', ' ')
+  const d = new Date(cleaned)
+  if (isNaN(d.getTime())) return ''
+  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`
+}
+
 export default function DashboardPage() {
   const [trades, setTrades] = useState<Trade[]>([])
+  const [dailyPnl, setDailyPnl] = useState<DailyPnl[]>([])
   const [loading, setLoading] = useState(true)
   const [calMonth, setCalMonth] = useState(() => new Date())
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
@@ -35,37 +82,53 @@ export default function DashboardPage() {
   const [macroLoaded, setMacroLoaded] = useState(false)
   const [dayModal, setDayModal] = useState<DayModal | null>(null)
 
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [importStep, setImportStep] = useState<'closed' | 'drop' | 'mapping' | 'preview' | 'importing'>('closed')
+  const [isDragging, setIsDragging] = useState(false)
+  const [csvHeaders, setCsvHeaders] = useState<string[]>([])
+  const [csvRows, setCsvRows] = useState<ParsedRow[]>([])
+  const [mapping, setMapping] = useState<Record<string, string>>({})
+  const [importError, setImportError] = useState('')
+  const [importedCount, setImportedCount] = useState<number | null>(null)
+
   useEffect(() => {
-    async function load() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { window.location.href = '/login'; return }
-      const { data: tradesData } = await supabase
-        .from('trades').select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-      if (tradesData) setTrades(tradesData)
-      const { data: profileData } = await supabase
-        .from('profiles').select('*').eq('id', user.id).single()
-      if (profileData) setProfile(profileData)
-      const today = new Date().toISOString().split('T')[0]
-      const { data: planData } = await supabase
-        .from('morning_plans').select('id').eq('user_id', user.id).gte('created_at', today).limit(1)
-      if (planData && planData.length > 0) setPlanReady(true)
-      setLoading(false)
-    }
-    load()
+    loadAll()
   }, [])
 
-  async function openDayModal(day: number, dayTrades: Trade[]) {
+  async function loadAll() {
+    setLoading(true)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { window.location.href = '/login'; return }
+    const { data: tradesData } = await supabase
+      .from('trades').select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+    if (tradesData) setTrades(tradesData)
+    const { data: pnlData } = await supabase
+      .from('daily_pnl').select('*')
+      .eq('user_id', user.id)
+    if (pnlData) setDailyPnl(pnlData)
+    const { data: profileData } = await supabase
+      .from('profiles').select('*').eq('id', user.id).single()
+    if (profileData) setProfile(profileData)
+    const today = new Date().toISOString().split('T')[0]
+    const { data: planData } = await supabase
+      .from('morning_plans').select('id').eq('user_id', user.id).gte('created_at', today).limit(1)
+    if (planData && planData.length > 0) setPlanReady(true)
+    setLoading(false)
+  }
+
+  async function openDayModal(day: number, dayTrades: Trade[], dateKey: string, pnl: number | null) {
     const totalR = parseFloat(dayTrades.reduce((s, t) => s + t.result_r, 0).toFixed(2))
     const dateStr = `${day} ${monthNames[calMonthIdx]} ${calYear}`
 
     if (!profile?.is_pro) {
-      setDayModal({ day, date: dateStr, trades: dayTrades, totalR, insight: 'PRO_LOCKED', insightLoading: false })
+      setDayModal({ day, date: dateStr, dateKey, trades: dayTrades, totalR, pnl, insight: 'PRO_LOCKED', insightLoading: false })
       return
     }
 
-    setDayModal({ day, date: dateStr, trades: dayTrades, totalR, insight: '', insightLoading: true })
+    setDayModal({ day, date: dateStr, dateKey, trades: dayTrades, totalR, pnl, insight: '', insightLoading: dayTrades.length > 0 })
+    if (dayTrades.length === 0) return
     try {
       const res = await fetch('/api/day-insight', {
         method: 'POST',
@@ -105,6 +168,123 @@ export default function DashboardPage() {
       .map((line) => `<div style="min-height:4px">${line || '&nbsp;'}</div>`)
       .join('')
   }
+
+  // --- CSV Import (PnL quotidien uniquement) ---
+
+  function openImportModal() {
+    setImportedCount(null)
+    setImportStep('drop')
+  }
+
+  function openFilePicker() {
+    fileInputRef.current?.click()
+  }
+
+  function processFile(file: File) {
+    setImportError('')
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      setImportError('Le fichier doit être au format .csv')
+      return
+    }
+
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (results) => {
+        const headers = results.meta.fields || []
+        const rows = results.data as ParsedRow[]
+        if (headers.length === 0 || rows.length === 0) {
+          setImportError('Le fichier CSV est vide ou illisible.')
+          return
+        }
+        const autoMapping: Record<string, string> = {}
+        for (const field of FIELD_DEFS) {
+          autoMapping[field.key] = autoDetectColumn(headers, field.aliases)
+        }
+        setCsvHeaders(headers)
+        setCsvRows(rows)
+        setMapping(autoMapping)
+
+        const stillMissing = FIELD_DEFS.filter(f => f.required && !autoMapping[f.key])
+        setImportStep(stillMissing.length === 0 ? 'preview' : 'mapping')
+      },
+      error: () => {
+        setImportError('Impossible de lire ce fichier. Vérifie le format CSV.')
+      }
+    })
+  }
+
+  function handleFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (file) processFile(file)
+    e.target.value = ''
+  }
+
+  function handleDragOver(e: React.DragEvent) { e.preventDefault(); setIsDragging(true) }
+  function handleDragLeave(e: React.DragEvent) { e.preventDefault(); setIsDragging(false) }
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault()
+    setIsDragging(false)
+    const file = e.dataTransfer.files?.[0]
+    if (file) processFile(file)
+  }
+
+  function buildDailyTotals(): DailyPnl[] {
+    const totals: Record<string, number> = {}
+    for (const row of csvRows) {
+      const dateRaw = mapping.date ? row[mapping.date] || '' : ''
+      const pnlRaw = mapping.pnl ? row[mapping.pnl] || '0' : '0'
+      const dateKey = parseDateToKey(dateRaw)
+      if (!dateKey) continue
+      const pnl = parsePnl(pnlRaw)
+      totals[dateKey] = parseFloat(((totals[dateKey] || 0) + pnl).toFixed(2))
+    }
+    return Object.entries(totals)
+      .map(([date, pnl]) => ({ date, pnl }))
+      .sort((a, b) => b.date.localeCompare(a.date))
+  }
+
+  async function confirmImport() {
+    setImportStep('importing')
+    const { data: { user } } = await supabase.auth.getUser()
+    const totals = buildDailyTotals()
+
+    const rowsToUpsert = totals.map(t => ({
+      user_id: user?.id,
+      date: t.date,
+      pnl: t.pnl,
+    }))
+
+    const { error } = await supabase.from('daily_pnl').upsert(rowsToUpsert, { onConflict: 'user_id,date' })
+    if (error) {
+      setImportError("Erreur lors de l'import. Vérifie le mapping des colonnes.")
+      setImportStep('preview')
+      return
+    }
+
+    setImportedCount(rowsToUpsert.length)
+    setImportStep('closed')
+    setCsvHeaders([])
+    setCsvRows([])
+    setMapping({})
+    setImportError('')
+    loadAll()
+    setTimeout(() => setImportedCount(null), 4000)
+  }
+
+  function closeImport() {
+    setImportStep('closed')
+    setIsDragging(false)
+    setCsvHeaders([])
+    setCsvRows([])
+    setMapping({})
+    setImportError('')
+  }
+
+  const previewTotals = (importStep === 'preview' || importStep === 'importing') ? buildDailyTotals() : []
+  const missingRequired = FIELD_DEFS.filter(f => f.required && !mapping[f.key])
+
+  // --- Stats Journal (R) ---
 
   const wins = trades.filter(t => t.result_r > 0)
   const losses = trades.filter(t => t.result_r <= 0)
@@ -146,6 +326,8 @@ export default function DashboardPage() {
   const lastX = equityCurve.length > 1 ? 560 : 20
   const lastY = equityCurve.length > 0 ? getY(equityCurve[equityCurve.length - 1].r) : chartH / 2
 
+  // --- Calendrier ---
+
   const calYear = calMonth.getFullYear()
   const calMonthIdx = calMonth.getMonth()
   const firstDay = new Date(calYear, calMonthIdx, 1).getDay()
@@ -162,12 +344,21 @@ export default function DashboardPage() {
     }
   })
 
+  const pnlByDay: Record<string, number> = {}
+  dailyPnl.forEach(p => {
+    const [y, m, d] = p.date.split('-').map(Number)
+    if (y === calYear && (m - 1) === calMonthIdx) {
+      pnlByDay[d.toString()] = p.pnl
+    }
+  })
+
   const monthNames = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre']
   const today = new Date()
   const calTrades = Object.values(tradesByDay)
   const calWinDays = calTrades.filter(ts => ts.reduce((s, t) => s + t.result_r, 0) > 0).length
   const calTotalR = parseFloat(Object.values(tradesByDay).flat().reduce((s, t) => s + t.result_r, 0).toFixed(1))
   const calWR = calTrades.length > 0 ? Math.round((calWinDays / calTrades.length) * 100) : 0
+  const calTotalPnl = parseFloat(Object.values(pnlByDay).reduce((s, p) => s + p, 0).toFixed(2))
 
   const sidebarW = sidebarExpanded ? 200 : 52
   const dateStr = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
@@ -220,28 +411,169 @@ export default function DashboardPage() {
         .macro-btn { display: flex; align-items: center; justify-content: center; gap: 8px; background: #111; color: #fff; border: none; border-radius: 10px; padding: 10px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; width: 100%; }
         .macro-btn:hover { background: #333; }
         .macro-btn:disabled { background: #555; cursor: wait; }
-        .cal-day { aspect-ratio: 1; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; transition: all 0.15s; cursor: default; }
+        .cal-day { aspect-ratio: 1; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; transition: all 0.15s; cursor: default; padding: 4px; }
         .cal-win { background: #c8f0d8; color: #15803d; cursor: pointer; }
-        .cal-win:hover { transform: scale(1.08); box-shadow: 0 4px 12px rgba(22,163,74,0.2); }
+        .cal-win:hover { transform: scale(1.06); box-shadow: 0 4px 12px rgba(22,163,74,0.2); }
         .cal-loss { background: #fdd0d0; color: #dc2626; cursor: pointer; }
-        .cal-loss:hover { transform: scale(1.08); box-shadow: 0 4px 12px rgba(220,38,38,0.2); }
-        .cal-neutral { background: #f5f5f5; color: #ccc; }
-        .cal-empty { background: transparent; }
+        .cal-loss:hover { transform: scale(1.06); box-shadow: 0 4px 12px rgba(220,38,38,0.2); }
+        .cal-neutral { background: #f5f5f5; color: #ccc; cursor: pointer; }
+        .cal-neutral:hover { transform: scale(1.06); }
+        .cal-empty { background: transparent; cursor: default; }
         .cal-future { background: #f5f5f5; color: #ddd; }
         .cal-today { outline: 2px solid #888; outline-offset: -2px; }
-        .cal-r { font-size: 9px; margin-top: 2px; opacity: 0.75; }
+        .cal-r { font-size: 9px; margin-top: 1px; opacity: 0.85; }
+        .cal-pnl { font-size: 8px; margin-top: 1px; opacity: 0.7; font-family: monospace; }
         .cal-weekend { opacity: 0.3; }
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; z-index: 200; }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 2rem; }
         .modal-box { background: #fff; border: 0.5px solid #e8e8e8; border-radius: 16px; padding: 1.5rem; width: 520px; max-width: 92vw; max-height: 85vh; overflow-y: auto; }
+        .modal-box-sm { background: #fff; border-radius: 16px; padding: 1.75rem; width: 480px; max-width: 95vw; }
         .modal-trade-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 0.5px solid #f2f2f2; }
         .modal-trade-row:last-child { border-bottom: none; }
         .section-lbl { font-size: 10px; font-weight: 600; color: #bbb; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; }
         .aidot { width: 6px; height: 6px; border-radius: 50%; background: #aaa; animation: dotPulse 1.2s ease-in-out infinite; display: inline-block; margin: 0 2px; }
         .aidot:nth-child(2) { animation-delay: 0.2s; }
         .aidot:nth-child(3) { animation-delay: 0.4s; }
+        .btn-primary { background: #111; color: #fff; border: none; border-radius: 8px; padding: 10px 20px; font-weight: 600; font-size: 13px; cursor: pointer; transition: opacity 0.15s; font-family: inherit; }
+        .btn-primary:hover { opacity: 0.85; }
+        .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-secondary { background: transparent; color: #666; border: 0.5px solid #e0e0e0; border-radius: 8px; padding: 10px 20px; font-size: 13px; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+        .btn-secondary:hover { background: #f5f5f5; }
+        .map-row { display: grid; grid-template-columns: 150px 1fr; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 0.5px solid #f2f2f2; }
+        .map-row:last-child { border-bottom: none; }
+        .map-select { width: 100%; background: #f0fdf4; border: 0.5px solid #bbf7d0; border-radius: 6px; padding: 7px 10px; color: #15803d; font-size: 13px; font-family: inherit; }
+        .dropzone { border: 1.5px dashed #d0d0d0; border-radius: 12px; padding: 2.5rem 1.5rem; text-align: center; background: #fafafa; transition: border-color 0.15s, background 0.15s; cursor: pointer; }
+        .dropzone.dragging { border-color: #111; background: #f5f5f5; }
+        .dropzone-icon { width: 44px; height: 44px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 20px; transition: background 0.15s; }
+        .dropzone.dragging .dropzone-icon { background: #111; color: #fff; }
       `}</style>
 
-      {/* MODAL */}
+      <input ref={fileInputRef} type="file" accept=".csv" style={{ display: 'none' }} onChange={handleFileSelected} />
+
+      {/* MODAL IMPORT — DROPZONE */}
+      {importStep === 'drop' && (
+        <div className="modal-overlay" onClick={closeImport}>
+          <div className="modal-box-sm" onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+              <div>
+                <div style={{ fontSize: '16px', fontWeight: 700, color: '#111' }}>Importer le PnL quotidien</div>
+                <div style={{ fontSize: '12px', color: '#aaa', marginTop: '2px' }}>Export de ta plateforme broker</div>
+              </div>
+              <button onClick={closeImport} style={{ background: '#f5f5f5', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '5px 12px', fontSize: '12px', color: '#666', cursor: 'pointer' }}>✕</button>
+            </div>
+
+            <div
+              className={`dropzone${isDragging ? ' dragging' : ''}`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={openFilePicker}
+            >
+              <div className="dropzone-icon">{isDragging ? '⬇' : '↑'}</div>
+              {isDragging ? (
+                <div style={{ fontSize: '14px', fontWeight: 600, color: '#111' }}>Relâche pour importer</div>
+              ) : (
+                <>
+                  <div style={{ fontSize: '14px', fontWeight: 600, color: '#111', marginBottom: '4px' }}>Glisse ton fichier CSV ici</div>
+                  <div style={{ fontSize: '12.5px', color: '#aaa', marginBottom: '1.25rem' }}>ou clique pour parcourir tes fichiers</div>
+                  <button className="btn-primary" onClick={(e) => { e.stopPropagation(); openFilePicker() }}>Choisir un fichier</button>
+                </>
+              )}
+            </div>
+
+            {importError && (
+              <div style={{ background: '#fff5f5', border: '0.5px solid #fca5a5', borderRadius: '8px', padding: '10px 14px', color: '#dc2626', fontSize: '12px', marginTop: '1rem' }}>
+                {importError}
+              </div>
+            )}
+
+            <div style={{ fontSize: '12px', color: '#aaa', marginTop: '1rem', lineHeight: 1.6 }}>
+              On additionne automatiquement toutes les lignes de la même date pour calculer ton PnL du jour — comme dans ton tableau broker.
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL IMPORT — MAPPING (filet de sécurité) */}
+      {importStep === 'mapping' && (
+        <div className="modal-overlay" onClick={closeImport}>
+          <div className="modal-box-sm" onClick={e => e.stopPropagation()}>
+            <div style={{ fontSize: '16px', fontWeight: 700, color: '#111', marginBottom: '4px' }}>Où se trouvent tes données ?</div>
+            <div style={{ fontSize: '12px', color: '#aaa', marginBottom: '1.25rem' }}>{csvRows.length} lignes détectées</div>
+
+            <div style={{ marginBottom: '1.25rem' }}>
+              {FIELD_DEFS.map(field => (
+                <div key={field.key} className="map-row">
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#111' }}>{field.label}{field.required && <span style={{ color: '#dc2626' }}> *</span>}</div>
+                    <div style={{ fontSize: '11px', color: '#aaa' }}>{field.hint}</div>
+                  </div>
+                  <select
+                    className="map-select"
+                    value={mapping[field.key] || ''}
+                    onChange={e => setMapping({ ...mapping, [field.key]: e.target.value })}
+                  >
+                    <option value="">— Aucune colonne —</option>
+                    {csvHeaders.map(h => <option key={h} value={h}>{h}</option>)}
+                  </select>
+                </div>
+              ))}
+            </div>
+
+            {missingRequired.length > 0 && (
+              <div style={{ background: '#fff5f5', border: '0.5px solid #fca5a5', borderRadius: '8px', padding: '10px 14px', color: '#dc2626', fontSize: '12px', marginBottom: '1rem' }}>
+                Il manque encore : {missingRequired.map(f => f.label).join(', ')}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button className="btn-primary" disabled={missingRequired.length > 0} onClick={() => setImportStep('preview')}>C'est bon, continuer →</button>
+              <button className="btn-secondary" onClick={() => setImportStep('drop')}>← Retour</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL IMPORT — PREVIEW */}
+      {(importStep === 'preview' || importStep === 'importing') && (
+        <div className="modal-overlay" onClick={() => importStep === 'preview' && closeImport()}>
+          <div className="modal-box-sm" onClick={e => e.stopPropagation()}>
+            <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#f0fdf4', border: '0.5px solid #bbf7d0', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+                <span style={{ color: '#16a34a', fontSize: '20px' }}>✓</span>
+              </div>
+              <div style={{ fontSize: '16px', fontWeight: 700, color: '#111', marginBottom: '4px' }}>Ton fichier a bien été lu</div>
+              <div style={{ fontSize: '13px', color: '#888' }}>{previewTotals.length} jour{previewTotals.length > 1 ? 's' : ''} de PnL trouvé{previewTotals.length > 1 ? 's' : ''}</div>
+            </div>
+
+            <div style={{ border: '0.5px solid #e8e8e8', borderRadius: '10px', overflow: 'hidden', marginBottom: '1.25rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px', background: '#f9f9f9', padding: '8px 12px', fontSize: '11px', fontWeight: 500, color: '#888' }}>
+                <div>Date</div><div style={{ textAlign: 'right' }}>PnL</div>
+              </div>
+              {previewTotals.slice(0, 6).map((t, i) => (
+                <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 100px', padding: '8px 12px', fontSize: '13px', borderTop: '0.5px solid #f2f2f2' }}>
+                  <div style={{ color: '#111' }}>{new Date(t.date + 'T12:00:00').toLocaleDateString('fr-FR')}</div>
+                  <div style={{ textAlign: 'right', fontFamily: 'monospace', color: t.pnl >= 0 ? '#16a34a' : '#dc2626' }}>{t.pnl >= 0 ? '+' : ''}{t.pnl}</div>
+                </div>
+              ))}
+              {previewTotals.length > 6 && (
+                <div style={{ padding: '8px 12px', fontSize: '12px', color: '#aaa', borderTop: '0.5px solid #f2f2f2' }}>et {previewTotals.length - 6} autres jours...</div>
+              )}
+            </div>
+
+            {importError && (
+              <div style={{ background: '#fff5f5', border: '0.5px solid #fca5a5', borderRadius: '8px', padding: '10px 14px', color: '#dc2626', fontSize: '12px', marginBottom: '1rem' }}>
+                {importError}
+              </div>
+            )}
+
+            <button className="btn-primary" onClick={confirmImport} disabled={importStep === 'importing'} style={{ width: '100%' }}>
+              {importStep === 'importing' ? 'Import en cours...' : `Importer ${previewTotals.length} jour${previewTotals.length > 1 ? 's' : ''}`}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DETAIL JOUR */}
       {dayModal && (
         <div className="modal-overlay" onClick={() => setDayModal(null)}>
           <div className="modal-box" onClick={e => e.stopPropagation()}>
@@ -249,7 +581,8 @@ export default function DashboardPage() {
               <div>
                 <div style={{ fontSize: '16px', fontWeight: 700, color: '#111' }}>{dayModal.date}</div>
                 <div style={{ fontSize: '12px', color: '#bbb', marginTop: '2px' }}>
-                  {dayModal.trades.length} trade{dayModal.trades.length > 1 ? 's' : ''} · {dayModal.totalR >= 0 ? '+' : ''}{dayModal.totalR}R
+                  {dayModal.trades.length} trade{dayModal.trades.length > 1 ? 's' : ''} journalisé{dayModal.trades.length > 1 ? 's' : ''} · {dayModal.totalR >= 0 ? '+' : ''}{dayModal.totalR}R
+                  {dayModal.pnl !== null && <> · PnL broker {dayModal.pnl >= 0 ? '+' : ''}{dayModal.pnl}$</>}
                 </div>
               </div>
               <button onClick={() => setDayModal(null)} style={{ background: '#f5f5f5', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '5px 12px', fontSize: '12px', color: '#666', cursor: 'pointer' }}>
@@ -257,47 +590,51 @@ export default function DashboardPage() {
               </button>
             </div>
 
-            <div style={{ marginBottom: '1rem' }}>
-              <div className="section-lbl">Trades du jour</div>
-              {dayModal.trades.map(t => (
-                <div key={t.id} className="modal-trade-row">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span className={`badge badge-${t.direction === 'long' ? 'long' : 'short'}`}>{t.direction}</span>
-                    <div>
-                      <div style={{ fontSize: '12.5px', fontWeight: 600, color: '#111' }}>{t.setup_type || t.instrument}</div>
-                      <div style={{ fontSize: '10px', color: '#bbb' }}>{t.instrument}</div>
+            {dayModal.trades.length > 0 && (
+              <div style={{ marginBottom: '1rem' }}>
+                <div className="section-lbl">Trades du jour</div>
+                {dayModal.trades.map(t => (
+                  <div key={t.id} className="modal-trade-row">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span className={`badge badge-${t.direction === 'long' ? 'long' : 'short'}`}>{t.direction}</span>
+                      <div>
+                        <div style={{ fontSize: '12.5px', fontWeight: 600, color: '#111' }}>{t.setup_type || t.instrument}</div>
+                        <div style={{ fontSize: '10px', color: '#bbb' }}>{t.instrument}</div>
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '13px', fontWeight: 700, fontFamily: 'monospace', color: t.result_r > 0 ? '#16a34a' : '#dc2626' }}>
+                        {t.result_r > 0 ? '+' : ''}{t.result_r}R
+                      </div>
+                      <div style={{ fontSize: '10px', color: t.followed_plan ? '#16a34a' : '#d97706' }}>
+                        {t.followed_plan ? '✓ plan' : '✗ plan'}
+                      </div>
                     </div>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '13px', fontWeight: 700, fontFamily: 'monospace', color: t.result_r > 0 ? '#16a34a' : '#dc2626' }}>
-                      {t.result_r > 0 ? '+' : ''}{t.result_r}R
-                    </div>
-                    <div style={{ fontSize: '10px', color: t.followed_plan ? '#16a34a' : '#d97706' }}>
-                      {t.followed_plan ? '✓ plan' : '✗ plan'}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
-            {dayModal.insight === 'PRO_LOCKED' ? (
-              <div style={{ background: '#f9f9f9', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '1.25rem', textAlign: 'center' }}>
+            {dayModal.trades.length === 0 ? (
+              <div style={{ background: '#f9f9f9', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '1.25rem', textAlign: 'center', marginBottom: '1rem' }}>
+                <div style={{ fontSize: '13px', color: '#888' }}>Aucun trade journalisé ce jour-là{dayModal.pnl !== null && ', seul le PnL broker est connu'}.</div>
+              </div>
+            ) : dayModal.insight === 'PRO_LOCKED' ? (
+              <div style={{ background: '#f9f9f9', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '1.25rem', textAlign: 'center', marginBottom: '1rem' }}>
                 <div style={{ fontSize: '20px', marginBottom: '8px' }}>🔒</div>
                 <div style={{ fontSize: '13px', fontWeight: 600, color: '#111', marginBottom: '4px' }}>Fonctionnalité Pro</div>
                 <div style={{ fontSize: '12px', color: '#888', marginBottom: '14px' }}>L'IA Insight est réservée aux membres Pro.</div>
                 <a href="/pricing" style={{ background: '#111', color: '#fff', borderRadius: '8px', padding: '8px 18px', fontSize: '12px', fontWeight: 600, textDecoration: 'none' }}>Passer au Pro →</a>
               </div>
             ) : (
-              <div style={{ background: '#f9f9f9', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '1rem' }}>
+              <div style={{ background: '#f9f9f9', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '1rem', marginBottom: '1rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                   <div className="section-lbl" style={{ marginBottom: 0 }}>IA Insight</div>
                   <div style={{ fontSize: '10px', color: '#bbb' }}>{profile?.approach} · {profile?.market}</div>
                 </div>
                 {dayModal.insightLoading ? (
                   <div style={{ padding: '0.5rem 0' }}>
-                    <span className="aidot"></span>
-                    <span className="aidot"></span>
-                    <span className="aidot"></span>
+                    <span className="aidot"></span><span className="aidot"></span><span className="aidot"></span>
                   </div>
                 ) : (
                   <>
@@ -316,6 +653,10 @@ export default function DashboardPage() {
                 )}
               </div>
             )}
+
+            <a href={`/journal?date=${dayModal.dateKey}`} className="btn-primary" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>
+              + Ajouter un trade ce jour-là
+            </a>
           </div>
         </div>
       )}
@@ -387,6 +728,12 @@ export default function DashboardPage() {
               </a>
             </div>
 
+            {importedCount !== null && (
+              <div className="sa" style={{ background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '10px', padding: '10px 14px', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#15803d' }}>
+                ✓ PnL importé pour {importedCount} jour{importedCount > 1 ? 's' : ''}
+              </div>
+            )}
+
             {/* KPI CARDS */}
             <div className="sa sa2" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '12px', marginBottom: '1.5rem' }}>
               <div className="kpi-card">
@@ -419,7 +766,6 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* MESSAGE SI PAS DE TRADES */}
             {trades.length === 0 ? (
               <div className="sa sa3 mid-card" style={{ textAlign: 'center', padding: '2rem', marginBottom: '1.5rem' }}>
                 <div style={{ fontSize: '24px', marginBottom: '10px' }}>▤</div>
@@ -428,7 +774,6 @@ export default function DashboardPage() {
               </div>
             ) : (
               <>
-                {/* JOURNAL + SETUP */}
                 <div className="sa sa3" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '1.5rem' }}>
                   <div className="mid-card">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1rem' }}>
@@ -484,7 +829,6 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                {/* EQUITY CURVE */}
                 <div className="sa sa4 mid-card" style={{ marginBottom: '1.5rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                     <span style={{ fontSize: '13px', fontWeight: 600, color: '#888' }}>Capital cumulé (R)</span>
@@ -545,19 +889,19 @@ export default function DashboardPage() {
 
             {/* CALENDRIER */}
             <div className="sa sa6 mid-card">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '10px' }}>
                 <span style={{ fontSize: '15px', fontWeight: 700, color: '#111', letterSpacing: '-0.3px' }}>Calendrier · {monthNames[calMonthIdx]} {calYear}</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '11.5px', color: '#aaa' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><span style={{ width: 12, height: 12, borderRadius: '3px', background: '#c8f0d8', display: 'inline-block' }}></span>Jour gagnant</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><span style={{ width: 12, height: 12, borderRadius: '3px', background: '#fdd0d0', display: 'inline-block' }}></span>Jour perdant</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><span style={{ width: 12, height: 12, borderRadius: '3px', outline: '1.5px solid #888', display: 'inline-block' }}></span>Aujourd'hui</span>
-                  </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <button className="btn-secondary" onClick={openImportModal} style={{ padding: '6px 14px', fontSize: '12px' }}>↑ Importer CSV</button>
                   <div style={{ display: 'flex', gap: '5px' }}>
                     <button onClick={() => setCalMonth(new Date(calYear, calMonthIdx - 1, 1))} style={{ background: '#f5f5f5', border: 'none', borderRadius: '6px', padding: '5px 12px', fontSize: '12px', color: '#666', cursor: 'pointer' }}>← Préc.</button>
                     <button onClick={() => setCalMonth(new Date(calYear, calMonthIdx + 1, 1))} style={{ background: '#f5f5f5', border: 'none', borderRadius: '6px', padding: '5px 12px', fontSize: '12px', color: '#666', cursor: 'pointer' }}>Suiv. →</button>
                   </div>
                 </div>
+              </div>
+              <div style={{ display: 'flex', gap: '14px', fontSize: '11px', color: '#aaa', marginBottom: '10px' }}>
+                <span>Ligne du haut : R (Journal)</span>
+                <span>Ligne du bas : PnL $ (broker)</span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '6px', marginBottom: '6px' }}>
                 {['L','M','M','J','V','S','D'].map((d, i) => (
@@ -571,26 +915,32 @@ export default function DashboardPage() {
                 {Array(daysInMonth).fill(null).map((_, i) => {
                   const day = i + 1
                   const key = day.toString()
-                  const dayTrades = tradesByDay[key]
-                  const r = dayTrades ? dayTrades.reduce((s, t) => s + t.result_r, 0) : undefined
+                  const dayTrades = tradesByDay[key] || []
+                  const pnl = pnlByDay[key] !== undefined ? pnlByDay[key] : null
+                  const r = dayTrades.length > 0 ? dayTrades.reduce((s, t) => s + t.result_r, 0) : undefined
                   const isFuture = new Date(calYear, calMonthIdx, day) > today
                   const isToday = day === today.getDate() && calMonthIdx === today.getMonth() && calYear === today.getFullYear()
                   const isWeekend = (() => { const d = new Date(calYear, calMonthIdx, day).getDay(); return d === 0 || d === 6 })()
+                  const hasData = r !== undefined || pnl !== null
+                  const refValue = r !== undefined ? r : pnl
                   let cls = 'cal-day '
-                  if (isFuture || isWeekend) cls += 'cal-future'
-                  else if (r !== undefined) cls += r > 0 ? 'cal-win' : 'cal-loss'
+                  if (isFuture) cls += 'cal-future'
+                  else if (hasData) cls += (refValue! > 0 ? 'cal-win' : refValue! < 0 ? 'cal-loss' : 'cal-neutral')
                   else cls += 'cal-neutral'
                   if (isToday) cls += ' cal-today'
-                  if (isWeekend) cls += ' cal-weekend'
+                  if (isWeekend && !hasData) cls += ' cal-weekend'
                   return (
                     <div
                       key={day}
                       className={cls}
-                      onClick={() => dayTrades && !isWeekend && !isFuture ? openDayModal(day, dayTrades) : undefined}
+                      onClick={() => !isFuture ? openDayModal(day, dayTrades, `${calYear}-${(calMonthIdx+1).toString().padStart(2,'0')}-${day.toString().padStart(2,'0')}`, pnl) : undefined}
                     >
                       {day}
-                      {r !== undefined && !isWeekend && !isFuture && (
+                      {r !== undefined && (
                         <span className="cal-r">{r >= 0 ? '+' : ''}{r.toFixed(1)}R</span>
+                      )}
+                      {pnl !== null && (
+                        <span className="cal-pnl">{pnl >= 0 ? '+' : ''}{pnl}$</span>
                       )}
                     </div>
                   )
@@ -599,15 +949,15 @@ export default function DashboardPage() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '10px', marginTop: '1.25rem', paddingTop: '1rem', borderTop: '0.5px solid #f0f0f0' }}>
                 <div style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: calTotalR >= 0 ? '#16a34a' : '#dc2626' }}>{calTotalR >= 0 ? '+' : ''}{calTotalR}R</div>
-                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '3px' }}>Total du mois</div>
+                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '3px' }}>Total R (journal)</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: calTotalPnl >= 0 ? '#16a34a' : '#dc2626' }}>{calTotalPnl >= 0 ? '+' : ''}{calTotalPnl}$</div>
+                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '3px' }}>Total PnL (broker)</div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: '#111' }}>{calTrades.length}</div>
                   <div style={{ fontSize: '11px', color: '#bbb', marginTop: '3px' }}>Jours tradés</div>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: '#16a34a' }}>{calWinDays}/{calTrades.length || 0}</div>
-                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '3px' }}>Jours gagnants</div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: calWR >= 50 ? '#16a34a' : '#dc2626' }}>{calWR}%</div>
