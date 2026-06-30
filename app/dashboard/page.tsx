@@ -35,7 +35,7 @@ type ParsedRow = Record<string, string>
 
 const FIELD_DEFS = [
   { key: 'date', label: 'les dates', hint: 'une ligne par transaction', required: true, aliases: ['date', 'time', 'datetime', 'entry date', 'open time', 'entry time'] },
-  { key: 'pnl', label: 'les résultats', hint: 'profit ou perte', required: true, aliases: ['pnl', 'p&l', 'p/l', 'profit', 'résultat', 'net pnl', 'realized pnl', 'result_r'] },
+  { key: 'pnl', label: 'les résultats', hint: 'profit ou perte', required: true, aliases: ['pnl', 'p&l', 'p/l', 'profit', 'résultat', 'net pnl', 'realized pnl'] },
 ]
 
 function normalize(s: string) {
@@ -81,6 +81,8 @@ export default function DashboardPage() {
   const [macroLoading, setMacroLoading] = useState(false)
   const [macroLoaded, setMacroLoaded] = useState(false)
   const [dayModal, setDayModal] = useState<DayModal | null>(null)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [importStep, setImportStep] = useState<'closed' | 'drop' | 'mapping' | 'preview' | 'importing'>('closed')
@@ -142,6 +144,18 @@ export default function DashboardPage() {
     }
   }
 
+  async function deleteTrade(id: string) {
+    setDeleting(true)
+    await supabase.from('trades').delete().eq('id', id)
+    setDeleteConfirmId(null)
+    if (dayModal) {
+      const remainingTrades = dayModal.trades.filter(t => t.id !== id)
+      setDayModal({ ...dayModal, trades: remainingTrades, totalR: parseFloat(remainingTrades.reduce((s, t) => s + t.result_r, 0).toFixed(2)) })
+    }
+    loadAll()
+    setDeleting(false)
+  }
+
   async function getMacroBriefing() {
     setMacroLoading(true)
     setMacroText('')
@@ -168,8 +182,6 @@ export default function DashboardPage() {
       .map((line) => `<div style="min-height:4px">${line || '&nbsp;'}</div>`)
       .join('')
   }
-
-  // --- CSV Import (PnL quotidien uniquement) ---
 
   function openImportModal() {
     setImportedCount(null)
@@ -284,8 +296,6 @@ export default function DashboardPage() {
   const previewTotals = (importStep === 'preview' || importStep === 'importing') ? buildDailyTotals() : []
   const missingRequired = FIELD_DEFS.filter(f => f.required && !mapping[f.key])
 
-  // --- Stats Journal (R) ---
-
   const wins = trades.filter(t => t.result_r > 0)
   const losses = trades.filter(t => t.result_r <= 0)
   const winRate = trades.length > 0 ? Math.round((wins.length / trades.length) * 100) : 0
@@ -325,8 +335,6 @@ export default function DashboardPage() {
   }).join(' ')
   const lastX = equityCurve.length > 1 ? 560 : 20
   const lastY = equityCurve.length > 0 ? getY(equityCurve[equityCurve.length - 1].r) : chartH / 2
-
-  // --- Calendrier ---
 
   const calYear = calMonth.getFullYear()
   const calMonthIdx = calMonth.getMonth()
@@ -438,6 +446,8 @@ export default function DashboardPage() {
         .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
         .btn-secondary { background: transparent; color: #666; border: 0.5px solid #e0e0e0; border-radius: 8px; padding: 10px 20px; font-size: 13px; cursor: pointer; font-family: inherit; transition: background 0.15s; }
         .btn-secondary:hover { background: #f5f5f5; }
+        .btn-danger { background: #fff5f5; color: #dc2626; border: 0.5px solid #fca5a5; border-radius: 8px; padding: 10px 20px; font-size: 13px; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+        .btn-danger:hover { background: #fee2e2; }
         .map-row { display: grid; grid-template-columns: 150px 1fr; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 0.5px solid #f2f2f2; }
         .map-row:last-child { border-bottom: none; }
         .map-select { width: 100%; background: #f0fdf4; border: 0.5px solid #bbf7d0; border-radius: 6px; padding: 7px 10px; color: #15803d; font-size: 13px; font-family: inherit; }
@@ -445,11 +455,29 @@ export default function DashboardPage() {
         .dropzone.dragging { border-color: #111; background: #f5f5f5; }
         .dropzone-icon { width: 44px; height: 44px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 20px; transition: background 0.15s; }
         .dropzone.dragging .dropzone-icon { background: #111; color: #fff; }
+        .delete-icon-btn { background: none; border: none; color: #ccc; cursor: pointer; font-size: 15px; padding: 4px; line-height: 1; }
+        .delete-icon-btn:hover { color: #dc2626; }
+        .confirm-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; z-index: 400; }
+        .confirm-box { background: #fff; border-radius: 14px; padding: 1.5rem; width: 360px; max-width: 90vw; }
       `}</style>
 
       <input ref={fileInputRef} type="file" accept=".csv" style={{ display: 'none' }} onChange={handleFileSelected} />
 
-      {/* MODAL IMPORT — DROPZONE */}
+      {deleteConfirmId && (
+        <div className="confirm-overlay" onClick={() => setDeleteConfirmId(null)}>
+          <div className="confirm-box" onClick={e => e.stopPropagation()}>
+            <div style={{ fontSize: '15px', fontWeight: 700, color: '#111', marginBottom: '8px' }}>Supprimer ce trade ?</div>
+            <div style={{ fontSize: '13px', color: '#888', lineHeight: 1.6, marginBottom: '1.25rem' }}>Cette action est définitive et ne peut pas être annulée.</div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button className="btn-danger" onClick={() => deleteTrade(deleteConfirmId)} disabled={deleting}>
+                {deleting ? 'Suppression...' : 'Supprimer'}
+              </button>
+              <button className="btn-secondary" onClick={() => setDeleteConfirmId(null)}>Annuler</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {importStep === 'drop' && (
         <div className="modal-overlay" onClick={closeImport}>
           <div className="modal-box-sm" onClick={e => e.stopPropagation()}>
@@ -493,7 +521,6 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* MODAL IMPORT — MAPPING (filet de sécurité) */}
       {importStep === 'mapping' && (
         <div className="modal-overlay" onClick={closeImport}>
           <div className="modal-box-sm" onClick={e => e.stopPropagation()}>
@@ -533,7 +560,6 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* MODAL IMPORT — PREVIEW */}
       {(importStep === 'preview' || importStep === 'importing') && (
         <div className="modal-overlay" onClick={() => importStep === 'preview' && closeImport()}>
           <div className="modal-box-sm" onClick={e => e.stopPropagation()}>
@@ -549,14 +575,14 @@ export default function DashboardPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px', background: '#f9f9f9', padding: '8px 12px', fontSize: '11px', fontWeight: 500, color: '#888' }}>
                 <div>Date</div><div style={{ textAlign: 'right' }}>PnL</div>
               </div>
-              {previewTotals.slice(0, 6).map((t, i) => (
+              {previewTotals.slice(0, 8).map((t, i) => (
                 <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 100px', padding: '8px 12px', fontSize: '13px', borderTop: '0.5px solid #f2f2f2' }}>
                   <div style={{ color: '#111' }}>{new Date(t.date + 'T12:00:00').toLocaleDateString('fr-FR')}</div>
-                  <div style={{ textAlign: 'right', fontFamily: 'monospace', color: t.pnl >= 0 ? '#16a34a' : '#dc2626' }}>{t.pnl >= 0 ? '+' : ''}{t.pnl}</div>
+                  <div style={{ textAlign: 'right', fontFamily: 'monospace', color: t.pnl >= 0 ? '#16a34a' : '#dc2626' }}>{t.pnl >= 0 ? '+' : ''}{t.pnl}$</div>
                 </div>
               ))}
-              {previewTotals.length > 6 && (
-                <div style={{ padding: '8px 12px', fontSize: '12px', color: '#aaa', borderTop: '0.5px solid #f2f2f2' }}>et {previewTotals.length - 6} autres jours...</div>
+              {previewTotals.length > 8 && (
+                <div style={{ padding: '8px 12px', fontSize: '12px', color: '#aaa', borderTop: '0.5px solid #f2f2f2' }}>et {previewTotals.length - 8} autres jours...</div>
               )}
             </div>
 
@@ -573,7 +599,6 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* MODAL DETAIL JOUR */}
       {dayModal && (
         <div className="modal-overlay" onClick={() => setDayModal(null)}>
           <div className="modal-box" onClick={e => e.stopPropagation()}>
@@ -602,13 +627,16 @@ export default function DashboardPage() {
                         <div style={{ fontSize: '10px', color: '#bbb' }}>{t.instrument}</div>
                       </div>
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '13px', fontWeight: 700, fontFamily: 'monospace', color: t.result_r > 0 ? '#16a34a' : '#dc2626' }}>
-                        {t.result_r > 0 ? '+' : ''}{t.result_r}R
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '13px', fontWeight: 700, fontFamily: 'monospace', color: t.result_r > 0 ? '#16a34a' : '#dc2626' }}>
+                          {t.result_r > 0 ? '+' : ''}{t.result_r}R
+                        </div>
+                        <div style={{ fontSize: '10px', color: t.followed_plan ? '#16a34a' : '#d97706' }}>
+                          {t.followed_plan ? '✓ plan' : '✗ plan'}
+                        </div>
                       </div>
-                      <div style={{ fontSize: '10px', color: t.followed_plan ? '#16a34a' : '#d97706' }}>
-                        {t.followed_plan ? '✓ plan' : '✗ plan'}
-                      </div>
+                      <button className="delete-icon-btn" onClick={() => setDeleteConfirmId(t.id)} title="Supprimer ce trade">✕</button>
                     </div>
                   </div>
                 ))}
@@ -661,7 +689,6 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* SIDEBAR */}
       <div
         className={`sidebar${sidebarExpanded ? ' exp' : ''}`}
         style={{ width: sidebarW }}
@@ -709,14 +736,12 @@ export default function DashboardPage() {
         </nav>
       </div>
 
-      {/* MAIN */}
       <main style={{ marginLeft: sidebarW, flex: 1, minWidth: 0, transition: 'margin-left 0.2s cubic-bezier(0.4,0,0.2,1)', padding: '0 2rem 3rem' }}>
         {loading ? (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh', color: '#ccc', fontSize: '13px' }}>Chargement...</div>
         ) : (
           <div style={{ maxWidth: '1080px', margin: '0 auto' }}>
 
-            {/* HEADER */}
             <div className="sa sa1" style={{ height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '0.5px solid #e8e8e8', marginBottom: '2rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
                 <span style={{ fontSize: '20px', fontWeight: 700, color: '#111', letterSpacing: '-0.5px' }}>Dashboard</span>
@@ -734,7 +759,6 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* KPI CARDS */}
             <div className="sa sa2" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '12px', marginBottom: '1.5rem' }}>
               <div className="kpi-card">
                 <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px', fontWeight: 500 }}>Win rate</div>
@@ -856,7 +880,6 @@ export default function DashboardPage() {
               </>
             )}
 
-            {/* DÉBRIEF MACRO IA */}
             <div className="sa sa5 mid-card" style={{ marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                 <div>
@@ -887,7 +910,6 @@ export default function DashboardPage() {
               )}
             </div>
 
-            {/* CALENDRIER */}
             <div className="sa sa6 mid-card">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '10px' }}>
                 <span style={{ fontSize: '15px', fontWeight: 700, color: '#111', letterSpacing: '-0.3px' }}>Calendrier · {monthNames[calMonthIdx]} {calYear}</span>
@@ -900,7 +922,7 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '14px', fontSize: '11px', color: '#aaa', marginBottom: '10px' }}>
-                <span>Ligne du haut : R (Journal)</span>
+                <span>Ligne du haut : R (journal)</span>
                 <span>Ligne du bas : PnL $ (broker)</span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '6px', marginBottom: '6px' }}>
