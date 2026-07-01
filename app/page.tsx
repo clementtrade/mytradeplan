@@ -4,6 +4,10 @@ import { useState } from 'react'
 export default function Home() {
   const [annual, setAnnual] = useState(false)
 
+  const stripeUrl = annual
+    ? 'https://buy.stripe.com/5kQ28t8bOg6D6Sa4HP3gk02'
+    : 'https://buy.stripe.com/8x2aEZ3Vy4nVfoGdel3gk00'
+
   return (
     <main style={{ minHeight: '100vh', background: '#fff', color: '#111', fontFamily: 'Inter, sans-serif' }}>
       <style>{`
@@ -49,8 +53,6 @@ export default function Home() {
         .dash-kpi { background: #111; border-radius: 8px; padding: 8px 10px; }
         .dash-kpi-l { font-size: 8px; color: #888; margin-bottom: 3px; }
         .dash-kpi-v { font-size: 13px; font-weight: 700; font-family: monospace; }
-        .dash-badge-l { background: #dcfce7; color: #16a34a; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
-        .dash-badge-s { background: #fee2e2; color: #dc2626; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
         .dash-cal { aspect-ratio: 1; border-radius: 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 8px; font-weight: 600; }
         .cal-win { background: #c8f0d8; color: #15803d; }
         .cal-loss { background: #fdd0d0; color: #dc2626; }
@@ -62,11 +64,10 @@ export default function Home() {
         .mockup-float-3 { animation: float 5s 1s ease-in-out infinite; }
       `}</style>
 
-      {/* Navbar */}
       <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 2.5rem', borderBottom: '0.5px solid #e8e8e8', position: 'sticky', top: 0, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)', zIndex: 10 }}>
         <span style={{ fontWeight: 700, fontSize: '1rem', letterSpacing: '-0.3px' }}>MyTradePlan</span>
         <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
-          <a href="/features" className="nav-link">Fonctionnalités</a>
+          <a href="/features" className="nav-link">Fonctionnalites</a>
           <a href="#pricing" className="nav-link">Tarifs</a>
           <a href="/login" className="nav-link">Connexion</a>
           <a href="/account" className="nav-link">Mon compte</a>
@@ -74,12 +75,11 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* HERO */}
       <section style={{ maxWidth: '1100px', margin: '0 auto', padding: '5rem 2.5rem 4rem', display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '4rem', alignItems: 'center' }}>
         <div>
           <div className="anim-1" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '20px', padding: '5px 14px', marginBottom: '1.5rem' }}>
             <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#16a34a', animation: 'glow 2s ease-in-out infinite' }}></div>
-            <span style={{ fontSize: '12px', color: '#16a34a', fontWeight: 500 }}>Plan IA pre-marche · Tous marches</span>
+            <span style={{ fontSize: '12px', color: '#16a34a', fontWeight: 500 }}>Plan IA pre-marche - Tous marches</span>
           </div>
           <h1 className="anim-2" style={{ fontSize: '2.75rem', fontWeight: 700, lineHeight: 1.1, letterSpacing: '-1.5px', marginBottom: '1.25rem' }}>
             Tradez avec un plan.<br />
@@ -110,7 +110,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* MOCKUPS */}
         <div style={{ display: 'flex', gap: '14px', alignItems: 'stretch', padding: '2.5rem 0.5rem', minHeight: '480px' }}>
           <div style={{ flex: 1, background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '20px', padding: '1.25rem', boxShadow: '0 20px 60px rgba(0,0,0,0.12)', animation: 'floatL 5s ease-in-out infinite', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', paddingBottom: '10px', borderBottom: '0.5px solid #f0f0f0' }}>
@@ -131,7 +130,7 @@ export default function Home() {
               </div>
               <div style={{ background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '3px 10px 10px 10px', padding: '9px 12px', fontSize: '12px', maxWidth: '92%' }}>
                 <div style={{ color: '#16a34a', fontSize: '10px', fontWeight: 600, marginBottom: '3px' }}>Plan pret</div>
-                <span style={{ color: '#444' }}>Short uniquement · Break and retest · Pas de mean reversion.</span>
+                <span style={{ color: '#444' }}>Short uniquement - Break and retest - Pas de mean reversion.</span>
               </div>
             </div>
             <div style={{ background: '#f9f9f9', borderRadius: '10px', padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
@@ -148,7 +147,6 @@ export default function Home() {
               <div style={{ background: '#f9f9f9', borderRadius: '10px', padding: '12px', textAlign: 'center' }}><div style={{ fontSize: '20px', fontWeight: 700, color: '#111', fontFamily: 'monospace' }}>2.4</div><div style={{ fontSize: '10px', color: '#aaa', marginTop: '2px' }}>Profit factor</div></div>
               <div style={{ background: '#f9f9f9', borderRadius: '10px', padding: '12px', textAlign: 'center' }}><div style={{ fontSize: '20px', fontWeight: 700, color: '#dc2626', fontFamily: 'monospace' }}>-254$</div><div style={{ fontSize: '10px', color: '#aaa', marginTop: '2px' }}>Perte moy/jour</div></div>
             </div>
-            <div style={{ fontSize: '10px', color: '#aaa', fontWeight: 500, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>PnL cumule</div>
             <svg viewBox="0 0 220 65" style={{ width: '100%', height: '65px', marginBottom: '12px' }}>
               <defs><linearGradient id="gSt" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#16a34a" stopOpacity="0.15"/><stop offset="100%" stopColor="#16a34a" stopOpacity="0"/></linearGradient></defs>
               <path d="M5,52 L30,46 L55,36 L75,40 L100,28 L120,20 L145,13 L175,7 L210,3 L210,62 L5,62 Z" fill="url(#gSt)"/>
@@ -162,27 +160,25 @@ export default function Home() {
         </div>
       </section>
 
-      {/* BANDE STATS */}
       <div style={{ background: '#f9f9f9', borderTop: '0.5px solid #e8e8e8', borderBottom: '0.5px solid #e8e8e8', padding: '1.5rem 2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '4rem', alignItems: 'center', maxWidth: '700px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#111', letterSpacing: '-0.5px' }}>5 min</div><div style={{ fontSize: '12px', color: '#888', marginTop: '2px' }}>pour preparer votre session</div></div>
+          <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#111' }}>5 min</div><div style={{ fontSize: '12px', color: '#888', marginTop: '2px' }}>pour preparer votre session</div></div>
           <div style={{ width: '0.5px', height: '32px', background: '#e8e8e8' }}></div>
-          <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#111', letterSpacing: '-0.5px' }}>100%</div><div style={{ fontSize: '12px', color: '#888', marginTop: '2px' }}>personnalise a votre profil</div></div>
+          <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#111' }}>100%</div><div style={{ fontSize: '12px', color: '#888', marginTop: '2px' }}>personnalise a votre profil</div></div>
           <div style={{ width: '0.5px', height: '32px', background: '#e8e8e8' }}></div>
-          <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#111', letterSpacing: '-0.5px' }}>Tous marches</div><div style={{ fontSize: '12px', color: '#888', marginTop: '2px' }}>Futures, Forex, Crypto...</div></div>
+          <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#111' }}>Tous marches</div><div style={{ fontSize: '12px', color: '#888', marginTop: '2px' }}>Futures, Forex, Crypto...</div></div>
         </div>
       </div>
 
-      {/* How it works */}
       <section style={{ background: '#fff', padding: '4rem 2rem', borderBottom: '0.5px solid #f0f0f0' }}>
         <div style={{ fontSize: '0.7rem', color: '#888', textTransform: 'uppercase', letterSpacing: '1.5px', textAlign: 'center', marginBottom: '0.5rem' }}>Processus</div>
         <h2 style={{ fontSize: '1.75rem', fontWeight: 700, textAlign: 'center', letterSpacing: '-0.5px', marginBottom: '0.5rem' }}>Comment ca marche</h2>
         <p style={{ fontSize: '0.875rem', color: '#888', textAlign: 'center', marginBottom: '2.5rem' }}>3 etapes pour trader avec methode</p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', maxWidth: '760px', margin: '0 auto' }}>
           {[
-            { n: '1', title: 'Creez votre profil', desc: "Votre marche, votre methode, vos erreurs recurrentes. L'IA memorise tout et s'adapte a vous." },
-            { n: '2', title: 'Preparez votre session', desc: "L'IA pose les bonnes questions chaque matin. Votre plan est structure en moins de 5 minutes." },
-            { n: '3', title: 'Analysez et progressez', desc: "Journal + stats + insights IA pour identifier votre edge et vous ameliorer trade apres trade." },
+            { n: '1', title: 'Creez votre profil', desc: "Votre marche, votre methode, vos erreurs. L'IA s'adapte a vous." },
+            { n: '2', title: 'Preparez votre session', desc: "L'IA pose les bonnes questions chaque matin. Plan structure en 5 minutes." },
+            { n: '3', title: 'Analysez et progressez', desc: "Journal + stats + insights IA pour identifier votre edge." },
           ].map((s, i) => (
             <div key={i} style={{ background: '#f9f9f9', border: '0.5px solid #e8e8e8', borderRadius: '10px', padding: '1.25rem' }}>
               <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
@@ -197,13 +193,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FEATURE 1 */}
       <section style={{ padding: '4rem 2.5rem', borderBottom: '0.5px solid #f0f0f0' }}>
         <div className="feat-section">
           <div>
             <div className="feat-tag">Plan du matin</div>
             <div className="feat-title">L'IA vous guide. Vous tradez avec un plan.</div>
-            <div className="feat-desc">Avant d'ouvrir vos graphiques, MyTradePlan pose les bonnes questions. Biais, setup, zone d'invalidation — votre plan est structure en 5 minutes.</div>
+            <div className="feat-desc">Avant d'ouvrir vos graphiques, MyTradePlan pose les bonnes questions. Votre plan est structure en 5 minutes.</div>
             <div className="feat-point"><div className="feat-chk">✓</div>Personnalise a votre profil de trader</div>
             <div className="feat-point"><div className="feat-chk">✓</div>Questions centrees sur le contexte du jour</div>
             <div className="feat-point"><div className="feat-chk">✓</div>Resume clair avant l'ouverture</div>
@@ -222,14 +217,13 @@ export default function Home() {
               <div style={{ background: '#111', borderRadius: '8px 3px 8px 8px', padding: '7px 9px', fontSize: '10px', color: '#fff', maxWidth: '78%', marginLeft: 'auto' }}>Negatif, gamma negatif.</div>
               <div style={{ background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '3px 8px 8px 8px', padding: '8px 10px', fontSize: '10px', maxWidth: '92%' }}>
                 <div style={{ color: '#16a34a', fontSize: '9px', fontWeight: 600, marginBottom: '3px' }}>Plan pret</div>
-                <span style={{ color: '#444' }}>Short uniquement · Break and retest · Max 1R.</span>
+                <span style={{ color: '#444' }}>Short uniquement - Break and retest - Max 1R.</span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* FEATURE 2 */}
       <section style={{ padding: '4rem 2.5rem', background: '#f9f9f9', borderBottom: '0.5px solid #f0f0f0' }}>
         <div className="feat-section">
           <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }} className="mockup-float-2">
@@ -265,15 +259,14 @@ export default function Home() {
           <div>
             <div className="feat-tag">Dashboard IA</div>
             <div className="feat-title">Votre trading, enfin visible.</div>
-            <div className="feat-desc">Importez votre CSV broker et visualisez votre PnL jour par jour. Cliquez sur n'importe quel jour pour obtenir une analyse IA instantanee.</div>
-            <div className="feat-point"><div className="feat-chk">✓</div>KPIs en temps reel — win rate, gain/perte moyen, profit factor</div>
-            <div className="feat-point"><div className="feat-chk">✓</div>Calendrier visuel PnL dollar vert/rouge par session</div>
+            <div className="feat-desc">Importez votre CSV broker et visualisez votre PnL jour par jour. Cliquez sur n'importe quel jour pour une analyse IA instantanee.</div>
+            <div className="feat-point"><div className="feat-chk">✓</div>KPIs en temps reel - win rate, gain et perte moyen, profit factor</div>
+            <div className="feat-point"><div className="feat-chk">✓</div>Calendrier visuel PnL dollar vert et rouge par session</div>
             <div className="feat-point"><div className="feat-chk">✓</div>Analyse IA au clic sur chaque journee</div>
           </div>
         </div>
       </section>
 
-      {/* FEATURE 3 */}
       <section style={{ padding: '4rem 2.5rem', borderBottom: '0.5px solid #f0f0f0' }}>
         <div className="feat-section">
           <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }} className="mockup-float-3">
@@ -285,20 +278,20 @@ export default function Home() {
               <div style={{ paddingBottom: '8px', borderBottom: '0.5px solid #f0f0f0' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
                   <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#dc2626', flexShrink: 0 }}></div>
-                  <span style={{ fontSize: '10px', fontWeight: 700, color: '#111' }}>Fed hawkish — Contexte macro</span>
+                  <span style={{ fontSize: '10px', fontWeight: 700, color: '#111' }}>Fed hawkish - Contexte macro</span>
                 </div>
-                <div style={{ fontSize: '10px', color: '#555', lineHeight: 1.65, paddingLeft: '12px' }}>Attentes de baisse revisees a une seule coupe fin 2026. Appétit pour le risque comprime.</div>
+                <div style={{ fontSize: '10px', color: '#555', lineHeight: 1.65, paddingLeft: '12px' }}>Attentes de baisse revisees a une seule coupe fin 2026.</div>
               </div>
               <div style={{ background: '#fffbeb', border: '0.5px solid #fde68a', borderRadius: '8px', padding: '10px 12px' }}>
                 <div style={{ fontSize: '9px', color: '#d97706', fontWeight: 700, marginBottom: '4px' }}>Biais directionnel</div>
-                <div style={{ fontSize: '12px', fontWeight: 700, color: '#92400e' }}>BAISSIER · Short uniquement · Evitez les mean reversions</div>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: '#92400e' }}>BAISSIER - Short uniquement - Evitez les mean reversions</div>
               </div>
             </div>
           </div>
           <div>
             <div className="feat-tag">Briefing Macro IA</div>
             <div className="feat-title">Le contexte macro en 30 secondes.</div>
-            <div className="feat-desc">Chaque matin, MyTradePlan analyse les donnees macro, les catalyseurs du jour et les flux institutionnels pour vous donner un biais directionnel clair.</div>
+            <div className="feat-desc">Chaque matin, MyTradePlan analyse les donnees macro et les flux institutionnels pour vous donner un biais directionnel clair.</div>
             <div className="feat-point"><div className="feat-chk">✓</div>Analyse Fed, inflation, flux institutionnels</div>
             <div className="feat-point"><div className="feat-chk">✓</div>Catalyseurs economiques du jour</div>
             <div className="feat-point"><div className="feat-chk">✓</div>Biais directionnel avec score de confiance IA</div>
@@ -306,7 +299,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* PRICING */}
       <section id="pricing" style={{ maxWidth: '760px', margin: '0 auto', padding: '4rem 2rem', textAlign: 'center' }}>
         <div style={{ fontSize: '0.7rem', color: '#888', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '0.5rem' }}>Tarifs</div>
         <h2 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.75rem', letterSpacing: '-0.5px' }}>Simple et transparent</h2>
@@ -317,7 +309,7 @@ export default function Home() {
             <div className="toggle-knob"></div>
           </button>
           <span className={`toggle-label${annual ? ' active' : ''}`}>Annuel</span>
-          {annual && <span className="save-badge">Economisez 60 euros/an</span>}
+          {annual && <span className="save-badge">Economisez 60 euros par an</span>}
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', textAlign: 'left' }}>
           <div className="plan-card" style={{ border: '0.5px solid #e8e8e8' }}>
@@ -344,11 +336,11 @@ export default function Home() {
               <div style={{ fontSize: '1rem', color: '#888', marginBottom: '2px' }}>/mois</div>
             </div>
             {annual ? (
-              <div style={{ fontSize: '11px', color: '#16a34a', fontWeight: 600, marginBottom: '4px' }}>179,99 euros/an · economisez 60 euros</div>
+              <div style={{ fontSize: '11px', color: '#16a34a', fontWeight: 600, marginBottom: '4px' }}>179,99 euros par an - economisez 60 euros</div>
             ) : (
-              <div style={{ fontSize: '11px', color: '#aaa', marginBottom: '4px' }}>ou 14,99 euros/mois facture annuellement</div>
+              <div style={{ fontSize: '11px', color: '#aaa', marginBottom: '4px' }}>ou 14,99 euros par mois facture annuellement</div>
             )}
-            <div style={{ fontSize: '12px', color: '#aaa', marginBottom: '1.25rem' }}>Sans engagement · resiliez a tout moment</div>
+            <div style={{ fontSize: '12px', color: '#aaa', marginBottom: '1.25rem' }}>Sans engagement - resiliez a tout moment</div>
             <div style={{ borderTop: '0.5px solid #f0f0f0', paddingTop: '1rem', marginBottom: '1rem' }}>
               <div className="plan-feature-on"><div className="plan-check">✓</div>Trades illimites</div>
               <div className="plan-feature-on"><div className="plan-check">✓</div>Plans illimites</div>
@@ -358,30 +350,25 @@ export default function Home() {
               <div className="plan-feature-on"><div className="plan-check">✓</div><strong>Insight IA calendrier</strong></div>
             </div>
             
-              href={annual
-                ? 'https://buy.stripe.com/5kQ28t8bOg6D6Sa4HP3gk02'
-                : 'https://buy.stripe.com/8x2aEZ3Vy4nVfoGdel3gk00'
-              }
+              href={stripeUrl}
               style={{ display: 'block', textAlign: 'center', padding: '0.75rem', background: '#111', color: '#fff', borderRadius: '8px', fontSize: '0.875rem', textDecoration: 'none', fontWeight: 600 }}
             >
               Commencer maintenant
             </a>
           </div>
         </div>
-        <div style={{ marginTop: '1.5rem', fontSize: '12px', color: '#aaa' }}>Sans engagement · Resiliez a tout moment</div>
+        <div style={{ marginTop: '1.5rem', fontSize: '12px', color: '#aaa' }}>Sans engagement - Resiliez a tout moment</div>
       </section>
 
-      {/* CTA Final */}
       <section style={{ padding: '4rem 2rem', textAlign: 'center', background: '#f9f9f9', borderTop: '0.5px solid #e8e8e8' }}>
         <h2 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#111', letterSpacing: '-0.5px', marginBottom: '0.75rem' }}>Pret a trader avec un plan ?</h2>
         <p style={{ fontSize: '0.875rem', color: '#888', marginBottom: '2rem' }}>Rejoignez les traders qui progressent chaque jour.</p>
         <a href="/register" className="btn-main">Commencer gratuitement</a>
       </section>
 
-      {/* Footer */}
       <footer style={{ borderTop: '0.5px solid #e8e8e8', padding: '1.5rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontWeight: 700, fontSize: '0.875rem', color: '#111' }}>MyTradePlan</span>
-        <span style={{ fontSize: '0.8rem', color: '#aaa' }}>2026 MyTradePlan · Tous droits reserves</span>
+        <span style={{ fontSize: '0.8rem', color: '#aaa' }}>2026 MyTradePlan - Tous droits reserves</span>
       </footer>
     </main>
   )
