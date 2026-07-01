@@ -195,7 +195,6 @@ export default function DashboardPage() {
       setImportError('Le fichier doit être au format .csv')
       return
     }
-
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
@@ -213,7 +212,6 @@ export default function DashboardPage() {
         setCsvHeaders(headers)
         setCsvRows(rows)
         setMapping(autoMapping)
-
         const stillMissing = FIELD_DEFS.filter(f => f.required && !autoMapping[f.key])
         setImportStep(stillMissing.length === 0 ? 'preview' : 'mapping')
       },
@@ -257,20 +255,17 @@ export default function DashboardPage() {
     setImportStep('importing')
     const { data: { user } } = await supabase.auth.getUser()
     const totals = buildDailyTotals()
-
     const rowsToUpsert = totals.map(t => ({
       user_id: user?.id,
       date: t.date,
       pnl: t.pnl,
     }))
-
     const { error } = await supabase.from('daily_pnl').upsert(rowsToUpsert, { onConflict: 'user_id,date' })
     if (error) {
       setImportError("Erreur lors de l'import. Vérifie le mapping des colonnes.")
       setImportStep('preview')
       return
     }
-
     setImportedCount(rowsToUpsert.length)
     setImportStep('closed')
     setCsvHeaders([])
@@ -292,7 +287,6 @@ export default function DashboardPage() {
 
   const previewTotals = (importStep === 'preview' || importStep === 'importing') ? buildDailyTotals() : []
   const missingRequired = FIELD_DEFS.filter(f => f.required && !mapping[f.key])
-
   const recentTrades = trades.slice(0, 4)
 
   const calYear = calMonth.getFullYear()
@@ -322,15 +316,21 @@ export default function DashboardPage() {
   const monthNames = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre']
   const today = new Date()
 
-  const monthPnlValues = Object.values(pnlByDay)
-  const tradedDaysCount = monthPnlValues.length
-  const winningDays = monthPnlValues.filter(p => p > 0)
-  const losingDays = monthPnlValues.filter(p => p < 0)
+  // Stats globales (tous mois) — pour les KPI cards
+  const allPnlValues = dailyPnl.map(p => p.pnl)
+  const tradedDaysCount = allPnlValues.length
+  const winningDays = allPnlValues.filter(p => p > 0)
+  const losingDays = allPnlValues.filter(p => p < 0)
   const winRatePnl = tradedDaysCount > 0 ? Math.round((winningDays.length / tradedDaysCount) * 100) : 0
   const avgWinDay = winningDays.length > 0 ? parseFloat((winningDays.reduce((s, p) => s + p, 0) / winningDays.length).toFixed(2)) : 0
   const avgLossDay = losingDays.length > 0 ? parseFloat((losingDays.reduce((s, p) => s + p, 0) / losingDays.length).toFixed(2)) : 0
-  const profitFactorPnl = avgLossDay !== 0 ? parseFloat((Math.abs(winningDays.reduce((s, p) => s + p, 0)) / Math.abs(losingDays.reduce((s, p) => s + p, 0) || 1)).toFixed(1)) : 0
+  const profitFactorPnl = losingDays.length > 0 ? parseFloat((Math.abs(winningDays.reduce((s, p) => s + p, 0)) / Math.abs(losingDays.reduce((s, p) => s + p, 0))).toFixed(1)) : 0
+
+  // Stats du mois affiché — pour le calendrier et la carte PnL total
+  const monthPnlValues = Object.values(pnlByDay)
   const calTotalPnl = parseFloat(monthPnlValues.reduce((s, p) => s + p, 0).toFixed(2))
+  const calTradedDays = monthPnlValues.length
+  const calWinRate = calTradedDays > 0 ? Math.round((monthPnlValues.filter(p => p > 0).length / calTradedDays) * 100) : 0
 
   const profitFactorLabel = profitFactorPnl >= 2 ? 'Excellent' : profitFactorPnl >= 1.5 ? 'Bon' : profitFactorPnl >= 1 ? 'Correct' : 'À améliorer'
   const winRateCircumference = 2 * Math.PI * 22
@@ -454,7 +454,6 @@ export default function DashboardPage() {
               </div>
               <button onClick={closeImport} style={{ background: '#f5f5f5', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '5px 12px', fontSize: '12px', color: '#666', cursor: 'pointer' }}>✕</button>
             </div>
-
             <div
               className={`dropzone${isDragging ? ' dragging' : ''}`}
               onDragOver={handleDragOver}
@@ -473,15 +472,13 @@ export default function DashboardPage() {
                 </>
               )}
             </div>
-
             {importError && (
               <div style={{ background: '#fff5f5', border: '0.5px solid #fca5a5', borderRadius: '8px', padding: '10px 14px', color: '#dc2626', fontSize: '12px', marginTop: '1rem' }}>
                 {importError}
               </div>
             )}
-
             <div style={{ fontSize: '12px', color: '#aaa', marginTop: '1rem', lineHeight: 1.6 }}>
-              On additionne automatiquement toutes les lignes de la même date pour calculer ton PnL du jour — comme dans ton tableau broker.
+              On additionne automatiquement toutes les lignes de la même date pour calculer ton PnL du jour.
             </div>
           </div>
         </div>
@@ -492,7 +489,6 @@ export default function DashboardPage() {
           <div className="modal-box-sm" onClick={e => e.stopPropagation()}>
             <div style={{ fontSize: '16px', fontWeight: 700, color: '#111', marginBottom: '4px' }}>Où se trouvent tes données ?</div>
             <div style={{ fontSize: '12px', color: '#aaa', marginBottom: '1.25rem' }}>{csvRows.length} lignes détectées</div>
-
             <div style={{ marginBottom: '1.25rem' }}>
               {FIELD_DEFS.map(field => (
                 <div key={field.key} className="map-row">
@@ -511,16 +507,14 @@ export default function DashboardPage() {
                 </div>
               ))}
             </div>
-
             {missingRequired.length > 0 && (
               <div style={{ background: '#fff5f5', border: '0.5px solid #fca5a5', borderRadius: '8px', padding: '10px 14px', color: '#dc2626', fontSize: '12px', marginBottom: '1rem' }}>
                 Il manque encore : {missingRequired.map(f => f.label).join(', ')}
               </div>
             )}
-
             <div style={{ display: 'flex', gap: '8px' }}>
-              <button className="btn-primary" disabled={missingRequired.length > 0} onClick={() => setImportStep('preview')}>C'est bon, continuer →</button>
-              <button className="btn-secondary" onClick={() => setImportStep('drop')}>← Retour</button>
+              <button className="btn-primary" disabled={missingRequired.length > 0} onClick={() => setImportStep('preview')}>C'est bon, continuer</button>
+              <button className="btn-secondary" onClick={() => setImportStep('drop')}>Retour</button>
             </div>
           </div>
         </div>
@@ -536,7 +530,6 @@ export default function DashboardPage() {
               <div style={{ fontSize: '16px', fontWeight: 700, color: '#111', marginBottom: '4px' }}>Ton fichier a bien été lu</div>
               <div style={{ fontSize: '13px', color: '#888' }}>{previewTotals.length} jour{previewTotals.length > 1 ? 's' : ''} de PnL trouvé{previewTotals.length > 1 ? 's' : ''}</div>
             </div>
-
             <div style={{ border: '0.5px solid #e8e8e8', borderRadius: '10px', overflow: 'hidden', marginBottom: '1.25rem' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px', background: '#f9f9f9', padding: '8px 12px', fontSize: '11px', fontWeight: 500, color: '#888' }}>
                 <div>Date</div><div style={{ textAlign: 'right' }}>PnL</div>
@@ -551,13 +544,11 @@ export default function DashboardPage() {
                 <div style={{ padding: '8px 12px', fontSize: '12px', color: '#aaa', borderTop: '0.5px solid #f2f2f2' }}>et {previewTotals.length - 8} autres jours...</div>
               )}
             </div>
-
             {importError && (
               <div style={{ background: '#fff5f5', border: '0.5px solid #fca5a5', borderRadius: '8px', padding: '10px 14px', color: '#dc2626', fontSize: '12px', marginBottom: '1rem' }}>
                 {importError}
               </div>
             )}
-
             <button className="btn-primary" onClick={confirmImport} disabled={importStep === 'importing'} style={{ width: '100%' }}>
               {importStep === 'importing' ? 'Import en cours...' : `Importer ${previewTotals.length} jour${previewTotals.length > 1 ? 's' : ''}`}
             </button>
@@ -580,7 +571,6 @@ export default function DashboardPage() {
                 ✕ Fermer
               </button>
             </div>
-
             {dayModal.trades.length > 0 && (
               <div style={{ marginBottom: '1rem' }}>
                 <div className="section-lbl">Trades du jour</div>
@@ -603,7 +593,6 @@ export default function DashboardPage() {
                 ))}
               </div>
             )}
-
             {dayModal.trades.length === 0 ? (
               <div style={{ background: '#f9f9f9', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '1.25rem', textAlign: 'center', marginBottom: '1rem' }}>
                 <div style={{ fontSize: '13px', color: '#888' }}>Aucun trade journalisé ce jour-là{dayModal.pnl !== null && ', seul le PnL broker est connu'}.</div>
@@ -613,7 +602,7 @@ export default function DashboardPage() {
                 <div style={{ fontSize: '20px', marginBottom: '8px' }}>🔒</div>
                 <div style={{ fontSize: '13px', fontWeight: 600, color: '#111', marginBottom: '4px' }}>Fonctionnalité Pro</div>
                 <div style={{ fontSize: '12px', color: '#888', marginBottom: '14px' }}>L'IA Insight est réservée aux membres Pro.</div>
-                <a href="/pricing" style={{ background: '#111', color: '#fff', borderRadius: '8px', padding: '8px 18px', fontSize: '12px', fontWeight: 600, textDecoration: 'none' }}>Passer au Pro →</a>
+                <a href="/pricing" style={{ background: '#111', color: '#fff', borderRadius: '8px', padding: '8px 18px', fontSize: '12px', fontWeight: 600, textDecoration: 'none' }}>Passer au Pro</a>
               </div>
             ) : (
               <div style={{ background: '#f9f9f9', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '1rem', marginBottom: '1rem' }}>
@@ -642,7 +631,6 @@ export default function DashboardPage() {
                 )}
               </div>
             )}
-
             <a href={`/journal?date=${dayModal.dateKey}`} className="btn-primary" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>
               + Ajouter un trade ce jour-là
             </a>
@@ -759,12 +747,14 @@ export default function DashboardPage() {
             <div className="sa sa3 mid-card" style={{ marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                 <div>
-                  <div style={{ fontSize: '12px', color: '#888', marginBottom: '4px' }}>PnL total ce mois</div>
+                  <div style={{ fontSize: '12px', color: '#888', marginBottom: '4px' }}>PnL total · {monthNames[calMonthIdx]} {calYear}</div>
                   <div style={{ fontSize: '26px', fontWeight: 700, color: calTotalPnl >= 0 ? '#16a34a' : '#dc2626', fontFamily: 'monospace' }}>
-                    {tradedDaysCount === 0 ? '—' : `${calTotalPnl >= 0 ? '+' : ''}${calTotalPnl}$`}
+                    {calTradedDays === 0 ? '—' : `${calTotalPnl >= 0 ? '+' : ''}${calTotalPnl}$`}
                   </div>
                 </div>
-                <div style={{ fontSize: '12px', color: '#aaa' }}>{tradedDaysCount > 0 ? `sur ${tradedDaysCount} jour${tradedDaysCount > 1 ? 's' : ''} tradé${tradedDaysCount > 1 ? 's' : ''}` : 'aucune donnée importée'}</div>
+                <div style={{ fontSize: '12px', color: '#aaa' }}>
+                  {calTradedDays > 0 ? `sur ${calTradedDays} jour${calTradedDays > 1 ? 's' : ''} tradé${calTradedDays > 1 ? 's' : ''}` : 'aucune donnée importée'}
+                </div>
               </div>
             </div>
 
@@ -772,7 +762,7 @@ export default function DashboardPage() {
               <div className="sa sa4 mid-card" style={{ marginBottom: '1.5rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1rem' }}>
                   <span style={{ fontSize: '13px', fontWeight: 700, color: '#888' }}>Journal récent</span>
-                  <a href="/journal" style={{ fontSize: '12px', color: '#aaa', textDecoration: 'none', fontWeight: 500 }}>Voir tout →</a>
+                  <a href="/journal" style={{ fontSize: '12px', color: '#aaa', textDecoration: 'none', fontWeight: 500 }}>Voir tout</a>
                 </div>
                 {recentTrades.map(t => {
                   const d = new Date(t.created_at)
@@ -803,7 +793,7 @@ export default function DashboardPage() {
                 </div>
                 {macroLoaded && profile?.is_pro && (
                   <button onClick={getMacroBriefing} disabled={macroLoading} style={{ background: 'none', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '5px 12px', fontSize: '11.5px', color: '#888', cursor: 'pointer' }}>
-                    ↺ Rafraîchir
+                    Rafraîchir
                   </button>
                 )}
               </div>
@@ -812,14 +802,14 @@ export default function DashboardPage() {
                   <div style={{ fontSize: '20px', marginBottom: '8px' }}>🔒</div>
                   <div style={{ fontSize: '13px', fontWeight: 600, color: '#111', marginBottom: '4px' }}>Fonctionnalité Pro</div>
                   <div style={{ fontSize: '12px', color: '#888', marginBottom: '14px' }}>Le débrief macro IA est réservé aux membres Pro.</div>
-                  <a href="/pricing" style={{ background: '#111', color: '#fff', borderRadius: '8px', padding: '8px 18px', fontSize: '12px', fontWeight: 600, textDecoration: 'none' }}>Passer au Pro →</a>
+                  <a href="/pricing" style={{ background: '#111', color: '#fff', borderRadius: '8px', padding: '8px 18px', fontSize: '12px', fontWeight: 600, textDecoration: 'none' }}>Passer au Pro</a>
                 </div>
               ) : !macroLoaded ? (
                 <button className="macro-btn" onClick={getMacroBriefing} disabled={macroLoading}>
-                  {macroLoading ? <>⏳ Génération en cours...</> : <>◈ Générer le débrief macro du jour</>}
+                  {macroLoading ? <>Génération en cours...</> : <>◈ Générer le débrief macro du jour</>}
                 </button>
               ) : macroLoading ? (
-                <div style={{ color: '#aaa', fontSize: '13px', padding: '1rem 0' }}>⏳ Génération en cours...</div>
+                <div style={{ color: '#aaa', fontSize: '13px', padding: '1rem 0' }}>Génération en cours...</div>
               ) : (
                 <div style={{ fontSize: '13px', color: '#333', lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: formatMacro(macroText) }}/>
               )}
@@ -829,10 +819,10 @@ export default function DashboardPage() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '10px' }}>
                 <span style={{ fontSize: '15px', fontWeight: 700, color: '#111', letterSpacing: '-0.3px' }}>Calendrier · {monthNames[calMonthIdx]} {calYear}</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <button className="btn-secondary" onClick={openImportModal} style={{ padding: '6px 14px', fontSize: '12px' }}>↑ Importer CSV</button>
+                  <button className="btn-secondary" onClick={openImportModal} style={{ padding: '6px 14px', fontSize: '12px' }}>Importer CSV</button>
                   <div style={{ display: 'flex', gap: '5px' }}>
-                    <button onClick={() => setCalMonth(new Date(calYear, calMonthIdx - 1, 1))} style={{ background: '#f5f5f5', border: 'none', borderRadius: '6px', padding: '5px 12px', fontSize: '12px', color: '#666', cursor: 'pointer' }}>← Préc.</button>
-                    <button onClick={() => setCalMonth(new Date(calYear, calMonthIdx + 1, 1))} style={{ background: '#f5f5f5', border: 'none', borderRadius: '6px', padding: '5px 12px', fontSize: '12px', color: '#666', cursor: 'pointer' }}>Suiv. →</button>
+                    <button onClick={() => setCalMonth(new Date(calYear, calMonthIdx - 1, 1))} style={{ background: '#f5f5f5', border: 'none', borderRadius: '6px', padding: '5px 12px', fontSize: '12px', color: '#666', cursor: 'pointer' }}>Préc.</button>
+                    <button onClick={() => setCalMonth(new Date(calYear, calMonthIdx + 1, 1))} style={{ background: '#f5f5f5', border: 'none', borderRadius: '6px', padding: '5px 12px', fontSize: '12px', color: '#666', cursor: 'pointer' }}>Suiv.</button>
                   </div>
                 </div>
               </div>
@@ -876,15 +866,15 @@ export default function DashboardPage() {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '10px', marginTop: '1.25rem', paddingTop: '1rem', borderTop: '0.5px solid #f0f0f0' }}>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: calTotalPnl >= 0 ? '#16a34a' : '#dc2626' }}>{tradedDaysCount === 0 ? '—' : `${calTotalPnl >= 0 ? '+' : ''}${calTotalPnl}$`}</div>
+                  <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: calTotalPnl >= 0 ? '#16a34a' : '#dc2626' }}>{calTradedDays === 0 ? '—' : `${calTotalPnl >= 0 ? '+' : ''}${calTotalPnl}$`}</div>
                   <div style={{ fontSize: '11px', color: '#bbb', marginTop: '3px' }}>Total PnL</div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: '#111' }}>{tradedDaysCount}</div>
+                  <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: '#111' }}>{calTradedDays}</div>
                   <div style={{ fontSize: '11px', color: '#bbb', marginTop: '3px' }}>Jours tradés</div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: winRatePnl >= 50 ? '#16a34a' : '#dc2626' }}>{tradedDaysCount === 0 ? '—' : `${winRatePnl}%`}</div>
+                  <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: calWinRate >= 50 ? '#16a34a' : '#dc2626' }}>{calTradedDays === 0 ? '—' : `${calWinRate}%`}</div>
                   <div style={{ fontSize: '11px', color: '#bbb', marginTop: '3px' }}>Win rate mensuel</div>
                 </div>
               </div>
