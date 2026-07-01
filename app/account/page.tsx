@@ -18,7 +18,6 @@ export default function AccountPage() {
   const [savingPassword, setSavingPassword] = useState(false)
   const [passwordSaved, setPasswordSaved] = useState(false)
   const [passwordError, setPasswordError] = useState('')
-  const [portalLoading, setPortalLoading] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -57,16 +56,8 @@ export default function AccountPage() {
     setTimeout(() => setPasswordSaved(false), 3000)
   }
 
-  async function openPortal() {
-    setPortalLoading(true)
-    const res = await fetch('/api/portal', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: user.id }),
-    })
-    const data = await res.json()
-    if (data.url) window.location.href = data.url
-    else setPortalLoading(false)
+  function openPortal() {
+    window.location.href = 'https://billing.stripe.com/p/login/8x2aEZ3Vy4nVfoGdel3gk00'
   }
 
   async function handleLogout() {
@@ -126,7 +117,6 @@ export default function AccountPage() {
         .field-row-input { flex: 1; }
       `}</style>
 
-      {/* SIDEBAR */}
       <div
         className={`sidebar${sidebarExpanded ? ' exp' : ''}`}
         style={{ width: sidebarW }}
@@ -174,18 +164,15 @@ export default function AccountPage() {
         </nav>
       </div>
 
-      {/* MAIN */}
       <main style={{ marginLeft: sidebarW, flex: 1, padding: '0 2.5rem 3rem', transition: 'margin-left 0.2s cubic-bezier(0.4,0,0.2,1)', maxWidth: '780px' }}>
         {loading ? (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh', color: '#ccc', fontSize: '13px' }}>Chargement...</div>
         ) : (
           <>
-            {/* HEADER */}
             <div style={{ height: '52px', display: 'flex', alignItems: 'center', borderBottom: '0.5px solid #e8e8e8', marginBottom: '1.75rem' }}>
               <div style={{ fontSize: '17px', fontWeight: 700, color: '#111', letterSpacing: '-0.3px' }}>Mon compte</div>
             </div>
 
-            {/* TABS */}
             <div style={{ display: 'flex', borderBottom: '0.5px solid #e8e8e8', marginBottom: '1.75rem' }}>
               {(['profil', 'abonnement', 'securite'] as const).map(tab => (
                 <button
@@ -198,7 +185,6 @@ export default function AccountPage() {
               ))}
             </div>
 
-            {/* PROFIL */}
             {activeTab === 'profil' && (
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.75rem' }}>
@@ -210,7 +196,6 @@ export default function AccountPage() {
                     <div style={{ fontSize: '12px', color: '#aaa', marginTop: '2px' }}>{user?.email}</div>
                   </div>
                 </div>
-
                 <div className="acc-section">
                   <div className="acc-section-title">Informations personnelles</div>
                   <div className="acc-section-desc">Votre nom est affiché dans l'application.</div>
@@ -237,7 +222,6 @@ export default function AccountPage() {
               </div>
             )}
 
-            {/* ABONNEMENT & FACTURATION */}
             {activeTab === 'abonnement' && (
               <div>
                 <div className="acc-section">
@@ -267,7 +251,7 @@ export default function AccountPage() {
                         Passez au plan Pro pour débloquer le Briefing Macro IA, l'Insight IA sur chaque session et les trades illimités.
                       </div>
                       <a href="/pricing" className="btn-save" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
-                        Passer au Pro →
+                        Passer au Pro
                       </a>
                     </>
                   )}
@@ -277,15 +261,14 @@ export default function AccountPage() {
                   <div className="acc-section">
                     <div className="acc-section-title">Gérer l'abonnement</div>
                     <div className="acc-section-desc">Modifiez votre plan, votre moyen de paiement ou consultez vos factures.</div>
-                    <button className="btn-save" onClick={openPortal} disabled={portalLoading}>
-                      {portalLoading ? 'Chargement...' : 'Gérer mon abonnement →'}
+                    <button className="btn-save" onClick={openPortal}>
+                      Gérer mon abonnement
                     </button>
                   </div>
                 )}
               </div>
             )}
 
-            {/* SÉCURITÉ */}
             {activeTab === 'securite' && (
               <div>
                 <div className="acc-section">
