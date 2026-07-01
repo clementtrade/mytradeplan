@@ -3,10 +3,7 @@ import { useState } from 'react'
 
 export default function Home() {
   const [annual, setAnnual] = useState(false)
-
-  const stripeUrl = annual
-    ? 'https://buy.stripe.com/5kQ28t8bOg6D6Sa4HP3gk02'
-    : 'https://buy.stripe.com/8x2aEZ3Vy4nVfoGdel3gk00'
+  const stripeUrl = annual ? 'https://buy.stripe.com/5kQ28t8bOg6D6Sa4HP3gk02' : 'https://buy.stripe.com/8x2aEZ3Vy4nVfoGdel3gk00'
 
   return (
     <main style={{ minHeight: '100vh', background: '#fff', color: '#111', fontFamily: 'Inter, sans-serif' }}>
@@ -82,8 +79,7 @@ export default function Home() {
             <span style={{ fontSize: '12px', color: '#16a34a', fontWeight: 500 }}>Plan IA pre-marche - Tous marches</span>
           </div>
           <h1 className="anim-2" style={{ fontSize: '2.75rem', fontWeight: 700, lineHeight: 1.1, letterSpacing: '-1.5px', marginBottom: '1.25rem' }}>
-            Tradez avec un plan.<br />
-            <span style={{ color: '#666' }}>Performez avec les donnees.</span>
+            Tradez avec un plan.<br /><span style={{ color: '#666' }}>Performez avec les donnees.</span>
           </h1>
           <p className="anim-3" style={{ fontSize: '1rem', color: '#666', lineHeight: 1.7, marginBottom: '1.75rem', maxWidth: '400px' }}>
             MyTradePlan vous guide chaque matin avec un plan IA personnalise, et analyse vos trades pour identifier votre veritable edge.
@@ -91,8 +87,7 @@ export default function Home() {
           <div className="anim-4" style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '1.75rem' }}>
             {["L'IA construit votre plan, vous tradez", 'Trouvez votre edge par setup', 'Transformez vos erreurs en avantage'].map((p, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', color: '#444' }}>
-                <div className="feat-check">✓</div>
-                {p}
+                <div className="feat-check">✓</div>{p}
               </div>
             ))}
           </div>
@@ -245,13 +240,6 @@ export default function Home() {
                   <div className="dash-cal cal-win">5<span className="cal-r">+44$</span></div>
                   <div className="dash-cal cal-we">6</div>
                   <div className="dash-cal cal-we">7</div>
-                  <div className="dash-cal cal-win">8<span className="cal-r">+333$</span></div>
-                  <div className="dash-cal cal-win">9<span className="cal-r">+188$</span></div>
-                  <div className="dash-cal cal-neu">10</div>
-                  <div className="dash-cal cal-loss">11<span className="cal-r">-173$</span></div>
-                  <div className="dash-cal cal-win">12<span className="cal-r">+910$</span></div>
-                  <div className="dash-cal cal-we">13</div>
-                  <div className="dash-cal cal-we">14</div>
                 </div>
               </div>
             </div>
@@ -284,7 +272,7 @@ export default function Home() {
               </div>
               <div style={{ background: '#fffbeb', border: '0.5px solid #fde68a', borderRadius: '8px', padding: '10px 12px' }}>
                 <div style={{ fontSize: '9px', color: '#d97706', fontWeight: 700, marginBottom: '4px' }}>Biais directionnel</div>
-                <div style={{ fontSize: '12px', fontWeight: 700, color: '#92400e' }}>BAISSIER - Short uniquement - Evitez les mean reversions</div>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: '#92400e' }}>BAISSIER - Short uniquement</div>
               </div>
             </div>
           </div>
@@ -305,9 +293,7 @@ export default function Home() {
         <p style={{ color: '#666', marginBottom: '2rem' }}>Demarrez gratuitement, passez au Pro quand vous etes pret.</p>
         <div className="toggle-wrap">
           <span className={`toggle-label${!annual ? ' active' : ''}`}>Mensuel</span>
-          <button className={`toggle-btn${annual ? ' on' : ''}`} onClick={() => setAnnual(!annual)}>
-            <div className="toggle-knob"></div>
-          </button>
+          <button className={`toggle-btn${annual ? ' on' : ''}`} onClick={() => setAnnual(!annual)}><div className="toggle-knob"></div></button>
           <span className={`toggle-label${annual ? ' active' : ''}`}>Annuel</span>
           {annual && <span className="save-badge">Economisez 60 euros par an</span>}
         </div>
@@ -349,12 +335,7 @@ export default function Home() {
               <div className="plan-feature-on"><div className="plan-check">✓</div><strong>Briefing Macro IA</strong></div>
               <div className="plan-feature-on"><div className="plan-check">✓</div><strong>Insight IA calendrier</strong></div>
             </div>
-            
-              href={stripeUrl}
-              style={{ display: 'block', textAlign: 'center', padding: '0.75rem', background: '#111', color: '#fff', borderRadius: '8px', fontSize: '0.875rem', textDecoration: 'none', fontWeight: 600 }}
-            >
-              Commencer maintenant
-            </a>
+            <a href={stripeUrl} style={{ display: 'block', textAlign: 'center', padding: '0.75rem', background: '#111', color: '#fff', borderRadius: '8px', fontSize: '0.875rem', textDecoration: 'none', fontWeight: 600 }}>Commencer maintenant</a>
           </div>
         </div>
         <div style={{ marginTop: '1.5rem', fontSize: '12px', color: '#aaa' }}>Sans engagement - Resiliez a tout moment</div>
