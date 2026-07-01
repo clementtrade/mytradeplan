@@ -13,7 +13,6 @@ type Trade = {
   zone: string
   cible: string
   confirmation: string
-  result_r: number
   followed_plan: boolean
   notes: string
 }
@@ -34,6 +33,9 @@ function JournalContent() {
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [expanded, setExpanded] = useState<string | null>(null)
+  const [menuOpenId, setMenuOpenId] = useState<string | null>(null)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
@@ -46,7 +48,6 @@ function JournalContent() {
     zone: '',
     cible: '',
     confirmation: '',
-    result_r: '',
     followed_plan: true,
     notes: '',
     trade_date: '',
@@ -65,6 +66,12 @@ function JournalContent() {
       setShowForm(true)
     }
   }, [prefilledDate])
+
+  useEffect(() => {
+    function closeMenu() { setMenuOpenId(null) }
+    document.addEventListener('click', closeMenu)
+    return () => document.removeEventListener('click', closeMenu)
+  }, [])
 
   async function loadProfile() {
     const { data: { user } } = await supabase.auth.getUser()
@@ -86,7 +93,7 @@ function JournalContent() {
   }
 
   function resetForm() {
-    setForm({ instrument: '', direction: 'long', setup_type: '', contexte: '', zone: '', cible: '', confirmation: '', result_r: '', followed_plan: true, notes: '', trade_date: '' })
+    setForm({ instrument: '', direction: 'long', setup_type: '', contexte: '', zone: '', cible: '', confirmation: '', followed_plan: true, notes: '', trade_date: '' })
   }
 
   function startNewTrade() {
@@ -104,7 +111,6 @@ function JournalContent() {
       zone: trade.zone || '',
       cible: trade.cible || '',
       confirmation: trade.confirmation || '',
-      result_r: trade.result_r?.toString() || '',
       followed_plan: trade.followed_plan,
       notes: trade.notes || '',
       trade_date: '',
@@ -112,10 +118,11 @@ function JournalContent() {
     setEditingId(trade.id)
     setShowForm(true)
     setExpanded(null)
+    setMenuOpenId(null)
   }
 
   async function saveTrade() {
-    if (!form.instrument || !form.result_r) return
+    if (!form.instrument) return
     setSaving(true)
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -127,7 +134,6 @@ function JournalContent() {
       zone: form.zone,
       cible: form.cible,
       confirmation: form.confirmation,
-      result_r: parseFloat(form.result_r),
       followed_plan: form.followed_plan,
       notes: form.notes,
     }
@@ -149,9 +155,17 @@ function JournalContent() {
     setSaving(false)
   }
 
-  const totalR = trades.reduce((sum, t) => sum + t.result_r, 0)
-  const wins = trades.filter(t => t.result_r > 0)
-  const winRate = trades.length > 0 ? Math.round((wins.length / trades.length) * 100) : 0
+  async function deleteTrade(id: string) {
+    setDeleting(true)
+    await supabase.from('trades').delete().eq('id', id)
+    setDeleteConfirmId(null)
+    setExpanded(null)
+    loadTrades()
+    setDeleting(false)
+  }
+
+  const followedCount = trades.filter(t => t.followed_plan).length
+  const disciplineRate = trades.length > 0 ? Math.round((followedCount / trades.length) * 100) : 0
 
   const sidebarW = sidebarExpanded ? 200 : 52
   const initials = profile?.full_name
@@ -195,15 +209,41 @@ function JournalContent() {
         .sidebar.exp .nav-lbl { opacity: 1; }
         .nav-item.active .nav-lbl { color: #fff; }
 
-        .trade-card { background: #fff; border: 0.5px solid #e8e8e8; border-radius: 10px; overflow: hidden; transition: box-shadow 0.2s, transform 0.2s; }
+        .trade-card { background: #fff; border: 0.5px solid #e8e8e8; border-radius: 10px; overflow: visible; transition: box-shadow 0.2s, transform 0.2s; position: relative; }
         .trade-card:hover { box-shadow: 0 4px 18px rgba(0,0,0,0.08); transform: translateY(-1px); }
         .stat-card { background: #fff; border: 0.5px solid #e8e8e8; border-radius: 10px; padding: 1rem 1.25rem; }
         .btn-primary { background: #111; color: #fff; border: none; border-radius: 8px; padding: 10px 20px; font-weight: 600; font-size: 13px; cursor: pointer; transition: opacity 0.15s; font-family: inherit; }
         .btn-primary:hover { opacity: 0.85; }
         .btn-secondary { background: transparent; color: #666; border: 0.5px solid #e0e0e0; border-radius: 8px; padding: 10px 20px; font-size: 13px; cursor: pointer; font-family: inherit; transition: background 0.15s; }
         .btn-secondary:hover { background: #f5f5f5; }
+        .btn-danger { background: #fff5f5; color: #dc2626; border: 0.5px solid #fca5a5; border-radius: 8px; padding: 10px 20px; font-size: 13px; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+        .btn-danger:hover { background: #fee2e2; }
         .form-input:focus { border-color: #111 !important; }
+        .menu-btn { background: none; border: none; color: #bbb; font-size: 18px; cursor: pointer; padding: 4px 8px; border-radius: 6px; line-height: 1; }
+        .menu-btn:hover { background: #f5f5f5; color: #666; }
+        .menu-dropdown { position: absolute; top: 38px; right: 12px; background: #fff; border: 0.5px solid #e8e8e8; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); z-index: 50; min-width: 140px; overflow: hidden; }
+        .menu-item { display: block; width: 100%; text-align: left; padding: 9px 14px; font-size: 13px; color: #333; background: none; border: none; cursor: pointer; font-family: inherit; }
+        .menu-item:hover { background: #f5f5f5; }
+        .menu-item.danger { color: #dc2626; }
+        .menu-item.danger:hover { background: #fff5f5; }
+        .confirm-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; z-index: 300; }
+        .confirm-box { background: #fff; border-radius: 14px; padding: 1.5rem; width: 360px; max-width: 90vw; }
       `}</style>
+
+      {deleteConfirmId && (
+        <div className="confirm-overlay" onClick={() => setDeleteConfirmId(null)}>
+          <div className="confirm-box" onClick={e => e.stopPropagation()}>
+            <div style={{ fontSize: '15px', fontWeight: 700, color: '#111', marginBottom: '8px' }}>Supprimer ce trade ?</div>
+            <div style={{ fontSize: '13px', color: '#888', lineHeight: 1.6, marginBottom: '1.25rem' }}>Cette action est définitive et ne peut pas être annulée.</div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button className="btn-danger" onClick={() => deleteTrade(deleteConfirmId)} disabled={deleting}>
+                {deleting ? 'Suppression...' : 'Supprimer'}
+              </button>
+              <button className="btn-secondary" onClick={() => setDeleteConfirmId(null)}>Annuler</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div
         className={`sidebar${sidebarExpanded ? ' exp' : ''}`}
@@ -260,18 +300,14 @@ function JournalContent() {
             <button className="btn-primary" onClick={() => { setShowForm(!showForm); if (!showForm) startNewTrade() }}>+ Nouveau trade</button>
           </div>
 
-          <div className="journal-anim" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '1.5rem' }}>
+          <div className="journal-anim" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '1.5rem' }}>
             <div className="stat-card">
-              <div style={{ color: '#888', fontSize: '12px', marginBottom: '4px' }}>Total R</div>
-              <div style={{ fontSize: '22px', fontWeight: 700, color: totalR >= 0 ? '#16a34a' : '#dc2626', fontFamily: 'monospace' }}>{totalR >= 0 ? '+' : ''}{totalR.toFixed(2)}R</div>
-            </div>
-            <div className="stat-card">
-              <div style={{ color: '#888', fontSize: '12px', marginBottom: '4px' }}>Win Rate</div>
-              <div style={{ fontSize: '22px', fontWeight: 700, color: '#111', fontFamily: 'monospace' }}>{winRate}%</div>
-            </div>
-            <div className="stat-card">
-              <div style={{ color: '#888', fontSize: '12px', marginBottom: '4px' }}>Trades</div>
+              <div style={{ color: '#888', fontSize: '12px', marginBottom: '4px' }}>Trades journalisés</div>
               <div style={{ fontSize: '22px', fontWeight: 700, color: '#111', fontFamily: 'monospace' }}>{trades.length}</div>
+            </div>
+            <div className="stat-card">
+              <div style={{ color: '#888', fontSize: '12px', marginBottom: '4px' }}>Discipline (plan suivi)</div>
+              <div style={{ fontSize: '22px', fontWeight: 700, color: disciplineRate >= 70 ? '#16a34a' : '#d97706', fontFamily: 'monospace' }}>{trades.length === 0 ? '—' : `${disciplineRate}%`}</div>
             </div>
           </div>
 
@@ -286,7 +322,7 @@ function JournalContent() {
                 )}
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                 <div>
                   <div style={labelStyle}>Instrument</div>
                   <input className="form-input" placeholder="Instrument" value={form.instrument} onChange={e => setForm({ ...form, instrument: e.target.value })} style={inputStyle}/>
@@ -308,10 +344,6 @@ function JournalContent() {
                     <option value="Reversal">Reversal</option>
                     <option value="Autre">Autre</option>
                   </select>
-                </div>
-                <div>
-                  <div style={labelStyle}>Résultat (R)</div>
-                  <input className="form-input" type="number" step="0.1" placeholder="0" value={form.result_r} onChange={e => setForm({ ...form, result_r: e.target.value })} style={{ ...inputStyle, color: parseFloat(form.result_r) >= 0 ? '#16a34a' : '#dc2626', fontWeight: 700 }}/>
                 </div>
               </div>
 
@@ -363,17 +395,23 @@ function JournalContent() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {trades.map(trade => (
                 <div key={trade.id} className="trade-card">
-                  <div onClick={() => setExpanded(expanded === trade.id ? null : trade.id)} style={{ padding: '1rem 1.25rem', display: 'grid', gridTemplateColumns: '90px 70px 80px 120px 1fr 110px 80px', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
-                    <div style={{ color: '#aaa', fontSize: '12px' }}>{new Date(trade.created_at).toLocaleDateString('fr-FR')}</div>
-                    <div style={{ color: '#111', fontWeight: 600, fontSize: '14px' }}>{trade.instrument}</div>
-                    <div style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', background: trade.direction === 'long' ? '#dcfce7' : '#fee2e2', color: trade.direction === 'long' ? '#16a34a' : '#dc2626', fontWeight: 600, textAlign: 'center' }}>
+                  <div style={{ padding: '1rem 1.25rem', display: 'grid', gridTemplateColumns: '90px 70px 80px 130px 1fr 110px 36px', alignItems: 'center', gap: '12px' }}>
+                    <div onClick={() => setExpanded(expanded === trade.id ? null : trade.id)} style={{ color: '#aaa', fontSize: '12px', cursor: 'pointer' }}>{new Date(trade.created_at).toLocaleDateString('fr-FR')}</div>
+                    <div onClick={() => setExpanded(expanded === trade.id ? null : trade.id)} style={{ color: '#111', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>{trade.instrument}</div>
+                    <div onClick={() => setExpanded(expanded === trade.id ? null : trade.id)} style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', background: trade.direction === 'long' ? '#dcfce7' : '#fee2e2', color: trade.direction === 'long' ? '#16a34a' : '#dc2626', fontWeight: 600, textAlign: 'center', cursor: 'pointer' }}>
                       {trade.direction.toUpperCase()}
                     </div>
-                    <div style={{ fontSize: '12px', color: '#555', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{trade.setup_type || '—'}</div>
-                    <div style={{ color: '#666', fontSize: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{trade.contexte}</div>
-                    <div style={{ fontSize: '12px', color: trade.followed_plan ? '#16a34a' : '#d97706' }}>{trade.followed_plan ? '✓ Plan suivi' : '⚠ Hors plan'}</div>
-                    <div style={{ textAlign: 'right', fontFamily: 'monospace', fontWeight: 700, fontSize: '16px', color: trade.result_r >= 0 ? '#16a34a' : '#dc2626' }}>
-                      {trade.result_r >= 0 ? '+' : ''}{trade.result_r}R
+                    <div onClick={() => setExpanded(expanded === trade.id ? null : trade.id)} style={{ fontSize: '12px', color: '#555', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer' }}>{trade.setup_type || '—'}</div>
+                    <div onClick={() => setExpanded(expanded === trade.id ? null : trade.id)} style={{ color: '#666', fontSize: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer' }}>{trade.contexte}</div>
+                    <div onClick={() => setExpanded(expanded === trade.id ? null : trade.id)} style={{ fontSize: '12px', color: trade.followed_plan ? '#16a34a' : '#d97706', cursor: 'pointer', textAlign: 'right' }}>{trade.followed_plan ? '✓ Plan suivi' : '⚠ Hors plan'}</div>
+                    <div style={{ position: 'relative', textAlign: 'right' }}>
+                      <button className="menu-btn" onClick={(e) => { e.stopPropagation(); setMenuOpenId(menuOpenId === trade.id ? null : trade.id) }}>⋯</button>
+                      {menuOpenId === trade.id && (
+                        <div className="menu-dropdown" onClick={e => e.stopPropagation()}>
+                          <button className="menu-item" onClick={() => startEditTrade(trade)}>Modifier</button>
+                          <button className="menu-item danger" onClick={() => { setDeleteConfirmId(trade.id); setMenuOpenId(null) }}>Supprimer</button>
+                        </div>
+                      )}
                     </div>
                   </div>
 
