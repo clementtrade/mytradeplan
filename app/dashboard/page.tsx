@@ -238,7 +238,6 @@ export default function DashboardPage() {
   const monthNames = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre']
   const today = new Date()
 
-  // Stats globales
   const allPnlValues = dailyPnl.map(p => p.pnl)
   const tradedDaysCount = allPnlValues.length
   const winningDays = allPnlValues.filter(p => p > 0)
@@ -248,22 +247,17 @@ export default function DashboardPage() {
   const avgLossDay = losingDays.length > 0 ? parseFloat((losingDays.reduce((s, p) => s + p, 0) / losingDays.length).toFixed(2)) : 0
   const profitFactorPnl = losingDays.length > 0 ? parseFloat((Math.abs(winningDays.reduce((s, p) => s + p, 0)) / Math.abs(losingDays.reduce((s, p) => s + p, 0))).toFixed(1)) : 0
 
-  // Stats du mois affiché
   const monthPnlValues = Object.values(pnlByDay)
   const calTotalPnl = parseFloat(monthPnlValues.reduce((s, p) => s + p, 0).toFixed(2))
   const calTradedDays = monthPnlValues.length
   const calWinRate = calTradedDays > 0 ? Math.round((monthPnlValues.filter(p => p > 0).length / calTradedDays) * 100) : 0
 
-  // Stats avancées
-  const totalGains = winningDays.reduce((s, p) => s + p, 0)
-  const totalLosses = Math.abs(losingDays.reduce((s, p) => s + p, 0))
   const expectancy = tradedDaysCount > 0 ? parseFloat(((winRatePnl / 100 * avgWinDay) + ((1 - winRatePnl / 100) * avgLossDay)).toFixed(2)) : 0
   const avgPnl = tradedDaysCount > 0 ? allPnlValues.reduce((s, p) => s + p, 0) / tradedDaysCount : 0
   const variance = tradedDaysCount > 1 ? allPnlValues.reduce((s, p) => s + Math.pow(p - avgPnl, 2), 0) / (tradedDaysCount - 1) : 0
   const stdDev = Math.sqrt(variance)
   const sharpeRatio = stdDev > 0 ? parseFloat((avgPnl / stdDev).toFixed(2)) : 0
   const sharpeLabel = sharpeRatio >= 2 ? 'Excellent' : sharpeRatio >= 1 ? 'Bon' : sharpeRatio >= 0.5 ? 'Correct' : 'À améliorer'
-  const sharpeWidth = Math.min(Math.max((sharpeRatio / 3) * 100, 0), 100)
 
   let maxDrawdown = 0
   let peak = 0
@@ -296,46 +290,34 @@ export default function DashboardPage() {
   const consistencyScore = totalTrades > 0 ? Math.round((followedTrades / totalTrades) * 100) : 0
   const consistencyOffset = 138 - (consistencyScore / 100) * 138
 
-  const beAtCurrentRR = avgWinDay !== 0 && avgLossDay !== 0
-    ? parseFloat((Math.abs(avgLossDay) / (avgWinDay + Math.abs(avgLossDay)) * 100).toFixed(1))
-    : 47.7
-  const currentRR = avgWinDay !== 0 && avgLossDay !== 0
-    ? parseFloat((avgWinDay / Math.abs(avgLossDay)).toFixed(2))
-    : 1.1
+  const beAtCurrentRR = avgWinDay !== 0 && avgLossDay !== 0 ? parseFloat((Math.abs(avgLossDay) / (avgWinDay + Math.abs(avgLossDay)) * 100).toFixed(1)) : 47.7
+  const currentRR = avgWinDay !== 0 && avgLossDay !== 0 ? parseFloat((avgWinDay / Math.abs(avgLossDay)).toFixed(2)) : 1.1
   const distanceBE = parseFloat((winRatePnl - beAtCurrentRR).toFixed(1))
   const distanceBEBarWidth = Math.min(Math.abs(distanceBE) / 30 * 50, 50)
 
   function getRRMessages(wr: number, rr: number, marge: number, be: number) {
     const msgs = []
     if (marge < 0) {
-      msgs.push({ color: '#dc2626', bg: '#fff5f5', border: '#fca5a5', icon: '⚠',
-        text: `Ton win rate (${wr}%) est sous le BE (${be}%) pour un RR de 1:${rr}. Tu perds de l'argent sur le long terme — améliore ton win rate ou revois ton RR.` })
+      msgs.push({ color: '#dc2626', bg: '#fff5f5', border: '#fca5a5', icon: '⚠', text: `Ton win rate (${wr}%) est sous le BE (${be}%) pour un RR de 1:${rr}. Tu perds de l'argent sur le long terme.` })
     } else if (marge < 10) {
-      msgs.push({ color: '#d97706', bg: '#fffbeb', border: '#fde68a', icon: '⚡',
-        text: `Ta marge est faible (${marge}%). Essaie de maintenir au moins 20% de marge au-dessus du BE pour absorber les mauvaises séries.` })
+      msgs.push({ color: '#d97706', bg: '#fffbeb', border: '#fde68a', icon: '⚡', text: `Ta marge est faible (${marge}%). Essaie de maintenir au moins 20% de marge au-dessus du BE.` })
     } else if (marge < 20) {
-      msgs.push({ color: '#2a78d6', bg: '#eff6ff', border: '#bfdbfe', icon: '💡',
-        text: `Marge correcte (${marge}%). Vise 20% de marge au-dessus du BE pour être plus résistant aux mauvaises séries.` })
+      msgs.push({ color: '#2a78d6', bg: '#eff6ff', border: '#bfdbfe', icon: '💡', text: `Marge correcte (${marge}%). Vise 20% de marge au-dessus du BE pour être plus résistant aux mauvaises séries.` })
     } else {
-      msgs.push({ color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0', icon: '✓',
-        text: `Excellente marge de ${marge}% au-dessus du BE. Continue à maintenir cette régularité.` })
+      msgs.push({ color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0', icon: '✓', text: `Excellente marge de ${marge}% au-dessus du BE. Continue à maintenir cette régularité.` })
     }
     if (rr >= 3) {
-      msgs.push({ color: '#7c3aed', bg: '#f5f3ff', border: '#ddd6fe', icon: '🏦',
-        text: `Avec un RR de 1:${rr}, ton BE est très bas (${be}%) mais attention aux longues séries perdantes. En prop firm, je te conseille de risquer seulement 0,5% par trade pour maximiser tes chances de payout.` })
+      msgs.push({ color: '#7c3aed', bg: '#f5f3ff', border: '#ddd6fe', icon: '🏦', text: `Avec un RR de 1:${rr}, ton BE est très bas (${be}%) mais attention aux longues séries perdantes. En prop firm, risque seulement 0,5% par trade pour maximiser tes chances de payout.` })
     }
     if (rr <= 1.5) {
-      msgs.push({ color: '#0891b2', bg: '#ecfeff', border: '#a5f3fc', icon: '🏦',
-        text: `Avec un RR de 1:${rr}, ta forte win rate te protège des losing streaks. Stratégie idéale en prop firm — tu peux risquer 1% par trade en évaluation.` })
+      msgs.push({ color: '#0891b2', bg: '#ecfeff', border: '#a5f3fc', icon: '🏦', text: `Avec un RR de 1:${rr}, ta forte win rate te protège des losing streaks. Stratégie idéale en prop firm — tu peux risquer 1% par trade en évaluation.` })
     }
     return msgs
   }
 
   useEffect(() => {
-    if (loading || tradedDaysCount === 0) return
-    const script = document.createElement('script')
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js'
-    script.onload = () => {
+    if (loading || tradedDaysCount === 0 || !profile?.is_pro) return
+    const initChart = () => {
       if (!rrCanvasRef.current) return
       if (rrChartRef.current) { rrChartRef.current.destroy(); rrChartRef.current = null }
       const rrs: number[] = []
@@ -378,10 +360,16 @@ export default function DashboardPage() {
         }
       })
     }
-    if (!(window as any).Chart) document.head.appendChild(script)
-    else script.onload!(new Event('load'))
+    if (!(window as any).Chart) {
+      const script = document.createElement('script')
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js'
+      script.onload = initChart
+      document.head.appendChild(script)
+    } else {
+      initChart()
+    }
     return () => { if (rrChartRef.current) { rrChartRef.current.destroy(); rrChartRef.current = null } }
-  }, [loading, tradedDaysCount, currentRR, winRatePnl])
+  }, [loading, tradedDaysCount, currentRR, winRatePnl, profile?.is_pro])
 
   const profitFactorLabel = profitFactorPnl >= 2 ? 'Excellent' : profitFactorPnl >= 1.5 ? 'Bon' : profitFactorPnl >= 1 ? 'Correct' : 'À améliorer'
   const winRateCircumference = 2 * Math.PI * 22
@@ -392,7 +380,6 @@ export default function DashboardPage() {
   const dateStr = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
   const dateFormatted = dateStr.charAt(0).toUpperCase() + dateStr.slice(1)
   const initials = profile?.full_name ? profile.full_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase() : 'CL'
-
   const rrMessages = getRRMessages(winRatePnl, currentRR, distanceBE, beAtCurrentRR)
 
   return (
@@ -684,7 +671,6 @@ export default function DashboardPage() {
         ) : (
           <div style={{ maxWidth: '1080px', margin: '0 auto' }}>
 
-            {/* HEADER */}
             <div className="sa sa1" style={{ height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '0.5px solid #e8e8e8', marginBottom: '2rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
                 <span style={{ fontSize: '20px', fontWeight: 700, color: '#111', letterSpacing: '-0.5px' }}>Dashboard</span>
@@ -818,7 +804,14 @@ export default function DashboardPage() {
                 <span style={{ fontSize: '14px', fontWeight: 700, color: '#111' }}>Stats avancées</span>
                 <span style={{ fontSize: '11px', color: '#bbb' }}>toutes périodes confondues</span>
               </div>
-              {tradedDaysCount === 0 ? (
+              {!profile?.is_pro ? (
+                <div style={{ background: '#f9f9f9', border: '0.5px solid #e8e8e8', borderRadius: '10px', padding: '1.25rem', textAlign: 'center' }}>
+                  <div style={{ fontSize: '20px', marginBottom: '8px' }}>🔒</div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#111', marginBottom: '4px' }}>Fonctionnalité Pro</div>
+                  <div style={{ fontSize: '12px', color: '#888', marginBottom: '14px' }}>Les stats avancées sont réservées aux membres Pro — Expectancy, Sharpe ratio, Max drawdown, Streak, Consistency et graphique RR vs Win rate.</div>
+                  <a href="/pricing" style={{ background: '#111', color: '#fff', borderRadius: '8px', padding: '8px 18px', fontSize: '12px', fontWeight: 600, textDecoration: 'none' }}>Passer au Pro</a>
+                </div>
+              ) : tradedDaysCount === 0 ? (
                 <div style={{ textAlign: 'center', padding: '1.5rem', color: '#bbb', fontSize: '13px' }}>Importe des données CSV pour voir tes stats avancées.</div>
               ) : (
                 <>
@@ -867,7 +860,7 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px', marginBottom: '8px' }}>
                     <div className="adv-card">
                       <div style={{ fontSize: '11px', color: '#888', marginBottom: '8px' }}>Meilleur / pire jour</div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
@@ -913,45 +906,47 @@ export default function DashboardPage() {
             </div>
 
             {/* 5. GRAPHIQUE RR VS WIN RATE */}
-            <div className="sa sa6 mid-card" style={{ marginBottom: '1.5rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                <div>
-                  <div style={{ fontSize: '14px', fontWeight: 700, color: '#111' }}>RR vs Win rate · Break even</div>
-                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>Win rate minimum pour être rentable selon ton RR</div>
+            {profile?.is_pro && (
+              <div className="sa sa6 mid-card" style={{ marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                  <div>
+                    <div style={{ fontSize: '14px', fontWeight: 700, color: '#111' }}>RR vs Win rate · Break even</div>
+                    <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>Win rate minimum pour être rentable selon ton RR</div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '12px', fontSize: '11px', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><div style={{ width: '20px', height: '2px', background: '#2a78d6' }}></div><span style={{ color: '#aaa' }}>Courbe BE</span></div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#16a34a' }}></div><span style={{ color: '#aaa' }}>Ta position</span></div>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', gap: '12px', fontSize: '11px', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><div style={{ width: '20px', height: '2px', background: '#2a78d6' }}></div><span style={{ color: '#aaa' }}>Courbe BE</span></div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#16a34a' }}></div><span style={{ color: '#aaa' }}>Ta position</span></div>
+                <div style={{ position: 'relative', height: '220px' }}>
+                  <canvas ref={rrCanvasRef}></canvas>
                 </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px', marginTop: '1rem', paddingTop: '1rem', borderTop: '0.5px solid #f0f0f0' }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '16px', fontWeight: 700, color: '#111', fontFamily: 'monospace' }}>{tradedDaysCount > 0 ? `${winRatePnl}%` : '—'}</div>
+                    <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>Win rate actuel</div>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '16px', fontWeight: 700, color: '#111', fontFamily: 'monospace' }}>{tradedDaysCount > 0 ? `1:${currentRR}` : '—'}</div>
+                    <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>RR moyen estimé</div>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '16px', fontWeight: 700, color: distanceBE >= 0 ? '#16a34a' : '#dc2626', fontFamily: 'monospace' }}>{tradedDaysCount > 0 ? `${distanceBE >= 0 ? '+' : ''}${distanceBE}%` : '—'}</div>
+                    <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>Marge au-dessus du BE</div>
+                  </div>
+                </div>
+                {tradedDaysCount > 0 && (
+                  <div style={{ marginTop: '0.75rem' }}>
+                    {rrMessages.map((m, i) => (
+                      <div key={i} style={{ background: m.bg, border: `0.5px solid ${m.border}`, borderRadius: '8px', padding: '8px 12px', marginBottom: '6px', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                        <span style={{ fontSize: '13px', flexShrink: 0 }}>{m.icon}</span>
+                        <span style={{ color: m.color, fontSize: '12px', lineHeight: 1.6 }}>{m.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-              <div style={{ position: 'relative', height: '220px' }}>
-                <canvas ref={rrCanvasRef}></canvas>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px', marginTop: '1rem', paddingTop: '1rem', borderTop: '0.5px solid #f0f0f0' }}>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '16px', fontWeight: 700, color: '#111', fontFamily: 'monospace' }}>{tradedDaysCount > 0 ? `${winRatePnl}%` : '—'}</div>
-                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>Win rate actuel</div>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '16px', fontWeight: 700, color: '#111', fontFamily: 'monospace' }}>{tradedDaysCount > 0 ? `1:${currentRR}` : '—'}</div>
-                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>RR moyen estimé</div>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '16px', fontWeight: 700, color: distanceBE >= 0 ? '#16a34a' : '#dc2626', fontFamily: 'monospace' }}>{tradedDaysCount > 0 ? `${distanceBE >= 0 ? '+' : ''}${distanceBE}%` : '—'}</div>
-                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>Marge au-dessus du BE</div>
-                </div>
-              </div>
-              {tradedDaysCount > 0 && (
-                <div style={{ marginTop: '0.75rem' }}>
-                  {rrMessages.map((m, i) => (
-                    <div key={i} style={{ background: m.bg, border: `0.5px solid ${m.border}`, borderRadius: '8px', padding: '8px 12px', marginBottom: '6px', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-                      <span style={{ fontSize: '13px', flexShrink: 0 }}>{m.icon}</span>
-                      <span style={{ color: m.color, fontSize: '12px', lineHeight: 1.6 }}>{m.text}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            )}
 
             {/* 6. JOURNAL RECENT */}
             {trades.length > 0 && (
