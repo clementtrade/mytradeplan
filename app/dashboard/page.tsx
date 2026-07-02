@@ -81,6 +81,8 @@ export default function DashboardPage() {
   const [dayModal, setDayModal] = useState<DayModal | null>(null)
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const rrChartRef = useRef<any>(null)
+  const rrCanvasRef = useRef<HTMLCanvasElement>(null)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [importStep, setImportStep] = useState<'closed' | 'drop' | 'mapping' | 'preview' | 'importing'>('closed')
@@ -91,49 +93,34 @@ export default function DashboardPage() {
   const [importError, setImportError] = useState('')
   const [importedCount, setImportedCount] = useState<number | null>(null)
 
-  useEffect(() => {
-    loadAll()
-  }, [])
+  useEffect(() => { loadAll() }, [])
 
   async function loadAll() {
     setLoading(true)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { window.location.href = '/login'; return }
-    const { data: tradesData } = await supabase
-      .from('trades').select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
+    const { data: tradesData } = await supabase.from('trades').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
     if (tradesData) setTrades(tradesData)
-    const { data: pnlData } = await supabase
-      .from('daily_pnl').select('*')
-      .eq('user_id', user.id)
+    const { data: pnlData } = await supabase.from('daily_pnl').select('*').eq('user_id', user.id)
     if (pnlData) setDailyPnl(pnlData)
-    const { data: profileData } = await supabase
-      .from('profiles').select('*').eq('id', user.id).single()
+    const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single()
     if (profileData) setProfile(profileData)
     const today = new Date().toISOString().split('T')[0]
-    const { data: planData } = await supabase
-      .from('morning_plans').select('id').eq('user_id', user.id).gte('created_at', today).limit(1)
+    const { data: planData } = await supabase.from('morning_plans').select('id').eq('user_id', user.id).gte('created_at', today).limit(1)
     if (planData && planData.length > 0) setPlanReady(true)
     setLoading(false)
   }
 
   async function openDayModal(day: number, dayTrades: Trade[], dateKey: string, pnl: number | null) {
     const dateStr = `${day} ${monthNames[calMonthIdx]} ${calYear}`
-
     if (!profile?.is_pro) {
       setDayModal({ day, date: dateStr, dateKey, trades: dayTrades, pnl, insight: 'PRO_LOCKED', insightLoading: false })
       return
     }
-
     setDayModal({ day, date: dateStr, dateKey, trades: dayTrades, pnl, insight: '', insightLoading: dayTrades.length > 0 })
     if (dayTrades.length === 0) return
     try {
-      const res = await fetch('/api/day-insight', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ trades: dayTrades, profile, date: dateStr }),
-      })
+      const res = await fetch('/api/day-insight', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ trades: dayTrades, profile, date: dateStr }) })
       const data = await res.json()
       setDayModal(prev => prev ? { ...prev, insight: data.insight, insightLoading: false } : null)
     } catch {
@@ -145,10 +132,7 @@ export default function DashboardPage() {
     setDeleting(true)
     await supabase.from('trades').delete().eq('id', id)
     setDeleteConfirmId(null)
-    if (dayModal) {
-      const remainingTrades = dayModal.trades.filter(t => t.id !== id)
-      setDayModal({ ...dayModal, trades: remainingTrades })
-    }
+    if (dayModal) setDayModal({ ...dayModal, trades: dayModal.trades.filter(t => t.id !== id) })
     loadAll()
     setDeleting(false)
   }
@@ -157,11 +141,7 @@ export default function DashboardPage() {
     setMacroLoading(true)
     setMacroText('')
     try {
-      const res = await fetch('/api/macro-briefing', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ profile }),
-      })
+      const res = await fetch('/api/macro-briefing', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ profile }) })
       const data = await res.json()
       setMacroText(data.reply)
       setMacroLoaded(true)
@@ -173,68 +153,34 @@ export default function DashboardPage() {
   }
 
   function formatMacro(text: string) {
-    return text
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .split('\n')
-      .map((line) => `<div style="min-height:4px">${line || '&nbsp;'}</div>`)
-      .join('')
+    return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').split('\n').map(line => `<div style="min-height:4px">${line || '&nbsp;'}</div>`).join('')
   }
 
-  function openImportModal() {
-    setImportedCount(null)
-    setImportStep('drop')
-  }
-
-  function openFilePicker() {
-    fileInputRef.current?.click()
-  }
+  function openImportModal() { setImportedCount(null); setImportStep('drop') }
+  function openFilePicker() { fileInputRef.current?.click() }
 
   function processFile(file: File) {
     setImportError('')
-    if (!file.name.toLowerCase().endsWith('.csv')) {
-      setImportError('Le fichier doit être au format .csv')
-      return
-    }
+    if (!file.name.toLowerCase().endsWith('.csv')) { setImportError('Le fichier doit être au format .csv'); return }
     Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
+      header: true, skipEmptyLines: true,
       complete: (results) => {
         const headers = results.meta.fields || []
         const rows = results.data as ParsedRow[]
-        if (headers.length === 0 || rows.length === 0) {
-          setImportError('Le fichier CSV est vide ou illisible.')
-          return
-        }
+        if (headers.length === 0 || rows.length === 0) { setImportError('Le fichier CSV est vide ou illisible.'); return }
         const autoMapping: Record<string, string> = {}
-        for (const field of FIELD_DEFS) {
-          autoMapping[field.key] = autoDetectColumn(headers, field.aliases)
-        }
-        setCsvHeaders(headers)
-        setCsvRows(rows)
-        setMapping(autoMapping)
-        const stillMissing = FIELD_DEFS.filter(f => f.required && !autoMapping[f.key])
-        setImportStep(stillMissing.length === 0 ? 'preview' : 'mapping')
+        for (const field of FIELD_DEFS) autoMapping[field.key] = autoDetectColumn(headers, field.aliases)
+        setCsvHeaders(headers); setCsvRows(rows); setMapping(autoMapping)
+        setImportStep(FIELD_DEFS.filter(f => f.required && !autoMapping[f.key]).length === 0 ? 'preview' : 'mapping')
       },
-      error: () => {
-        setImportError('Impossible de lire ce fichier. Vérifie le format CSV.')
-      }
+      error: () => setImportError('Impossible de lire ce fichier. Vérifie le format CSV.')
     })
   }
 
-  function handleFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (file) processFile(file)
-    e.target.value = ''
-  }
-
+  function handleFileSelected(e: React.ChangeEvent<HTMLInputElement>) { const file = e.target.files?.[0]; if (file) processFile(file); e.target.value = '' }
   function handleDragOver(e: React.DragEvent) { e.preventDefault(); setIsDragging(true) }
   function handleDragLeave(e: React.DragEvent) { e.preventDefault(); setIsDragging(false) }
-  function handleDrop(e: React.DragEvent) {
-    e.preventDefault()
-    setIsDragging(false)
-    const file = e.dataTransfer.files?.[0]
-    if (file) processFile(file)
-  }
+  function handleDrop(e: React.DragEvent) { e.preventDefault(); setIsDragging(false); const file = e.dataTransfer.files?.[0]; if (file) processFile(file) }
 
   function buildDailyTotals(): DailyPnl[] {
     const totals: Record<string, number> = {}
@@ -246,44 +192,22 @@ export default function DashboardPage() {
       const pnl = parsePnl(pnlRaw)
       totals[dateKey] = parseFloat(((totals[dateKey] || 0) + pnl).toFixed(2))
     }
-    return Object.entries(totals)
-      .map(([date, pnl]) => ({ date, pnl }))
-      .sort((a, b) => b.date.localeCompare(a.date))
+    return Object.entries(totals).map(([date, pnl]) => ({ date, pnl })).sort((a, b) => b.date.localeCompare(a.date))
   }
 
   async function confirmImport() {
     setImportStep('importing')
     const { data: { user } } = await supabase.auth.getUser()
     const totals = buildDailyTotals()
-    const rowsToUpsert = totals.map(t => ({
-      user_id: user?.id,
-      date: t.date,
-      pnl: t.pnl,
-    }))
+    const rowsToUpsert = totals.map(t => ({ user_id: user?.id, date: t.date, pnl: t.pnl }))
     const { error } = await supabase.from('daily_pnl').upsert(rowsToUpsert, { onConflict: 'user_id,date' })
-    if (error) {
-      setImportError("Erreur lors de l'import. Vérifie le mapping des colonnes.")
-      setImportStep('preview')
-      return
-    }
-    setImportedCount(rowsToUpsert.length)
-    setImportStep('closed')
-    setCsvHeaders([])
-    setCsvRows([])
-    setMapping({})
-    setImportError('')
-    loadAll()
-    setTimeout(() => setImportedCount(null), 4000)
+    if (error) { setImportError("Erreur lors de l'import. Vérifie le mapping des colonnes."); setImportStep('preview'); return }
+    setImportedCount(rowsToUpsert.length); setImportStep('closed')
+    setCsvHeaders([]); setCsvRows([]); setMapping({}); setImportError('')
+    loadAll(); setTimeout(() => setImportedCount(null), 4000)
   }
 
-  function closeImport() {
-    setImportStep('closed')
-    setIsDragging(false)
-    setCsvHeaders([])
-    setCsvRows([])
-    setMapping({})
-    setImportError('')
-  }
+  function closeImport() { setImportStep('closed'); setIsDragging(false); setCsvHeaders([]); setCsvRows([]); setMapping({}); setImportError('') }
 
   const previewTotals = (importStep === 'preview' || importStep === 'importing') ? buildDailyTotals() : []
   const missingRequired = FIELD_DEFS.filter(f => f.required && !mapping[f.key])
@@ -308,15 +232,13 @@ export default function DashboardPage() {
   const pnlByDay: Record<string, number> = {}
   dailyPnl.forEach(p => {
     const [y, m, d] = p.date.split('-').map(Number)
-    if (y === calYear && (m - 1) === calMonthIdx) {
-      pnlByDay[d.toString()] = p.pnl
-    }
+    if (y === calYear && (m - 1) === calMonthIdx) pnlByDay[d.toString()] = p.pnl
   })
 
   const monthNames = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre']
   const today = new Date()
 
-  // Stats globales (tous mois) — pour les KPI cards
+  // Stats globales
   const allPnlValues = dailyPnl.map(p => p.pnl)
   const tradedDaysCount = allPnlValues.length
   const winningDays = allPnlValues.filter(p => p > 0)
@@ -326,11 +248,140 @@ export default function DashboardPage() {
   const avgLossDay = losingDays.length > 0 ? parseFloat((losingDays.reduce((s, p) => s + p, 0) / losingDays.length).toFixed(2)) : 0
   const profitFactorPnl = losingDays.length > 0 ? parseFloat((Math.abs(winningDays.reduce((s, p) => s + p, 0)) / Math.abs(losingDays.reduce((s, p) => s + p, 0))).toFixed(1)) : 0
 
-  // Stats du mois affiché — pour le calendrier et la carte PnL total
+  // Stats du mois affiché
   const monthPnlValues = Object.values(pnlByDay)
   const calTotalPnl = parseFloat(monthPnlValues.reduce((s, p) => s + p, 0).toFixed(2))
   const calTradedDays = monthPnlValues.length
   const calWinRate = calTradedDays > 0 ? Math.round((monthPnlValues.filter(p => p > 0).length / calTradedDays) * 100) : 0
+
+  // Stats avancées
+  const totalGains = winningDays.reduce((s, p) => s + p, 0)
+  const totalLosses = Math.abs(losingDays.reduce((s, p) => s + p, 0))
+  const expectancy = tradedDaysCount > 0 ? parseFloat(((winRatePnl / 100 * avgWinDay) + ((1 - winRatePnl / 100) * avgLossDay)).toFixed(2)) : 0
+  const avgPnl = tradedDaysCount > 0 ? allPnlValues.reduce((s, p) => s + p, 0) / tradedDaysCount : 0
+  const variance = tradedDaysCount > 1 ? allPnlValues.reduce((s, p) => s + Math.pow(p - avgPnl, 2), 0) / (tradedDaysCount - 1) : 0
+  const stdDev = Math.sqrt(variance)
+  const sharpeRatio = stdDev > 0 ? parseFloat((avgPnl / stdDev).toFixed(2)) : 0
+  const sharpeLabel = sharpeRatio >= 2 ? 'Excellent' : sharpeRatio >= 1 ? 'Bon' : sharpeRatio >= 0.5 ? 'Correct' : 'À améliorer'
+  const sharpeWidth = Math.min(Math.max((sharpeRatio / 3) * 100, 0), 100)
+
+  let maxDrawdown = 0
+  let peak = 0
+  let cumPnl = 0
+  const sortedPnl = [...dailyPnl].sort((a, b) => a.date.localeCompare(b.date))
+  sortedPnl.forEach(p => {
+    cumPnl += p.pnl
+    if (cumPnl > peak) peak = cumPnl
+    const dd = peak - cumPnl
+    if (dd > maxDrawdown) maxDrawdown = dd
+  })
+  maxDrawdown = parseFloat(maxDrawdown.toFixed(2))
+
+  let streak = 0
+  let streakType: 'win' | 'loss' | null = null
+  const reversedPnl = [...sortedPnl].reverse()
+  for (const p of reversedPnl) {
+    if (streak === 0) { streakType = p.pnl > 0 ? 'win' : 'loss'; streak = 1 }
+    else if ((streakType === 'win' && p.pnl > 0) || (streakType === 'loss' && p.pnl < 0)) streak++
+    else break
+  }
+  const streakBoxes = Array(Math.min(streak, 5)).fill(streakType)
+  if (streakBoxes.length < 5) streakBoxes.push(null)
+
+  const bestDay = allPnlValues.length > 0 ? Math.max(...allPnlValues) : 0
+  const worstDay = allPnlValues.length > 0 ? Math.min(...allPnlValues) : 0
+
+  const totalTrades = trades.length
+  const followedTrades = trades.filter(t => t.followed_plan).length
+  const consistencyScore = totalTrades > 0 ? Math.round((followedTrades / totalTrades) * 100) : 0
+  const consistencyOffset = 138 - (consistencyScore / 100) * 138
+
+  const beAtCurrentRR = avgWinDay !== 0 && avgLossDay !== 0
+    ? parseFloat((Math.abs(avgLossDay) / (avgWinDay + Math.abs(avgLossDay)) * 100).toFixed(1))
+    : 47.7
+  const currentRR = avgWinDay !== 0 && avgLossDay !== 0
+    ? parseFloat((avgWinDay / Math.abs(avgLossDay)).toFixed(2))
+    : 1.1
+  const distanceBE = parseFloat((winRatePnl - beAtCurrentRR).toFixed(1))
+  const distanceBEBarWidth = Math.min(Math.abs(distanceBE) / 30 * 50, 50)
+
+  function getRRMessages(wr: number, rr: number, marge: number, be: number) {
+    const msgs = []
+    if (marge < 0) {
+      msgs.push({ color: '#dc2626', bg: '#fff5f5', border: '#fca5a5', icon: '⚠',
+        text: `Ton win rate (${wr}%) est sous le BE (${be}%) pour un RR de 1:${rr}. Tu perds de l'argent sur le long terme — améliore ton win rate ou revois ton RR.` })
+    } else if (marge < 10) {
+      msgs.push({ color: '#d97706', bg: '#fffbeb', border: '#fde68a', icon: '⚡',
+        text: `Ta marge est faible (${marge}%). Essaie de maintenir au moins 20% de marge au-dessus du BE pour absorber les mauvaises séries.` })
+    } else if (marge < 20) {
+      msgs.push({ color: '#2a78d6', bg: '#eff6ff', border: '#bfdbfe', icon: '💡',
+        text: `Marge correcte (${marge}%). Vise 20% de marge au-dessus du BE pour être plus résistant aux mauvaises séries.` })
+    } else {
+      msgs.push({ color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0', icon: '✓',
+        text: `Excellente marge de ${marge}% au-dessus du BE. Continue à maintenir cette régularité.` })
+    }
+    if (rr >= 3) {
+      msgs.push({ color: '#7c3aed', bg: '#f5f3ff', border: '#ddd6fe', icon: '🏦',
+        text: `Avec un RR de 1:${rr}, ton BE est très bas (${be}%) mais attention aux longues séries perdantes. En prop firm, je te conseille de risquer seulement 0,5% par trade pour maximiser tes chances de payout.` })
+    }
+    if (rr <= 1.5) {
+      msgs.push({ color: '#0891b2', bg: '#ecfeff', border: '#a5f3fc', icon: '🏦',
+        text: `Avec un RR de 1:${rr}, ta forte win rate te protège des losing streaks. Stratégie idéale en prop firm — tu peux risquer 1% par trade en évaluation.` })
+    }
+    return msgs
+  }
+
+  useEffect(() => {
+    if (loading || tradedDaysCount === 0) return
+    const script = document.createElement('script')
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js'
+    script.onload = () => {
+      if (!rrCanvasRef.current) return
+      if (rrChartRef.current) { rrChartRef.current.destroy(); rrChartRef.current = null }
+      const rrs: number[] = []
+      const beWR: number[] = []
+      for (let r = 0.1; r <= 10; r += 0.1) {
+        rrs.push(Math.round(r * 10) / 10)
+        beWR.push(Math.round((1 / (1 + r)) * 10000) / 100)
+      }
+      const Chart = (window as any).Chart
+      rrChartRef.current = new Chart(rrCanvasRef.current, {
+        type: 'line',
+        data: {
+          labels: rrs,
+          datasets: [
+            { data: beWR, borderColor: '#2a78d6', borderWidth: 2, pointRadius: 0, fill: { target: 'origin', above: 'rgba(42,120,214,0.05)' }, tension: 0.4 },
+            { data: rrs.map(r => Math.abs(r - currentRR) < 0.06 ? winRatePnl : null), borderColor: 'transparent', pointBackgroundColor: '#16a34a', pointBorderColor: '#fff', pointBorderWidth: 2, pointRadius: rrs.map(r => Math.abs(r - currentRR) < 0.06 ? 9 : 0), fill: false }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                title: (i: any) => `RR 1:${i[0].label}`,
+                label: (i: any) => {
+                  if (i.datasetIndex === 0) return `BE minimum : ${Number(i.raw).toFixed(1)}%`
+                  if (i.datasetIndex === 1 && i.raw !== null) return `Ton win rate : ${i.raw}%`
+                  return null
+                }
+              },
+              backgroundColor: '#111', titleColor: '#fff', bodyColor: '#aaa', padding: 10, cornerRadius: 8,
+              filter: (i: any) => i.raw !== null
+            }
+          },
+          scales: {
+            x: { title: { display: true, text: 'RR', color: '#888', font: { size: 11 } }, ticks: { color: '#888', font: { size: 11 }, maxTicksLimit: 11, callback: (_: any, i: number) => rrs[i] % 1 === 0 ? `1:${rrs[i]}` : '' }, grid: { color: 'rgba(0,0,0,0.04)' } },
+            y: { title: { display: true, text: 'Win rate (%)', color: '#888', font: { size: 11 } }, min: 0, max: 100, ticks: { color: '#888', font: { size: 11 }, callback: (v: any) => `${v}%` }, grid: { color: 'rgba(0,0,0,0.04)' } }
+          }
+        }
+      })
+    }
+    if (!(window as any).Chart) document.head.appendChild(script)
+    else script.onload!(new Event('load'))
+    return () => { if (rrChartRef.current) { rrChartRef.current.destroy(); rrChartRef.current = null } }
+  }, [loading, tradedDaysCount, currentRR, winRatePnl])
 
   const profitFactorLabel = profitFactorPnl >= 2 ? 'Excellent' : profitFactorPnl >= 1.5 ? 'Bon' : profitFactorPnl >= 1 ? 'Correct' : 'À améliorer'
   const winRateCircumference = 2 * Math.PI * 22
@@ -340,9 +391,9 @@ export default function DashboardPage() {
   const sidebarW = sidebarExpanded ? 200 : 52
   const dateStr = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
   const dateFormatted = dateStr.charAt(0).toUpperCase() + dateStr.slice(1)
-  const initials = profile?.full_name
-    ? profile.full_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
-    : 'CL'
+  const initials = profile?.full_name ? profile.full_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase() : 'CL'
+
+  const rrMessages = getRRMessages(winRatePnl, currentRR, distanceBE, beAtCurrentRR)
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#fff', fontFamily: 'Inter, sans-serif' }}>
@@ -354,6 +405,7 @@ export default function DashboardPage() {
         .sa1 { animation-delay: 0.04s; } .sa2 { animation-delay: 0.08s; }
         .sa3 { animation-delay: 0.12s; } .sa4 { animation-delay: 0.16s; }
         .sa5 { animation-delay: 0.20s; } .sa6 { animation-delay: 0.25s; }
+        .sa7 { animation-delay: 0.30s; } .sa8 { animation-delay: 0.35s; }
         .sidebar { position: fixed; left: 0; top: 0; height: 100vh; background: #fff; border-right: 0.5px solid #e8e8e8; display: flex; flex-direction: column; transition: width 0.2s cubic-bezier(0.4,0,0.2,1); overflow: hidden; z-index: 100; }
         .sb-logo { height: 52px; min-height: 52px; display: flex; align-items: center; padding: 0 14px; border-bottom: 0.5px solid #e8e8e8; white-space: nowrap; }
         .sb-dot { width: 24px; height: 24px; min-width: 24px; background: #111; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 800; }
@@ -378,6 +430,7 @@ export default function DashboardPage() {
         .kpi-card { background: #1a1a1a; border-radius: 14px; padding: 1.1rem; transition: transform 0.15s; }
         .kpi-card:hover { transform: translateY(-2px); }
         .mid-card { background: #fff; border: 0.5px solid #e8e8e8; border-radius: 14px; padding: 1.25rem; }
+        .adv-card { background: #f9f9f9; border: 0.5px solid #e8e8e8; border-radius: 10px; padding: 0.875rem; }
         .trade-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 0.5px solid #f2f2f2; }
         .trade-row:last-child { border-bottom: none; }
         .badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.4px; }
@@ -435,9 +488,7 @@ export default function DashboardPage() {
             <div style={{ fontSize: '15px', fontWeight: 700, color: '#111', marginBottom: '8px' }}>Supprimer ce trade ?</div>
             <div style={{ fontSize: '13px', color: '#888', lineHeight: 1.6, marginBottom: '1.25rem' }}>Cette action est définitive et ne peut pas être annulée.</div>
             <div style={{ display: 'flex', gap: '8px' }}>
-              <button className="btn-danger" onClick={() => deleteTrade(deleteConfirmId)} disabled={deleting}>
-                {deleting ? 'Suppression...' : 'Supprimer'}
-              </button>
+              <button className="btn-danger" onClick={() => deleteTrade(deleteConfirmId)} disabled={deleting}>{deleting ? 'Suppression...' : 'Supprimer'}</button>
               <button className="btn-secondary" onClick={() => setDeleteConfirmId(null)}>Annuler</button>
             </div>
           </div>
@@ -454,13 +505,7 @@ export default function DashboardPage() {
               </div>
               <button onClick={closeImport} style={{ background: '#f5f5f5', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '5px 12px', fontSize: '12px', color: '#666', cursor: 'pointer' }}>✕</button>
             </div>
-            <div
-              className={`dropzone${isDragging ? ' dragging' : ''}`}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              onClick={openFilePicker}
-            >
+            <div className={`dropzone${isDragging ? ' dragging' : ''}`} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onClick={openFilePicker}>
               <div className="dropzone-icon">{isDragging ? '⬇' : '↑'}</div>
               {isDragging ? (
                 <div style={{ fontSize: '14px', fontWeight: 600, color: '#111' }}>Relâche pour importer</div>
@@ -472,14 +517,8 @@ export default function DashboardPage() {
                 </>
               )}
             </div>
-            {importError && (
-              <div style={{ background: '#fff5f5', border: '0.5px solid #fca5a5', borderRadius: '8px', padding: '10px 14px', color: '#dc2626', fontSize: '12px', marginTop: '1rem' }}>
-                {importError}
-              </div>
-            )}
-            <div style={{ fontSize: '12px', color: '#aaa', marginTop: '1rem', lineHeight: 1.6 }}>
-              On additionne automatiquement toutes les lignes de la même date pour calculer ton PnL du jour.
-            </div>
+            {importError && <div style={{ background: '#fff5f5', border: '0.5px solid #fca5a5', borderRadius: '8px', padding: '10px 14px', color: '#dc2626', fontSize: '12px', marginTop: '1rem' }}>{importError}</div>}
+            <div style={{ fontSize: '12px', color: '#aaa', marginTop: '1rem', lineHeight: 1.6 }}>On additionne automatiquement toutes les lignes de la même date pour calculer ton PnL du jour.</div>
           </div>
         </div>
       )}
@@ -496,22 +535,14 @@ export default function DashboardPage() {
                     <div style={{ fontSize: '13px', fontWeight: 600, color: '#111' }}>{field.label}{field.required && <span style={{ color: '#dc2626' }}> *</span>}</div>
                     <div style={{ fontSize: '11px', color: '#aaa' }}>{field.hint}</div>
                   </div>
-                  <select
-                    className="map-select"
-                    value={mapping[field.key] || ''}
-                    onChange={e => setMapping({ ...mapping, [field.key]: e.target.value })}
-                  >
+                  <select className="map-select" value={mapping[field.key] || ''} onChange={e => setMapping({ ...mapping, [field.key]: e.target.value })}>
                     <option value="">— Aucune colonne —</option>
                     {csvHeaders.map(h => <option key={h} value={h}>{h}</option>)}
                   </select>
                 </div>
               ))}
             </div>
-            {missingRequired.length > 0 && (
-              <div style={{ background: '#fff5f5', border: '0.5px solid #fca5a5', borderRadius: '8px', padding: '10px 14px', color: '#dc2626', fontSize: '12px', marginBottom: '1rem' }}>
-                Il manque encore : {missingRequired.map(f => f.label).join(', ')}
-              </div>
-            )}
+            {missingRequired.length > 0 && <div style={{ background: '#fff5f5', border: '0.5px solid #fca5a5', borderRadius: '8px', padding: '10px 14px', color: '#dc2626', fontSize: '12px', marginBottom: '1rem' }}>Il manque encore : {missingRequired.map(f => f.label).join(', ')}</div>}
             <div style={{ display: 'flex', gap: '8px' }}>
               <button className="btn-primary" disabled={missingRequired.length > 0} onClick={() => setImportStep('preview')}>C'est bon, continuer</button>
               <button className="btn-secondary" onClick={() => setImportStep('drop')}>Retour</button>
@@ -540,15 +571,9 @@ export default function DashboardPage() {
                   <div style={{ textAlign: 'right', fontFamily: 'monospace', color: t.pnl >= 0 ? '#16a34a' : '#dc2626' }}>{t.pnl >= 0 ? '+' : ''}{t.pnl}$</div>
                 </div>
               ))}
-              {previewTotals.length > 8 && (
-                <div style={{ padding: '8px 12px', fontSize: '12px', color: '#aaa', borderTop: '0.5px solid #f2f2f2' }}>et {previewTotals.length - 8} autres jours...</div>
-              )}
+              {previewTotals.length > 8 && <div style={{ padding: '8px 12px', fontSize: '12px', color: '#aaa', borderTop: '0.5px solid #f2f2f2' }}>et {previewTotals.length - 8} autres jours...</div>}
             </div>
-            {importError && (
-              <div style={{ background: '#fff5f5', border: '0.5px solid #fca5a5', borderRadius: '8px', padding: '10px 14px', color: '#dc2626', fontSize: '12px', marginBottom: '1rem' }}>
-                {importError}
-              </div>
-            )}
+            {importError && <div style={{ background: '#fff5f5', border: '0.5px solid #fca5a5', borderRadius: '8px', padding: '10px 14px', color: '#dc2626', fontSize: '12px', marginBottom: '1rem' }}>{importError}</div>}
             <button className="btn-primary" onClick={confirmImport} disabled={importStep === 'importing'} style={{ width: '100%' }}>
               {importStep === 'importing' ? 'Import en cours...' : `Importer ${previewTotals.length} jour${previewTotals.length > 1 ? 's' : ''}`}
             </button>
@@ -567,9 +592,7 @@ export default function DashboardPage() {
                   {dayModal.pnl !== null && <> · PnL {dayModal.pnl >= 0 ? '+' : ''}{dayModal.pnl}$</>}
                 </div>
               </div>
-              <button onClick={() => setDayModal(null)} style={{ background: '#f5f5f5', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '5px 12px', fontSize: '12px', color: '#666', cursor: 'pointer' }}>
-                ✕ Fermer
-              </button>
+              <button onClick={() => setDayModal(null)} style={{ background: '#f5f5f5', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '5px 12px', fontSize: '12px', color: '#666', cursor: 'pointer' }}>✕ Fermer</button>
             </div>
             {dayModal.trades.length > 0 && (
               <div style={{ marginBottom: '1rem' }}>
@@ -584,9 +607,7 @@ export default function DashboardPage() {
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <div style={{ fontSize: '11px', color: t.followed_plan ? '#16a34a' : '#d97706' }}>
-                        {t.followed_plan ? '✓ plan' : '✗ plan'}
-                      </div>
+                      <div style={{ fontSize: '11px', color: t.followed_plan ? '#16a34a' : '#d97706' }}>{t.followed_plan ? '✓ plan' : '✗ plan'}</div>
                       <button className="delete-icon-btn" onClick={() => setDeleteConfirmId(t.id)} title="Supprimer ce trade">✕</button>
                     </div>
                   </div>
@@ -611,39 +632,26 @@ export default function DashboardPage() {
                   <div style={{ fontSize: '10px', color: '#bbb' }}>{profile?.approach} · {profile?.market}</div>
                 </div>
                 {dayModal.insightLoading ? (
-                  <div style={{ padding: '0.5rem 0' }}>
-                    <span className="aidot"></span><span className="aidot"></span><span className="aidot"></span>
-                  </div>
+                  <div style={{ padding: '0.5rem 0' }}><span className="aidot"></span><span className="aidot"></span><span className="aidot"></span></div>
                 ) : (
                   <>
                     <div style={{ fontSize: '12.5px', color: '#333', lineHeight: 1.7 }}>{dayModal.insight}</div>
                     <div style={{ borderTop: '0.5px solid #e8e8e8', marginTop: '10px', paddingTop: '10px' }}>
                       {(() => {
                         const disc = Math.round((dayModal.trades.filter(t => t.followed_plan).length / dayModal.trades.length) * 100)
-                        return (
-                          <div style={{ fontSize: '11.5px', fontWeight: 600, color: disc >= 80 ? '#16a34a' : '#d97706' }}>
-                            Discipline : {disc}% · {disc >= 80 ? 'Bonne session.' : 'À améliorer.'}
-                          </div>
-                        )
+                        return <div style={{ fontSize: '11.5px', fontWeight: 600, color: disc >= 80 ? '#16a34a' : '#d97706' }}>Discipline : {disc}% · {disc >= 80 ? 'Bonne session.' : 'À améliorer.'}</div>
                       })()}
                     </div>
                   </>
                 )}
               </div>
             )}
-            <a href={`/journal?date=${dayModal.dateKey}`} className="btn-primary" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>
-              + Ajouter un trade ce jour-là
-            </a>
+            <a href={`/journal?date=${dayModal.dateKey}`} className="btn-primary" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>+ Ajouter un trade ce jour-là</a>
           </div>
         </div>
       )}
 
-      <div
-        className={`sidebar${sidebarExpanded ? ' exp' : ''}`}
-        style={{ width: sidebarW }}
-        onMouseEnter={() => setSidebarExpanded(true)}
-        onMouseLeave={() => setSidebarExpanded(false)}
-      >
+      <div className={`sidebar${sidebarExpanded ? ' exp' : ''}`} style={{ width: sidebarW }} onMouseEnter={() => setSidebarExpanded(true)} onMouseLeave={() => setSidebarExpanded(false)}>
         <div className="sb-logo">
           <div className="sb-dot">M</div>
           <span className="sb-brand">MyTradePlan</span>
@@ -658,30 +666,15 @@ export default function DashboardPage() {
         <div className="sb-divider"></div>
         <div className="sb-section">Session</div>
         <nav style={{ paddingTop: '2px' }}>
-          <a href="/dashboard" className="nav-item active">
-            <span className="nav-icon">▦</span>
-            <span className="nav-lbl">Dashboard</span>
-          </a>
-          <a href="/plan" className="nav-item">
-            <span className="nav-icon">☀</span>
-            <span className="nav-lbl">Plan du matin</span>
-          </a>
-          <a href="/debrief" className="nav-item">
-            <span className="nav-icon">◈</span>
-            <span className="nav-lbl">Débrief Macro IA</span>
-          </a>
-          <a href="/journal" className="nav-item">
-            <span className="nav-icon" style={{ fontSize: '13px', fontWeight: 700 }}>▤</span>
-            <span className="nav-lbl">Journal</span>
-          </a>
+          <a href="/dashboard" className="nav-item active"><span className="nav-icon">▦</span><span className="nav-lbl">Dashboard</span></a>
+          <a href="/plan" className="nav-item"><span className="nav-icon">☀</span><span className="nav-lbl">Plan du matin</span></a>
+          <a href="/debrief" className="nav-item"><span className="nav-icon">◈</span><span className="nav-lbl">Débrief Macro IA</span></a>
+          <a href="/journal" className="nav-item"><span className="nav-icon" style={{ fontSize: '13px', fontWeight: 700 }}>▤</span><span className="nav-lbl">Journal</span></a>
         </nav>
         <div className="sb-divider"></div>
         <div className="sb-section">Compte</div>
         <nav style={{ paddingTop: '2px' }}>
-          <a href="/account" className="nav-item">
-            <span className="nav-icon">⚙</span>
-            <span className="nav-lbl">Mon compte</span>
-          </a>
+          <a href="/account" className="nav-item"><span className="nav-icon">⚙</span><span className="nav-lbl">Mon compte</span></a>
         </nav>
       </div>
 
@@ -691,6 +684,7 @@ export default function DashboardPage() {
         ) : (
           <div style={{ maxWidth: '1080px', margin: '0 auto' }}>
 
+            {/* HEADER */}
             <div className="sa sa1" style={{ height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '0.5px solid #e8e8e8', marginBottom: '2rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
                 <span style={{ fontSize: '20px', fontWeight: 700, color: '#111', letterSpacing: '-0.5px' }}>Dashboard</span>
@@ -708,6 +702,7 @@ export default function DashboardPage() {
               </div>
             )}
 
+            {/* 1. KPI CARDS */}
             <div className="sa sa2" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '12px', marginBottom: '1.5rem' }}>
               <div className="kpi-card">
                 <div style={{ fontSize: '11px', color: '#999', marginBottom: '10px' }}>Win rate</div>
@@ -744,6 +739,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
+            {/* 2. PNL TOTAL */}
             <div className="sa sa3 mid-card" style={{ marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                 <div>
@@ -758,64 +754,8 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {trades.length > 0 && (
-              <div className="sa sa4 mid-card" style={{ marginBottom: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1rem' }}>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#888' }}>Journal récent</span>
-                  <a href="/journal" style={{ fontSize: '12px', color: '#aaa', textDecoration: 'none', fontWeight: 500 }}>Voir tout</a>
-                </div>
-                {recentTrades.map(t => {
-                  const d = new Date(t.created_at)
-                  const ds = `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}`
-                  return (
-                    <div key={t.id} className="trade-row">
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
-                        <span className={`badge badge-${t.direction === 'long' ? 'long' : 'short'}`}>{t.direction}</span>
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{ fontSize: '13px', fontWeight: 600, color: '#111' }}>{t.setup_type || t.instrument}</div>
-                          <div style={{ fontSize: '11px', color: '#bbb' }}>{ds}</div>
-                        </div>
-                      </div>
-                      <span style={{ fontSize: '12px', color: t.followed_plan ? '#16a34a' : '#d97706' }}>
-                        {t.followed_plan ? '✓ Plan suivi' : '⚠ Hors plan'}
-                      </span>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-
-            <div className="sa sa5 mid-card" style={{ marginBottom: '1.5rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#111' }}>Débrief Macro IA</div>
-                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>Briefing du jour généré par IA selon ton profil</div>
-                </div>
-                {macroLoaded && profile?.is_pro && (
-                  <button onClick={getMacroBriefing} disabled={macroLoading} style={{ background: 'none', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '5px 12px', fontSize: '11.5px', color: '#888', cursor: 'pointer' }}>
-                    Rafraîchir
-                  </button>
-                )}
-              </div>
-              {!profile?.is_pro ? (
-                <div style={{ background: '#f9f9f9', border: '0.5px solid #e8e8e8', borderRadius: '10px', padding: '1.25rem', textAlign: 'center' }}>
-                  <div style={{ fontSize: '20px', marginBottom: '8px' }}>🔒</div>
-                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#111', marginBottom: '4px' }}>Fonctionnalité Pro</div>
-                  <div style={{ fontSize: '12px', color: '#888', marginBottom: '14px' }}>Le débrief macro IA est réservé aux membres Pro.</div>
-                  <a href="/pricing" style={{ background: '#111', color: '#fff', borderRadius: '8px', padding: '8px 18px', fontSize: '12px', fontWeight: 600, textDecoration: 'none' }}>Passer au Pro</a>
-                </div>
-              ) : !macroLoaded ? (
-                <button className="macro-btn" onClick={getMacroBriefing} disabled={macroLoading}>
-                  {macroLoading ? <>Génération en cours...</> : <>◈ Générer le débrief macro du jour</>}
-                </button>
-              ) : macroLoading ? (
-                <div style={{ color: '#aaa', fontSize: '13px', padding: '1rem 0' }}>Génération en cours...</div>
-              ) : (
-                <div style={{ fontSize: '13px', color: '#333', lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: formatMacro(macroText) }}/>
-              )}
-            </div>
-
-            <div className="sa sa6 mid-card">
+            {/* 3. CALENDRIER */}
+            <div className="sa sa4 mid-card" style={{ marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '10px' }}>
                 <span style={{ fontSize: '15px', fontWeight: 700, color: '#111', letterSpacing: '-0.3px' }}>Calendrier · {monthNames[calMonthIdx]} {calYear}</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -832,9 +772,7 @@ export default function DashboardPage() {
                 ))}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '6px' }}>
-                {Array(startOffset).fill(null).map((_, i) => (
-                  <div key={`e${i}`} className="cal-day cal-empty"></div>
-                ))}
+                {Array(startOffset).fill(null).map((_, i) => <div key={`e${i}`} className="cal-day cal-empty"></div>)}
                 {Array(daysInMonth).fill(null).map((_, i) => {
                   const day = i + 1
                   const key = day.toString()
@@ -851,15 +789,9 @@ export default function DashboardPage() {
                   if (isToday) cls += ' cal-today'
                   if (isWeekend && !hasData) cls += ' cal-weekend'
                   return (
-                    <div
-                      key={day}
-                      className={cls}
-                      onClick={() => !isFuture ? openDayModal(day, dayTrades, `${calYear}-${(calMonthIdx+1).toString().padStart(2,'0')}-${day.toString().padStart(2,'0')}`, pnl) : undefined}
-                    >
+                    <div key={day} className={cls} onClick={() => !isFuture ? openDayModal(day, dayTrades, `${calYear}-${(calMonthIdx+1).toString().padStart(2,'0')}-${day.toString().padStart(2,'0')}`, pnl) : undefined}>
                       {day}
-                      {pnl !== null && (
-                        <span className="cal-pnl">{pnl >= 0 ? '+' : ''}{pnl}$</span>
-                      )}
+                      {pnl !== null && <span className="cal-pnl">{pnl >= 0 ? '+' : ''}{pnl}$</span>}
                     </div>
                   )
                 })}
@@ -878,6 +810,202 @@ export default function DashboardPage() {
                   <div style={{ fontSize: '11px', color: '#bbb', marginTop: '3px' }}>Win rate mensuel</div>
                 </div>
               </div>
+            </div>
+
+            {/* 4. STATS AVANCEES */}
+            <div className="sa sa5 mid-card" style={{ marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                <span style={{ fontSize: '14px', fontWeight: 700, color: '#111' }}>Stats avancées</span>
+                <span style={{ fontSize: '11px', color: '#bbb' }}>toutes périodes confondues</span>
+              </div>
+              {tradedDaysCount === 0 ? (
+                <div style={{ textAlign: 'center', padding: '1.5rem', color: '#bbb', fontSize: '13px' }}>Importe des données CSV pour voir tes stats avancées.</div>
+              ) : (
+                <>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '8px', marginBottom: '8px' }}>
+                    <div className="adv-card">
+                      <div style={{ fontSize: '11px', color: '#888', marginBottom: '5px' }}>Expectancy</div>
+                      <div style={{ fontSize: '20px', fontWeight: 700, color: expectancy >= 0 ? '#16a34a' : '#dc2626', fontFamily: 'monospace' }}>{expectancy >= 0 ? '+' : ''}{expectancy}$</div>
+                      <div style={{ fontSize: '11px', color: '#aaa', margin: '4px 0 7px' }}>gain espéré / trade</div>
+                      <div style={{ height: '3px', background: '#e8e8e8', borderRadius: '2px' }}>
+                        <div style={{ width: `${Math.min(Math.max((expectancy / 200) * 100, 0), 100)}%`, height: '100%', background: expectancy >= 0 ? '#16a34a' : '#dc2626', borderRadius: '2px' }}></div>
+                      </div>
+                    </div>
+                    <div className="adv-card">
+                      <div style={{ fontSize: '11px', color: '#888', marginBottom: '5px' }}>Sharpe ratio</div>
+                      <div style={{ fontSize: '20px', fontWeight: 700, color: '#111', fontFamily: 'monospace' }}>{tradedDaysCount > 1 ? sharpeRatio : '—'}</div>
+                      <div style={{ fontSize: '11px', color: '#aaa', margin: '4px 0 7px' }}>rendement / risque</div>
+                      {tradedDaysCount > 1 && (
+                        <>
+                          <div style={{ display: 'flex', gap: '3px', marginBottom: '3px' }}>
+                            {[0,1,2,3].map(i => <div key={i} style={{ flex: 1, height: '3px', background: sharpeRatio >= (i + 1) * 0.5 ? '#16a34a' : '#e8e8e8', borderRadius: '2px' }}></div>)}
+                          </div>
+                          <div style={{ fontSize: '10px', color: '#16a34a' }}>{sharpeLabel}</div>
+                        </>
+                      )}
+                    </div>
+                    <div className="adv-card">
+                      <div style={{ fontSize: '11px', color: '#888', marginBottom: '5px' }}>Max drawdown</div>
+                      <div style={{ fontSize: '20px', fontWeight: 700, color: '#dc2626', fontFamily: 'monospace' }}>{maxDrawdown > 0 ? `-${maxDrawdown}$` : '—'}</div>
+                      <div style={{ fontSize: '11px', color: '#aaa', margin: '4px 0 7px' }}>pire série de pertes</div>
+                      <div style={{ height: '3px', background: '#e8e8e8', borderRadius: '2px' }}>
+                        <div style={{ width: `${Math.min((maxDrawdown / (Math.abs(calTotalPnl) + maxDrawdown + 1)) * 100, 100)}%`, height: '100%', background: '#dc2626', borderRadius: '2px' }}></div>
+                      </div>
+                    </div>
+                    <div className="adv-card">
+                      <div style={{ fontSize: '11px', color: '#888', marginBottom: '5px' }}>Streak actuel</div>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '20px', fontWeight: 700, color: streakType === 'win' ? '#16a34a' : '#dc2626', fontFamily: 'monospace' }}>{streak > 0 ? (streakType === 'win' ? `+${streak}` : `-${streak}`) : '—'}</span>
+                        {streak > 0 && <span style={{ fontSize: '11px', color: streakType === 'win' ? '#16a34a' : '#dc2626' }}>{streakType === 'win' ? 'gagnants' : 'perdants'}</span>}
+                      </div>
+                      <div style={{ display: 'flex', gap: '3px' }}>
+                        {streakBoxes.map((t, i) => (
+                          <div key={i} style={{ width: '18px', height: '18px', borderRadius: '4px', background: t === 'win' ? '#dcfce7' : t === 'loss' ? '#fee2e2' : '#e8e8e8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <span style={{ fontSize: '9px', color: t === 'win' ? '#15803d' : t === 'loss' ? '#dc2626' : '#ccc', fontWeight: 600 }}>{t === 'win' ? 'W' : t === 'loss' ? 'L' : '?'}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px' }}>
+                    <div className="adv-card">
+                      <div style={{ fontSize: '11px', color: '#888', marginBottom: '8px' }}>Meilleur / pire jour</div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <span style={{ fontSize: '11px', color: '#aaa' }}>Meilleur</span>
+                        <span style={{ fontSize: '15px', fontWeight: 700, color: '#16a34a', fontFamily: 'monospace' }}>{bestDay > 0 ? `+${bestDay}$` : '—'}</span>
+                      </div>
+                      <div style={{ height: '0.5px', background: '#e8e8e8', marginBottom: '6px' }}></div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '11px', color: '#aaa' }}>Pire</span>
+                        <span style={{ fontSize: '15px', fontWeight: 700, color: '#dc2626', fontFamily: 'monospace' }}>{worstDay < 0 ? `${worstDay}$` : '—'}</span>
+                      </div>
+                    </div>
+                    <div className="adv-card">
+                      <div style={{ fontSize: '11px', color: '#888', marginBottom: '6px' }}>Consistency score</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <svg width="48" height="48" viewBox="0 0 52 52">
+                          <circle cx="26" cy="26" r="22" fill="none" stroke="#e8e8e8" strokeWidth="6"/>
+                          <circle cx="26" cy="26" r="22" fill="none" stroke={consistencyScore >= 70 ? '#16a34a' : consistencyScore >= 50 ? '#d97706' : '#dc2626'} strokeWidth="6" strokeLinecap="round" strokeDasharray="138" strokeDashoffset={consistencyOffset} transform="rotate(-90 26 26)"/>
+                        </svg>
+                        <div>
+                          <div style={{ fontSize: '20px', fontWeight: 700, color: '#111', fontFamily: 'monospace' }}>{totalTrades > 0 ? `${consistencyScore}%` : '—'}</div>
+                          <div style={{ fontSize: '11px', color: '#aaa', marginTop: '2px' }}>jours plan suivi</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="adv-card">
+                      <div style={{ fontSize: '11px', color: '#888', marginBottom: '5px' }}>Distance au BE</div>
+                      <div style={{ fontSize: '20px', fontWeight: 700, color: distanceBE >= 0 ? '#16a34a' : '#dc2626', fontFamily: 'monospace' }}>{tradedDaysCount > 0 ? `${distanceBE >= 0 ? '+' : ''}${distanceBE}%` : '—'}</div>
+                      <div style={{ fontSize: '11px', color: '#aaa', margin: '4px 0 7px' }}>marge au-dessus du BE</div>
+                      {tradedDaysCount > 0 && (
+                        <div style={{ position: 'relative', height: '6px', background: '#e8e8e8', borderRadius: '3px' }}>
+                          <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: '1.5px', background: '#aaa' }}></div>
+                          {distanceBE >= 0
+                            ? <div style={{ position: 'absolute', left: '50%', width: `${distanceBEBarWidth}%`, height: '100%', background: '#16a34a', borderRadius: '0 3px 3px 0' }}></div>
+                            : <div style={{ position: 'absolute', right: '50%', width: `${distanceBEBarWidth}%`, height: '100%', background: '#dc2626', borderRadius: '3px 0 0 3px' }}></div>
+                          }
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* 5. GRAPHIQUE RR VS WIN RATE */}
+            <div className="sa sa6 mid-card" style={{ marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: 700, color: '#111' }}>RR vs Win rate · Break even</div>
+                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>Win rate minimum pour être rentable selon ton RR</div>
+                </div>
+                <div style={{ display: 'flex', gap: '12px', fontSize: '11px', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><div style={{ width: '20px', height: '2px', background: '#2a78d6' }}></div><span style={{ color: '#aaa' }}>Courbe BE</span></div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#16a34a' }}></div><span style={{ color: '#aaa' }}>Ta position</span></div>
+                </div>
+              </div>
+              <div style={{ position: 'relative', height: '220px' }}>
+                <canvas ref={rrCanvasRef}></canvas>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px', marginTop: '1rem', paddingTop: '1rem', borderTop: '0.5px solid #f0f0f0' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '16px', fontWeight: 700, color: '#111', fontFamily: 'monospace' }}>{tradedDaysCount > 0 ? `${winRatePnl}%` : '—'}</div>
+                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>Win rate actuel</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '16px', fontWeight: 700, color: '#111', fontFamily: 'monospace' }}>{tradedDaysCount > 0 ? `1:${currentRR}` : '—'}</div>
+                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>RR moyen estimé</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '16px', fontWeight: 700, color: distanceBE >= 0 ? '#16a34a' : '#dc2626', fontFamily: 'monospace' }}>{tradedDaysCount > 0 ? `${distanceBE >= 0 ? '+' : ''}${distanceBE}%` : '—'}</div>
+                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>Marge au-dessus du BE</div>
+                </div>
+              </div>
+              {tradedDaysCount > 0 && (
+                <div style={{ marginTop: '0.75rem' }}>
+                  {rrMessages.map((m, i) => (
+                    <div key={i} style={{ background: m.bg, border: `0.5px solid ${m.border}`, borderRadius: '8px', padding: '8px 12px', marginBottom: '6px', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                      <span style={{ fontSize: '13px', flexShrink: 0 }}>{m.icon}</span>
+                      <span style={{ color: m.color, fontSize: '12px', lineHeight: 1.6 }}>{m.text}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* 6. JOURNAL RECENT */}
+            {trades.length > 0 && (
+              <div className="sa sa7 mid-card" style={{ marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1rem' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#888' }}>Journal récent</span>
+                  <a href="/journal" style={{ fontSize: '12px', color: '#aaa', textDecoration: 'none', fontWeight: 500 }}>Voir tout</a>
+                </div>
+                {recentTrades.map(t => {
+                  const d = new Date(t.created_at)
+                  const ds = `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}`
+                  return (
+                    <div key={t.id} className="trade-row">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                        <span className={`badge badge-${t.direction === 'long' ? 'long' : 'short'}`}>{t.direction}</span>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontSize: '13px', fontWeight: 600, color: '#111' }}>{t.setup_type || t.instrument}</div>
+                          <div style={{ fontSize: '11px', color: '#bbb' }}>{ds}</div>
+                        </div>
+                      </div>
+                      <span style={{ fontSize: '12px', color: t.followed_plan ? '#16a34a' : '#d97706' }}>{t.followed_plan ? '✓ Plan suivi' : '⚠ Hors plan'}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
+            {/* 7. DEBRIEF MACRO IA */}
+            <div className="sa sa8 mid-card">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#111' }}>Débrief Macro IA</div>
+                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>Briefing du jour généré par IA selon ton profil</div>
+                </div>
+                {macroLoaded && profile?.is_pro && (
+                  <button onClick={getMacroBriefing} disabled={macroLoading} style={{ background: 'none', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '5px 12px', fontSize: '11.5px', color: '#888', cursor: 'pointer' }}>Rafraîchir</button>
+                )}
+              </div>
+              {!profile?.is_pro ? (
+                <div style={{ background: '#f9f9f9', border: '0.5px solid #e8e8e8', borderRadius: '10px', padding: '1.25rem', textAlign: 'center' }}>
+                  <div style={{ fontSize: '20px', marginBottom: '8px' }}>🔒</div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#111', marginBottom: '4px' }}>Fonctionnalité Pro</div>
+                  <div style={{ fontSize: '12px', color: '#888', marginBottom: '14px' }}>Le débrief macro IA est réservé aux membres Pro.</div>
+                  <a href="/pricing" style={{ background: '#111', color: '#fff', borderRadius: '8px', padding: '8px 18px', fontSize: '12px', fontWeight: 600, textDecoration: 'none' }}>Passer au Pro</a>
+                </div>
+              ) : !macroLoaded ? (
+                <button className="macro-btn" onClick={getMacroBriefing} disabled={macroLoading}>
+                  {macroLoading ? <>Génération en cours...</> : <>◈ Générer le débrief macro du jour</>}
+                </button>
+              ) : macroLoading ? (
+                <div style={{ color: '#aaa', fontSize: '13px', padding: '1rem 0' }}>Génération en cours...</div>
+              ) : (
+                <div style={{ fontSize: '13px', color: '#333', lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: formatMacro(macroText) }}/>
+              )}
             </div>
 
           </div>
