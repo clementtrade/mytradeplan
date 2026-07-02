@@ -40,6 +40,9 @@ function JournalContent() {
   const [saving, setSaving] = useState(false)
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [profile, setProfile] = useState<any>(null)
+  const [isPro, setIsPro] = useState(false)
+  const [tradeLimitReached, setTradeLimitReached] = useState(false)
+  const [tradesThisMonth, setTradesThisMonth] = useState(0)
   const [form, setForm] = useState({
     instrument: '',
     direction: 'long',
@@ -77,7 +80,22 @@ function JournalContent() {
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
       const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-      if (data) setProfile(data)
+      if (data) {
+        setProfile(data)
+        setIsPro(data.is_pro === true)
+        if (!data.is_pro) {
+          const now = new Date()
+          const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+          const { count } = await supabase
+            .from('trades')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+            .gte('created_at', startOfMonth)
+          const c = count ?? 0
+          setTradesThisMonth(c)
+          if (c >= 5) setTradeLimitReached(true)
+        }
+      }
     }
   }
 
@@ -146,6 +164,11 @@ function JournalContent() {
       await supabase.from('trades').update(payload).eq('id', editingId)
     } else {
       await supabase.from('trades').insert({ user_id: user?.id, ...payload })
+      if (!isPro) {
+        const newCount = tradesThisMonth + 1
+        setTradesThisMonth(newCount)
+        if (newCount >= 5) setTradeLimitReached(true)
+      }
     }
 
     resetForm()
@@ -186,7 +209,6 @@ function JournalContent() {
         * { box-sizing: border-box; margin: 0; padding: 0; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
         .journal-anim { animation: fadeUp 0.5s ease both; }
-
         .sidebar { position: fixed; left: 0; top: 0; height: 100vh; background: #fff; border-right: 0.5px solid #e8e8e8; display: flex; flex-direction: column; transition: width 0.2s cubic-bezier(0.4,0,0.2,1); overflow: hidden; z-index: 100; }
         .sb-logo { height: 52px; min-height: 52px; display: flex; align-items: center; padding: 0 14px; border-bottom: 0.5px solid #e8e8e8; white-space: nowrap; }
         .sb-dot { width: 24px; height: 24px; min-width: 24px; background: #111; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 800; }
@@ -208,12 +230,12 @@ function JournalContent() {
         .nav-lbl { font-size: 12.5px; font-weight: 500; margin-left: 8px; opacity: 0; transition: opacity 0.1s 0.07s; white-space: nowrap; }
         .sidebar.exp .nav-lbl { opacity: 1; }
         .nav-item.active .nav-lbl { color: #fff; }
-
         .trade-card { background: #fff; border: 0.5px solid #e8e8e8; border-radius: 10px; overflow: visible; transition: box-shadow 0.2s, transform 0.2s; position: relative; }
         .trade-card:hover { box-shadow: 0 4px 18px rgba(0,0,0,0.08); transform: translateY(-1px); }
         .stat-card { background: #fff; border: 0.5px solid #e8e8e8; border-radius: 10px; padding: 1rem 1.25rem; }
         .btn-primary { background: #111; color: #fff; border: none; border-radius: 8px; padding: 10px 20px; font-weight: 600; font-size: 13px; cursor: pointer; transition: opacity 0.15s; font-family: inherit; }
         .btn-primary:hover { opacity: 0.85; }
+        .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
         .btn-secondary { background: transparent; color: #666; border: 0.5px solid #e0e0e0; border-radius: 8px; padding: 10px 20px; font-size: 13px; cursor: pointer; font-family: inherit; transition: background 0.15s; }
         .btn-secondary:hover { background: #f5f5f5; }
         .btn-danger { background: #fff5f5; color: #dc2626; border: 0.5px solid #fca5a5; border-radius: 8px; padding: 10px 20px; font-size: 13px; cursor: pointer; font-family: inherit; transition: background 0.15s; }
@@ -265,30 +287,15 @@ function JournalContent() {
         <div className="sb-divider"></div>
         <div className="sb-section">Session</div>
         <nav style={{ paddingTop: '2px' }}>
-          <a href="/dashboard" className="nav-item">
-            <span className="nav-icon">▦</span>
-            <span className="nav-lbl">Dashboard</span>
-          </a>
-          <a href="/plan" className="nav-item">
-            <span className="nav-icon">☀</span>
-            <span className="nav-lbl">Plan du matin</span>
-          </a>
-          <a href="/debrief" className="nav-item">
-            <span className="nav-icon">◈</span>
-            <span className="nav-lbl">Débrief Macro IA</span>
-          </a>
-          <a href="/journal" className="nav-item active">
-            <span className="nav-icon" style={{ fontSize: '13px', fontWeight: 700 }}>▤</span>
-            <span className="nav-lbl">Journal</span>
-          </a>
+          <a href="/dashboard" className="nav-item"><span className="nav-icon">▦</span><span className="nav-lbl">Dashboard</span></a>
+          <a href="/plan" className="nav-item"><span className="nav-icon">☀</span><span className="nav-lbl">Plan du matin</span></a>
+          <a href="/debrief" className="nav-item"><span className="nav-icon">◈</span><span className="nav-lbl">Débrief Macro IA</span></a>
+          <a href="/journal" className="nav-item active"><span className="nav-icon" style={{ fontSize: '13px', fontWeight: 700 }}>▤</span><span className="nav-lbl">Journal</span></a>
         </nav>
         <div className="sb-divider"></div>
         <div className="sb-section">Compte</div>
         <nav style={{ paddingTop: '2px' }}>
-          <a href="/account" className="nav-item">
-            <span className="nav-icon">⚙</span>
-            <span className="nav-lbl">Mon compte</span>
-          </a>
+          <a href="/account" className="nav-item"><span className="nav-icon">⚙</span><span className="nav-lbl">Mon compte</span></a>
         </nav>
       </div>
 
@@ -297,8 +304,31 @@ function JournalContent() {
 
           <div className="journal-anim" style={{ height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '0.5px solid #e8e8e8', marginBottom: '2rem' }}>
             <span style={{ fontSize: '20px', fontWeight: 700, color: '#111', letterSpacing: '-0.5px' }}>Journal de trades</span>
-            <button className="btn-primary" onClick={() => { setShowForm(!showForm); if (!showForm) startNewTrade() }}>+ Nouveau trade</button>
+            <button
+              className="btn-primary"
+              onClick={() => { if (!tradeLimitReached) { setShowForm(!showForm); if (!showForm) startNewTrade() } }}
+              disabled={tradeLimitReached && !editingId}
+            >
+              + Nouveau trade
+            </button>
           </div>
+
+          {tradeLimitReached && !isPro && (
+            <div className="journal-anim" style={{ background: '#fff5f5', border: '0.5px solid #fca5a5', borderRadius: '10px', padding: '1rem 1.25rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: '#dc2626', marginBottom: '2px' }}>Limite atteinte — 5 trades / mois</div>
+                <div style={{ fontSize: '12px', color: '#888' }}>Vous avez utilisé vos 5 trades gratuits ce mois-ci. Passez au Pro pour des trades illimités.</div>
+              </div>
+              <a href="/account" style={{ background: '#111', color: '#fff', borderRadius: '8px', padding: '8px 16px', fontSize: '12px', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap', marginLeft: '1rem' }}>Passer au Pro</a>
+            </div>
+          )}
+
+          {!tradeLimitReached && !isPro && (
+            <div className="journal-anim" style={{ background: '#f9f9f9', border: '0.5px solid #e8e8e8', borderRadius: '10px', padding: '10px 1.25rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ fontSize: '12px', color: '#888' }}>{tradesThisMonth} / 5 trades utilisés ce mois-ci</div>
+              <a href="/account" style={{ fontSize: '12px', color: '#2a78d6', textDecoration: 'none', fontWeight: 500 }}>Passer au Pro pour des trades illimités</a>
+            </div>
+          )}
 
           <div className="journal-anim" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '1.5rem' }}>
             <div className="stat-card">
@@ -311,7 +341,7 @@ function JournalContent() {
             </div>
           </div>
 
-          {showForm && (
+          {showForm && !tradeLimitReached && (
             <div className="journal-anim" style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '1.5rem', marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.25rem' }}>
                 <div style={{ fontSize: '13px', fontWeight: 600, color: '#111' }}>{editingId ? 'Modifier le trade' : 'Nouveau trade'}</div>
@@ -321,7 +351,6 @@ function JournalContent() {
                   </span>
                 )}
               </div>
-
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                 <div>
                   <div style={labelStyle}>Instrument</div>
@@ -346,12 +375,10 @@ function JournalContent() {
                   </select>
                 </div>
               </div>
-
               <div style={{ marginBottom: '12px' }}>
                 <div style={labelStyle}>Contexte</div>
                 <textarea className="form-input" placeholder="Décris le contexte de marché..." value={form.contexte} onChange={e => setForm({ ...form, contexte: e.target.value })} rows={2} style={inputStyle}/>
               </div>
-
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                 <div>
                   <div style={labelStyle}>Zone</div>
@@ -362,22 +389,18 @@ function JournalContent() {
                   <textarea className="form-input" placeholder="Cible visée..." value={form.cible} onChange={e => setForm({ ...form, cible: e.target.value })} rows={2} style={inputStyle}/>
                 </div>
               </div>
-
               <div style={{ marginBottom: '12px' }}>
                 <div style={labelStyle}>Confirmation</div>
                 <textarea className="form-input" placeholder="Tes critères de confirmation..." value={form.confirmation} onChange={e => setForm({ ...form, confirmation: e.target.value })} rows={3} style={inputStyle}/>
               </div>
-
               <div style={{ marginBottom: '12px' }}>
                 <div style={labelStyle}>Notes / état mental</div>
                 <textarea className="form-input" placeholder="Notes et état mental..." value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} rows={2} style={inputStyle}/>
               </div>
-
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.25rem' }}>
                 <input type="checkbox" id="followedPlan" checked={form.followed_plan} onChange={e => setForm({ ...form, followed_plan: e.target.checked })}/>
                 <label htmlFor="followedPlan" style={{ color: '#555', fontSize: '13px', cursor: 'pointer' }}>J'ai suivi mon plan</label>
               </div>
-
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button className="btn-primary" onClick={saveTrade} disabled={saving} style={{ opacity: saving ? 0.6 : 1 }}>
                   {saving ? 'Sauvegarde...' : editingId ? 'Mettre à jour' : 'Sauvegarder'}
@@ -414,25 +437,21 @@ function JournalContent() {
                       )}
                     </div>
                   </div>
-
                   {expanded === trade.id && (
-                    <div style={{ padding: '0 1.25rem 1.25rem', borderTop: '0.5px solid #f0f0f0', marginTop: '12px' }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', paddingTop: '12px', marginBottom: '1rem' }}>
-                        <div><div style={labelStyle}>Setup</div><div style={{ color: '#444', fontSize: '13px', lineHeight: 1.6 }}>{trade.setup_type || '—'}</div></div>
-                        <div><div style={labelStyle}>Contexte</div><div style={{ color: '#444', fontSize: '13px', lineHeight: 1.6 }}>{trade.contexte || '—'}</div></div>
-                        <div><div style={labelStyle}>Zone</div><div style={{ color: '#444', fontSize: '13px', lineHeight: 1.6 }}>{trade.zone || '—'}</div></div>
-                        <div><div style={labelStyle}>Cible</div><div style={{ color: '#444', fontSize: '13px', lineHeight: 1.6 }}>{trade.cible || '—'}</div></div>
-                        <div><div style={labelStyle}>Confirmation</div><div style={{ color: '#444', fontSize: '13px', lineHeight: 1.6 }}>{trade.confirmation || '—'}</div></div>
-                        {trade.notes && <div><div style={labelStyle}>Notes</div><div style={{ color: '#444', fontSize: '13px', lineHeight: 1.6 }}>{trade.notes}</div></div>}
+                    <div style={{ padding: '0 1.25rem 1.25rem', borderTop: '0.5px solid #f5f5f5' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginTop: '1rem' }}>
+                        {trade.zone && <div><div style={{ fontSize: '11px', color: '#aaa', marginBottom: '3px' }}>Zone</div><div style={{ fontSize: '13px', color: '#333' }}>{trade.zone}</div></div>}
+                        {trade.cible && <div><div style={{ fontSize: '11px', color: '#aaa', marginBottom: '3px' }}>Cible</div><div style={{ fontSize: '13px', color: '#333' }}>{trade.cible}</div></div>}
+                        {trade.confirmation && <div><div style={{ fontSize: '11px', color: '#aaa', marginBottom: '3px' }}>Confirmation</div><div style={{ fontSize: '13px', color: '#333' }}>{trade.confirmation}</div></div>}
+                        {trade.contexte && <div style={{ gridColumn: '1 / -1' }}><div style={{ fontSize: '11px', color: '#aaa', marginBottom: '3px' }}>Contexte</div><div style={{ fontSize: '13px', color: '#333' }}>{trade.contexte}</div></div>}
+                        {trade.notes && <div style={{ gridColumn: '1 / -1' }}><div style={{ fontSize: '11px', color: '#aaa', marginBottom: '3px' }}>Notes</div><div style={{ fontSize: '13px', color: '#333' }}>{trade.notes}</div></div>}
                       </div>
-                      <button className="btn-primary" onClick={() => startEditTrade(trade)}>Modifier</button>
                     </div>
                   )}
                 </div>
               ))}
             </div>
           )}
-
         </div>
       </main>
     </div>
