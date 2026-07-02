@@ -61,6 +61,11 @@ export default function Home() {
         .mockup-float-3 { animation: float 5s 1s ease-in-out infinite; }
         .mockup-float-4 { animation: float 5s 1.5s ease-in-out infinite; }
         .adv-mini { background: #f9f9f9; border: 0.5px solid #e8e8e8; border-radius: 7px; padding: 8px; }
+        .macro-line { font-size: 10px; color: #555; line-height: 1.6; margin-bottom: 3px; }
+        .macro-bold { font-weight: 700; color: #111; }
+        .macro-blue { color: #2a78d6; }
+        .macro-section { font-size: 10px; font-weight: 700; margin-bottom: 5px; }
+        .macro-divider { height: 0.5px; background: #e8e8e8; margin: 8px 0; }
       `}</style>
 
       <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 2.5rem', borderBottom: '0.5px solid #e8e8e8', position: 'sticky', top: 0, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)', zIndex: 10 }}>
@@ -321,7 +326,7 @@ export default function Home() {
               <div style={{ fontSize: '12px', color: '#555', lineHeight: 1.6 }}>Les conseils s'adaptent automatiquement à votre RR moyen et votre style de trading.</div>
             </div>
           </div>
-          <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '1rem', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }} className="mockup-float-3">
+          <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '1rem', boxShadow: '0 4px 20px rgba(0,0,0,0.06)', overflow: 'hidden' }} className="mockup-float-3">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
               <span style={{ fontSize: '11px', fontWeight: 600, color: '#111' }}>Stats avancées</span>
               <span style={{ fontSize: '9px', color: '#aaa' }}>toutes périodes</span>
@@ -366,26 +371,19 @@ export default function Home() {
               </div>
             </div>
             <div className="adv-mini" style={{ marginBottom: '5px' }}>
-              <div style={{ fontSize: '8px', fontWeight: 600, color: '#111', marginBottom: '6px' }}>RR vs Win rate · Break even</div>
-              <svg viewBox="0 0 200 70" style={{ width: '100%', height: '70px' }}>
-                <defs>
-                  <linearGradient id="beGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#2a78d6" stopOpacity="0.08"/>
-                    <stop offset="100%" stopColor="#2a78d6" stopOpacity="0"/>
-                  </linearGradient>
-                </defs>
-                <path d="M0,5 C10,7 20,10 35,16 C50,22 65,30 80,38 C100,48 120,55 150,60 C170,63 185,64 200,65 L200,70 L0,70 Z" fill="url(#beGrad)"/>
-                <path d="M0,5 C10,7 20,10 35,16 C50,22 65,30 80,38 C100,48 120,55 150,60 C170,63 185,64 200,65" fill="none" stroke="#2a78d6" strokeWidth="1.5" strokeLinecap="round"/>
-                <circle cx="22" cy="25" r="4" fill="#16a34a" stroke="#fff" strokeWidth="1.5"/>
-                <line x1="22" x2="22" y1="0" y2="70" stroke="#16a34a" strokeWidth="0.5" strokeDasharray="2,2" opacity="0.4"/>
-                <text x="26" y="18" fontSize="6" fill="#16a34a" fontWeight="600">71% WR</text>
-                <text x="1" y="67" fontSize="5" fill="#888">RR 1:1</text>
-                <text x="90" y="67" fontSize="5" fill="#888">RR 1:5</text>
-                <text x="185" y="67" fontSize="5" fill="#888">1:10</text>
-                <text x="1" y="8" fontSize="5" fill="#888">100%</text>
-                <text x="1" y="38" fontSize="5" fill="#888">50%</text>
-              </svg>
-              <div style={{ background: '#ecfeff', border: '0.5px solid #a5f3fc', borderRadius: '4px', padding: '4px 6px', marginTop: '4px', fontSize: '8px', color: '#0891b2', lineHeight: 1.4 }}>
+              <div style={{ fontSize: '8px', fontWeight: 600, color: '#111', marginBottom: '5px' }}>RR vs Win rate · Break even</div>
+              <div style={{ display: 'flex', alignItems: 'flex-end', height: '44px', gap: '1px', marginBottom: '4px' }}>
+                <svg viewBox="0 0 140 40" style={{ width: '100%', height: '44px' }} preserveAspectRatio="none">
+                  <defs><linearGradient id="bg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#2a78d6" stopOpacity="0.1"/><stop offset="100%" stopColor="#2a78d6" stopOpacity="0"/></linearGradient></defs>
+                  <path d="M0,2 C5,3 12,5 22,9 C35,14 48,20 62,26 C78,32 95,36 120,38 C130,39 136,39 140,40 L140,40 L0,40 Z" fill="url(#bg2)"/>
+                  <path d="M0,2 C5,3 12,5 22,9 C35,14 48,20 62,26 C78,32 95,36 120,38 C130,39 136,39 140,40" fill="none" stroke="#2a78d6" strokeWidth="1.5" strokeLinecap="round"/>
+                  <circle cx="16" cy="15" r="3" fill="#16a34a" stroke="#fff" strokeWidth="1.2"/>
+                </svg>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '7px', color: '#bbb', marginBottom: '4px' }}>
+                <span>RR 1:1</span><span>RR 1:5</span><span>RR 1:10</span>
+              </div>
+              <div style={{ background: '#ecfeff', border: '0.5px solid #a5f3fc', borderRadius: '4px', padding: '4px 6px', fontSize: '8px', color: '#0891b2', lineHeight: 1.4 }}>
                 Stratégie idéale en prop firm — risque 1% par trade en évaluation.
               </div>
             </div>
@@ -407,37 +405,42 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FEATURE 4 : Macro Briefing */}
+      {/* FEATURE 4 : Briefing Macro IA */}
       <section style={{ padding: '4rem 2.5rem', background: '#f9f9f9', borderBottom: '0.5px solid #f0f0f0' }}>
         <div className="feat-section">
-          <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }} className="mockup-float-4">
-            <div style={{ background: '#111', padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '1rem 1.25rem', boxShadow: '0 4px 20px rgba(0,0,0,0.06)', overflow: 'hidden' }} className="mockup-float-4">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
               <div>
-                <div style={{ fontSize: '12px', fontWeight: 700, color: '#fff' }}>Briefing Macro IA</div>
-                <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)' }}>Généré pour votre profil · Order Flow · Futures US</div>
+                <div style={{ fontSize: '11px', fontWeight: 600, color: '#111' }}>Débrief Macro IA</div>
+                <div style={{ fontSize: '9px', color: '#aaa', marginTop: '1px' }}>Briefing du jour généré par IA selon ton profil</div>
               </div>
-              <div style={{ background: 'rgba(255,255,255,0.1)', border: '0.5px solid rgba(255,255,255,0.15)', borderRadius: '6px', padding: '4px 10px', fontSize: '9px', color: 'rgba(255,255,255,0.6)' }}>↺ Actualiser</div>
+              <div style={{ background: '#f5f5f5', border: '0.5px solid #e8e8e8', borderRadius: '5px', padding: '3px 8px', fontSize: '9px', color: '#666' }}>Rafraîchir</div>
             </div>
-            <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ paddingBottom: '8px', borderBottom: '0.5px solid #f0f0f0' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#dc2626', flexShrink: 0 }}></div>
-                  <span style={{ fontSize: '10px', fontWeight: 700, color: '#111' }}>Fed hawkish — Contexte macro</span>
-                </div>
-                <div style={{ fontSize: '10px', color: '#555', lineHeight: 1.65, paddingLeft: '12px' }}>Les minutes du FOMC de juin confirment une majorité hawkish persistante. Les attentes de baisse révisées à une seule coupe fin 2026.</div>
-              </div>
-              <div style={{ background: '#fffbeb', border: '0.5px solid #fde68a', borderRadius: '8px', padding: '10px 12px' }}>
-                <div style={{ fontSize: '9px', color: '#d97706', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Biais directionnel</div>
-                <div style={{ fontSize: '12px', fontWeight: 700, color: '#92400e' }}>BAISSIER · Short uniquement · Évitez les mean reversions</div>
-              </div>
-            </div>
+            <div style={{ fontSize: '10px', fontWeight: 600, color: '#111', marginBottom: '6px' }}>Briefing Macro — Jeudi 2 juillet 2026</div>
+            <div className="macro-divider"></div>
+            <div className="macro-section" style={{ color: '#2a78d6' }}>Contexte macro global</div>
+            <div className="macro-line"><span className="macro-bold">Fed en mode attente prolongée</span> : <span className="macro-blue">Posture "higher for longer" confirmée</span>, le marché digère l'absence de signal clair de pivot.</div>
+            <div className="macro-line"><span className="macro-bold">Marché du travail sous surveillance</span> : Données ADP surprises à la hausse, <span className="macro-blue">tension avant les NFP de demain</span>.</div>
+            <div className="macro-line" style={{ marginBottom: '6px' }}><span className="macro-bold">Appétit pour le risque fragile</span> : <span className="macro-blue">Flux actions restent défensifs en début de session.</span></div>
+            <div className="macro-divider"></div>
+            <div className="macro-section" style={{ color: '#2a78d6' }}>Catalyseurs du jour</div>
+            <div className="macro-line"><span className="macro-bold">Inscriptions chômage</span> <span className="macro-blue">(13h30 UTC)</span> — scrutées à 24h des NFP</div>
+            <div className="macro-line"><span className="macro-bold">ISM Services juin</span> <span className="macro-blue">(15h00 UTC)</span> — indicateur clé résilience éco.</div>
+            <div className="macro-line" style={{ marginBottom: '6px' }}><span className="macro-bold">Discours Fed</span> en après-midi — <span className="macro-blue">tout signal hawkish/dovish amplifié</span></div>
+            <div className="macro-divider"></div>
+            <div className="macro-section" style={{ color: '#d97706' }}>Risques du jour</div>
+            <div className="macro-line">Surprise chômage → <span className="macro-blue">spike de volatilité sur ES/NQ</span></div>
+            <div className="macro-line" style={{ marginBottom: '6px' }}>Liquidité réduite fin de session → <span className="macro-blue">slippage accru, faux mouvements order flow</span></div>
+            <div className="macro-divider"></div>
+            <div className="macro-section" style={{ color: '#dc2626' }}>Biais directionnel</div>
+            <div className="macro-line"><span className="macro-bold">Neutre à légèrement baissier</span> — <span className="macro-blue">Favoriser les setups réactifs sur catalyseurs plutôt que les positions directionnelles tenues.</span></div>
           </div>
           <div>
             <div className="feat-tag">Briefing Macro IA</div>
             <div className="feat-title">Le contexte macro<br />en 30 secondes.</div>
-            <div className="feat-desc">Chaque matin, MyTradePlan analyse les données macro, les catalyseurs du jour et les flux institutionnels pour vous donner un biais directionnel clair.</div>
+            <div className="feat-desc">Chaque matin, MyTradePlan analyse les données macro, les catalyseurs du jour et les flux institutionnels pour vous donner un biais directionnel clair et personnalisé.</div>
             <div className="feat-point"><div className="feat-chk">✓</div>Analyse Fed, inflation, flux institutionnels</div>
-            <div className="feat-point"><div className="feat-chk">✓</div>Catalyseurs économiques du jour</div>
+            <div className="feat-point"><div className="feat-chk">✓</div>Catalyseurs économiques du jour avec horaires</div>
             <div className="feat-point"><div className="feat-chk">✓</div>Biais directionnel avec score de confiance IA</div>
           </div>
         </div>
