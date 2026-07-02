@@ -33,7 +33,7 @@ export default function FeaturesPage() {
         .cal-neu { background: #f5f5f5; color: #ccc; }
         .cal-we { background: #f5f5f5; color: #ddd; opacity: 0.35; }
         .cal-r { font-size: 7px; opacity: 0.8; margin-top: 1px; }
-        .adv-card { background: #f9f9f9; border: 0.5px solid #e8e8e8; border-radius: 8px; padding: 10px; }
+        .adv-card { background: #f9f9f9; border: 0.5px solid #e8e8e8; border-radius: 8px; padding: 10px; overflow: hidden; }
         .macro-line { font-size: 11px; color: #555; line-height: 1.65; margin-bottom: 3px; }
         .macro-bold { font-weight: 700; color: #111; }
         .macro-blue { color: #2a78d6; }
@@ -41,7 +41,6 @@ export default function FeaturesPage() {
         .macro-divider { height: 0.5px; background: #f0f0f0; margin: 10px 0; }
       `}</style>
 
-      {/* Navbar */}
       <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 2.5rem', borderBottom: '0.5px solid #e8e8e8', position: 'sticky', top: 0, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)', zIndex: 10 }}>
         <a href="/" style={{ fontWeight: 700, fontSize: '1rem', color: '#111', textDecoration: 'none', letterSpacing: '-0.3px' }}>MyTradePlan</a>
         <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
@@ -52,7 +51,6 @@ export default function FeaturesPage() {
         </div>
       </nav>
 
-      {/* Hero */}
       <div style={{ textAlign: 'center', padding: '6rem 2rem 4rem', borderBottom: '0.5px solid #f0f0f0' }}>
         <div className="anim-1" style={{ fontSize: '11px', color: '#aaa', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '1.25rem' }}>Fonctionnalités</div>
         <h1 className="anim-2" style={{ fontSize: '3.5rem', fontWeight: 700, color: '#111', letterSpacing: '-1.5px', marginBottom: '1.25rem', lineHeight: 1.1 }}>
@@ -96,7 +94,7 @@ export default function FeaturesPage() {
             <div style={{ background: '#111', borderRadius: '10px 3px 10px 10px', padding: '9px 12px', fontSize: '12px', color: '#fff', maxWidth: '78%', marginLeft: 'auto' }}>Forme B, sous le VAL.</div>
             <div style={{ background: '#f5f5f5', borderRadius: '3px 10px 10px 10px', padding: '9px 12px', fontSize: '12px', color: '#333', maxWidth: '88%' }}>
               <div style={{ fontSize: '9px', color: '#16a34a', fontWeight: 600, marginBottom: '3px' }}>MyTradePlan IA</div>
-              Quel est votre risque max par trade aujourd'hui ?
+              Quel est votre risque max par trade ?
             </div>
             <div style={{ background: '#111', borderRadius: '10px 3px 10px 10px', padding: '9px 12px', fontSize: '12px', color: '#fff', maxWidth: '78%', marginLeft: 'auto' }}>1R max, sans exception.</div>
             <div style={{ background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '3px 10px 10px 10px', padding: '10px 12px', fontSize: '12px', maxWidth: '92%' }}>
@@ -137,10 +135,8 @@ export default function FeaturesPage() {
                     <div className="dash-kpi"><div className="dash-kpi-l">F. profit</div><div className="dash-kpi-v" style={{ color: '#fff' }}>2.4</div></div>
                     <div className="dash-kpi"><div className="dash-kpi-l">Perte moy.</div><div className="dash-kpi-v" style={{ color: '#f87171' }}>-254$</div></div>
                   </div>
-                  <div style={{ background: '#f9f9f9', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '8px', position: 'relative' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
-                      <span style={{ fontSize: '9px', fontWeight: 700, color: '#111' }}>Calendrier · Juin 2026</span>
-                    </div>
+                  <div style={{ background: '#f9f9f9', border: '0.5px solid #e8e8e8', borderRadius: '8px', padding: '8px' }}>
+                    <div style={{ fontSize: '9px', fontWeight: 700, color: '#111', marginBottom: '5px' }}>Calendrier · Juin 2026</div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '2px', marginBottom: '2px' }}>
                       {['L','M','M','J','V','S','D'].map((d, i) => (
                         <div key={i} style={{ textAlign: 'center', fontSize: '7px', color: i >= 5 ? '#ddd' : '#bbb', fontWeight: 600 }}>{d}</div>
@@ -252,18 +248,25 @@ export default function FeaturesPage() {
           </div>
           <div className="adv-card" style={{ marginBottom: '6px' }}>
             <div style={{ fontSize: '9px', fontWeight: 600, color: '#111', marginBottom: '6px' }}>RR vs Win rate · Break even</div>
-            <svg viewBox="0 0 240 60" style={{ width: '100%', height: '60px', display: 'block' }}>
-              <defs><linearGradient id="bg3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#2a78d6" stopOpacity="0.08"/><stop offset="100%" stopColor="#2a78d6" stopOpacity="0"/></linearGradient></defs>
-              <path d="M0,3 C8,4 18,7 32,12 C48,18 65,25 84,33 C104,41 124,48 155,53 C175,56 200,58 240,59 L240,60 L0,60 Z" fill="url(#bg3)"/>
-              <path d="M0,3 C8,4 18,7 32,12 C48,18 65,25 84,33 C104,41 124,48 155,53 C175,56 200,58 240,59" fill="none" stroke="#2a78d6" strokeWidth="1.5" strokeLinecap="round"/>
-              <circle cx="24" cy="22" r="4" fill="#16a34a" stroke="#fff" strokeWidth="1.5"/>
-              <line x1="24" x2="24" y1="0" y2="60" stroke="#16a34a" strokeWidth="0.5" strokeDasharray="3,2" opacity="0.4"/>
-              <text x="28" y="16" fontSize="7" fill="#16a34a" fontWeight="600">71% WR</text>
-              <text x="2" y="57" fontSize="6" fill="#bbb">RR 1:1</text>
-              <text x="100" y="57" fontSize="6" fill="#bbb">RR 1:5</text>
-              <text x="220" y="57" fontSize="6" fill="#bbb">1:10</text>
-            </svg>
-            <div style={{ background: '#ecfeff', border: '0.5px solid #a5f3fc', borderRadius: '5px', padding: '5px 8px', marginTop: '6px', fontSize: '9px', color: '#0891b2', lineHeight: 1.5 }}>
+            <div style={{ width: '100%', overflow: 'hidden', marginBottom: '4px' }}>
+              <svg viewBox="0 0 300 55" style={{ width: '100%', height: '55px', display: 'block' }} preserveAspectRatio="xMidYMid meet">
+                <defs>
+                  <linearGradient id="bg3" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#2a78d6" stopOpacity="0.08"/>
+                    <stop offset="100%" stopColor="#2a78d6" stopOpacity="0"/>
+                  </linearGradient>
+                </defs>
+                <path d="M0,3 C10,4 22,8 40,14 C60,21 80,28 105,36 C130,43 155,48 195,51 C225,53 260,54 300,55 L300,55 L0,55 Z" fill="url(#bg3)"/>
+                <path d="M0,3 C10,4 22,8 40,14 C60,21 80,28 105,36 C130,43 155,48 195,51 C225,53 260,54 300,55" fill="none" stroke="#2a78d6" strokeWidth="1.5" strokeLinecap="round"/>
+                <circle cx="30" cy="20" r="4" fill="#16a34a" stroke="#fff" strokeWidth="1.5"/>
+                <line x1="30" x2="30" y1="0" y2="55" stroke="#16a34a" strokeWidth="0.5" strokeDasharray="3,2" opacity="0.4"/>
+                <text x="35" y="14" fontSize="8" fill="#16a34a" fontWeight="600">71% WR</text>
+              </svg>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '7px', color: '#bbb', marginBottom: '6px' }}>
+              <span>RR 1:1</span><span>RR 1:5</span><span>RR 1:10</span>
+            </div>
+            <div style={{ background: '#ecfeff', border: '0.5px solid #a5f3fc', borderRadius: '5px', padding: '5px 8px', fontSize: '9px', color: '#0891b2', lineHeight: 1.5 }}>
               Stratégie idéale en prop firm — risque 1% par trade en évaluation.
             </div>
           </div>
@@ -325,14 +328,12 @@ export default function FeaturesPage() {
         </div>
       </div>
 
-      {/* CTA final */}
       <div style={{ textAlign: 'center', padding: '5rem 2rem', background: '#f9f9f9', borderTop: '0.5px solid #e8e8e8' }}>
         <h2 style={{ fontSize: '2rem', fontWeight: 700, color: '#111', letterSpacing: '-0.5px', marginBottom: '0.75rem' }}>Prêt à trader avec un plan ?</h2>
         <p style={{ color: '#888', fontSize: '1rem', marginBottom: '2rem' }}>Commencez gratuitement, passez au Pro quand vous êtes prêt.</p>
         <a href="/register" className="btn-main" style={{ fontSize: '1rem', padding: '0.875rem 2rem' }}>Commencer gratuitement</a>
       </div>
 
-      {/* Footer */}
       <footer style={{ borderTop: '0.5px solid #e8e8e8', padding: '1.5rem 2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontWeight: 700, fontSize: '0.875rem', color: '#111' }}>MyTradePlan</span>
         <span style={{ fontSize: '0.8rem', color: '#aaa' }}>2026 MyTradePlan · Tous droits réservés</span>
