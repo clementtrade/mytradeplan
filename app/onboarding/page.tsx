@@ -80,6 +80,12 @@ const QUESTIONS = [
   },
 ]
 
+// Payment Links Stripe (Priorité 1 — paiement en fin d'onboarding)
+const STRIPE_LINKS = {
+  mensuel: 'https://buy.stripe.com/8x2aEZ3Vy4nVfoGdel3gk00',
+  annuel: 'https://buy.stripe.com/5kQ28t8bOg6D6Sa4HP3gk02',
+}
+
 export default function OnboardingPage() {
   const router = useRouter()
   const [current, setCurrent] = useState(0)
@@ -88,6 +94,7 @@ export default function OnboardingPage() {
   const [textValue, setTextValue] = useState('')
   const [loading, setLoading] = useState(false)
   const [profile, setProfile] = useState<any>(null)
+  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null)
 
   const q = QUESTIONS[current]
   const progress = Math.round((current / QUESTIONS.length) * 100)
@@ -126,6 +133,17 @@ export default function OnboardingPage() {
             setup_type: data.setup_type,
             message: data.message,
           })
+
+          // Si l'utilisateur a choisi le plan Pro, on prépare l'URL Stripe.
+          // client_reference_id + prefilled_email permettront au webhook
+          // (Priorité 5) d'identifier qui a payé → is_pro = true.
+          const plan = localStorage.getItem('plan')
+          const billing = localStorage.getItem('billing') === 'annuel' ? 'annuel' : 'mensuel'
+          if (plan === 'pro') {
+            const base = STRIPE_LINKS[billing]
+            const url = `${base}?client_reference_id=${user.id}&prefilled_email=${encodeURIComponent(user.email || '')}`
+            setCheckoutUrl(url)
+          }
         }
         setProfile(data)
       } catch {
@@ -135,6 +153,13 @@ export default function OnboardingPage() {
     } else {
       setCurrent(current + 1)
     }
+  }
+
+  function goToCheckout() {
+    if (!checkoutUrl) return
+    localStorage.removeItem('plan')
+    localStorage.removeItem('billing')
+    window.location.href = checkoutUrl
   }
 
   if (loading) {
@@ -163,6 +188,12 @@ export default function OnboardingPage() {
             transition: box-shadow 0.2s, transform 0.2s; font-family: inherit;
           }
           .btn-go:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.22); transform: translateY(-1px); }
+          .btn-skip {
+            width: 100%; background: transparent; color: #888; border: none;
+            padding: 12px; font-weight: 500; font-size: 13px; cursor: pointer;
+            margin-top: 8px; font-family: inherit;
+          }
+          .btn-skip:hover { color: #111; }
         `}</style>
         <div className="profile-anim" style={{ maxWidth: '480px', width: '100%' }}>
 
@@ -204,9 +235,24 @@ export default function OnboardingPage() {
             </div>
           </div>
 
-          <button className="btn-go" onClick={() => router.push('/plan')}>
-            Commencer mon plan du matin →
-          </button>
+          {checkoutUrl ? (
+            <>
+              <div style={{ background: '#111', color: '#fff', borderRadius: '10px', padding: '14px 16px', marginBottom: '12px' }}>
+                <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '3px' }}>Dernière étape — activer ton compte Pro</div>
+                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.5 }}>7 jours gratuits, sans engagement. Tu peux résilier à tout moment.</div>
+              </div>
+              <button className="btn-go" onClick={goToCheckout}>
+                Activer mon compte Pro →
+              </button>
+              <button className="btn-skip" onClick={() => router.push('/plan')}>
+                Plus tard, continuer en gratuit
+              </button>
+            </>
+          ) : (
+            <button className="btn-go" onClick={() => router.push('/plan')}>
+              Commencer mon plan du matin →
+            </button>
+          )}
         </div>
       </main>
     )

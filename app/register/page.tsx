@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -10,6 +10,18 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  // Capture le plan choisi (?plan=pro&billing=mensuel|annuel) et le garde
+  // pour la fin de l'onboarding, où on redirigera vers Stripe.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const plan = params.get('plan')
+    const billing = params.get('billing')
+    if (plan === 'pro') {
+      localStorage.setItem('plan', 'pro')
+      localStorage.setItem('billing', billing === 'annuel' ? 'annuel' : 'mensuel')
+    }
+  }, [])
 
   async function handleRegister() {
     setLoading(true)

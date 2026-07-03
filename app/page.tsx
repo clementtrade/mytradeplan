@@ -3,7 +3,7 @@ import { useState } from 'react'
 
 export default function Home() {
   const [annual, setAnnual] = useState(false)
-  const stripeUrl = annual ? 'https://buy.stripe.com/5kQ28t8bOg6D6Sa4HP3gk02' : 'https://buy.stripe.com/8x2aEZ3Vy4nVfoGdel3gk00'
+  const proUrl = `/register?plan=pro&billing=${annual ? 'annuel' : 'mensuel'}`
 
   return (
     <main style={{ minHeight: '100vh', background: '#fff', color: '#111', fontFamily: 'Inter, sans-serif' }}>
@@ -495,7 +495,7 @@ export default function Home() {
               <div className="plan-feature-on"><div className="plan-check">✓</div><strong>Briefing Macro IA</strong></div>
               <div className="plan-feature-on"><div className="plan-check">✓</div><strong>Insight IA calendrier</strong></div>
             </div>
-            <a href={stripeUrl} style={{ display: 'block', textAlign: 'center', padding: '0.75rem', background: '#111', color: '#fff', borderRadius: '8px', fontSize: '0.875rem', textDecoration: 'none', fontWeight: 600 }}>Essayer gratuitement 7 jours</a>
+            <a href={proUrl} style={{ display: 'block', textAlign: 'center', padding: '0.75rem', background: '#111', color: '#fff', borderRadius: '8px', fontSize: '0.875rem', textDecoration: 'none', fontWeight: 600 }}>Essayer gratuitement 7 jours</a>
           </div>
         </div>
         <div style={{ marginTop: '1.5rem', fontSize: '12px', color: '#aaa' }}>Sans carte bancaire · Résiliez à tout moment</div>
