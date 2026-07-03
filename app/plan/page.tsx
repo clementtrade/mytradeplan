@@ -11,6 +11,7 @@ export default function PlanPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [isPro, setIsPro] = useState(false)
   const [planLimitReached, setPlanLimitReached] = useState(false)
+  const [planCount, setPlanCount] = useState(0)
   const [macroResult, setMacroResult] = useState('')
   const [macroLoading, setMacroLoading] = useState(false)
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
@@ -33,7 +34,9 @@ export default function PlanPage() {
             .select('*', { count: 'exact', head: true })
             .eq('user_id', user.id)
             .gte('created_at', startOfMonth)
-          if ((count ?? 0) >= 5) setPlanLimitReached(true)
+          const c = count ?? 0
+          setPlanCount(c)
+          if (c >= 5) setPlanLimitReached(true)
         }
       }
     }
@@ -102,6 +105,11 @@ export default function PlanPage() {
       })
       const data = await res.json()
       setMessages([{ role: 'ai', text: data.reply }])
+      if (!isPro) {
+        const newCount = planCount + 1
+        setPlanCount(newCount)
+        if (newCount >= 5) setPlanLimitReached(true)
+      }
     } catch { setMessages([{ role: 'ai', text: 'Erreur de connexion. Réessaie.' }]) }
     setLoading(false)
   }
@@ -157,6 +165,7 @@ export default function PlanPage() {
     .plan-anim { animation: fadeUp 0.5s ease both; }
     .btn-start { width: 100%; background: #111; color: #fff; border: none; border-radius: 8px; padding: 14px; font-weight: 600; font-size: 15px; cursor: pointer; transition: opacity 0.15s; margin-bottom: 1.25rem; font-family: inherit; }
     .btn-start:hover { opacity: 0.85; }
+    .btn-start:disabled { opacity: 0.4; cursor: not-allowed; }
   `
 
   const Sidebar = (
@@ -180,30 +189,15 @@ export default function PlanPage() {
       <div className="sb-divider"></div>
       <div className="sb-section">Session</div>
       <nav style={{ paddingTop: '2px' }}>
-        <a href="/dashboard" className="nav-item">
-          <span className="nav-icon">▦</span>
-          <span className="nav-lbl">Dashboard</span>
-        </a>
-        <a href="/plan" className="nav-item active">
-          <span className="nav-icon">☀</span>
-          <span className="nav-lbl">Plan du matin</span>
-        </a>
-        <a href="/debrief" className="nav-item">
-          <span className="nav-icon">◈</span>
-          <span className="nav-lbl">Débrief Macro IA</span>
-        </a>
-        <a href="/journal" className="nav-item">
-          <span className="nav-icon" style={{ fontSize: '13px', fontWeight: 700 }}>▤</span>
-          <span className="nav-lbl">Journal</span>
-        </a>
+        <a href="/dashboard" className="nav-item"><span className="nav-icon">▦</span><span className="nav-lbl">Dashboard</span></a>
+        <a href="/plan" className="nav-item active"><span className="nav-icon">☀</span><span className="nav-lbl">Plan du matin</span></a>
+        <a href="/debrief" className="nav-item"><span className="nav-icon">◈</span><span className="nav-lbl">Débrief Macro IA</span></a>
+        <a href="/journal" className="nav-item"><span className="nav-icon" style={{ fontSize: '13px', fontWeight: 700 }}>▤</span><span className="nav-lbl">Journal</span></a>
       </nav>
       <div className="sb-divider"></div>
       <div className="sb-section">Compte</div>
       <nav style={{ paddingTop: '2px' }}>
-        <a href="/account" className="nav-item">
-          <span className="nav-icon">⚙</span>
-          <span className="nav-lbl">Mon compte</span>
-        </a>
+        <a href="/account" className="nav-item"><span className="nav-icon">⚙</span><span className="nav-lbl">Mon compte</span></a>
       </nav>
     </div>
   )
@@ -222,12 +216,28 @@ export default function PlanPage() {
               <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#111', letterSpacing: '-0.5px', marginBottom: '0.5rem' }}>Plan du matin</h1>
               <p style={{ fontSize: '14px', color: '#888', lineHeight: 1.6 }}>L'IA va te poser quelques questions sur le contexte du jour pour construire ton plan.</p>
             </div>
+
             {profile && (
               <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '10px', padding: '12px 16px', marginBottom: '1.25rem' }}>
                 <div style={{ color: '#aaa', fontSize: '11px', fontWeight: 500, marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Ton profil</div>
                 <div style={{ color: '#111', fontSize: '13px', fontWeight: 500 }}>{profile.market} · {profile.tf} · {profile.approach}</div>
               </div>
             )}
+
+            {!isPro && (
+              <div style={{ background: '#f9f9f9', border: `0.5px solid ${planLimitReached ? '#fca5a5' : '#e8e8e8'}`, borderRadius: '10px', padding: '10px 16px', marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ fontSize: '12px', color: '#888' }}>Plans du matin utilisés ce mois</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                    {[1,2,3,4,5].map(i => (
+                      <div key={i} style={{ width: '10px', height: '10px', borderRadius: '50%', background: i <= planCount ? (planLimitReached ? '#dc2626' : '#111') : '#e8e8e8' }}></div>
+                    ))}
+                  </div>
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: planLimitReached ? '#dc2626' : '#111' }}>{planCount} / 5</div>
+                </div>
+              </div>
+            )}
+
             {planLimitReached ? (
               <div style={{ background: '#fff5f5', border: '0.5px solid #fca5a5', borderRadius: '10px', padding: '1.25rem', marginBottom: '1.25rem', textAlign: 'center' }}>
                 <div style={{ fontSize: '20px', marginBottom: '8px' }}>🔒</div>
@@ -238,6 +248,7 @@ export default function PlanPage() {
             ) : (
               <button className="btn-start" onClick={startPlan}>Commencer mon plan ✦</button>
             )}
+
             <div style={{ background: '#fff', border: `0.5px solid ${isPro ? '#d1fae5' : '#e8e8e8'}`, borderRadius: '10px', padding: '12px 16px', marginBottom: '1.25rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
                 <div>
@@ -249,7 +260,7 @@ export default function PlanPage() {
               {isPro ? (
                 <div>
                   {!macroResult ? (
-                    <button onClick={getMacroBriefing} disabled={macroLoading} style={{ width: '100%', background: 'none', border: '0.5px solid #none', borderRadius: '7px', padding: '10px', fontSize: '13px', cursor: macroLoading ? 'not-allowed' : 'pointer', opacity: macroLoading ? 0.6 : 1, fontFamily: 'inherit' }}>
+                    <button onClick={getMacroBriefing} disabled={macroLoading} style={{ width: '100%', background: 'none', border: 'none', borderRadius: '7px', padding: '10px', fontSize: '13px', cursor: macroLoading ? 'not-allowed' : 'pointer', opacity: macroLoading ? 0.6 : 1, fontFamily: 'inherit' }}>
                       {macroLoading ? 'Génération en cours...' : '◈ Générer mon briefing macro ✦'}
                     </button>
                   ) : (
