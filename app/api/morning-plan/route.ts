@@ -78,6 +78,16 @@ export async function POST(request: Request) {
         content: m.text,
       }))
 
+  // Sauvegarder dès le démarrage
+  if (start && user_id) {
+    const today = new Date().toISOString().split('T')[0]
+    await supabase.from('morning_plans').upsert({
+      user_id,
+      date: today,
+      content: 'started',
+    }, { onConflict: 'user_id,date' })
+  }
+
   const response = await client.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 600,
@@ -87,6 +97,7 @@ export async function POST(request: Request) {
 
   const reply = response.content[0].type === 'text' ? response.content[0].text : ''
 
+  // Mettre à jour avec le plan final si disponible
   const isPlanFinal = reply.includes('PLAN DU JOUR') && user_id
   if (isPlanFinal) {
     const today = new Date().toISOString().split('T')[0]
