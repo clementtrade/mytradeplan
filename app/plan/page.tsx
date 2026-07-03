@@ -166,6 +166,8 @@ export default function PlanPage() {
     .btn-start { width: 100%; background: #111; color: #fff; border: none; border-radius: 8px; padding: 14px; font-weight: 600; font-size: 15px; cursor: pointer; transition: opacity 0.15s; margin-bottom: 1.25rem; font-family: inherit; }
     .btn-start:hover { opacity: 0.85; }
     .btn-start:disabled { opacity: 0.4; cursor: not-allowed; }
+    .chat-textarea { width: 100%; background: transparent; border: none; color: #111; font-size: 14px; outline: none; font-family: inherit; resize: none; line-height: 1.6; display: block; }
+    .chat-textarea::placeholder { color: #aaa; }
   `
 
   const Sidebar = (
@@ -216,14 +218,12 @@ export default function PlanPage() {
               <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#111', letterSpacing: '-0.5px', marginBottom: '0.5rem' }}>Plan du matin</h1>
               <p style={{ fontSize: '14px', color: '#888', lineHeight: 1.6 }}>L'IA va te poser quelques questions sur le contexte du jour pour construire ton plan.</p>
             </div>
-
             {profile && (
               <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '10px', padding: '12px 16px', marginBottom: '1.25rem' }}>
                 <div style={{ color: '#aaa', fontSize: '11px', fontWeight: 500, marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Ton profil</div>
                 <div style={{ color: '#111', fontSize: '13px', fontWeight: 500 }}>{profile.market} · {profile.tf} · {profile.approach}</div>
               </div>
             )}
-
             {!isPro && (
               <div style={{ background: '#f9f9f9', border: `0.5px solid ${planLimitReached ? '#fca5a5' : '#e8e8e8'}`, borderRadius: '10px', padding: '10px 16px', marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ fontSize: '12px', color: '#888' }}>Plans du matin utilisés ce mois</div>
@@ -237,7 +237,6 @@ export default function PlanPage() {
                 </div>
               </div>
             )}
-
             {planLimitReached ? (
               <div style={{ background: '#fff5f5', border: '0.5px solid #fca5a5', borderRadius: '10px', padding: '1.25rem', marginBottom: '1.25rem', textAlign: 'center' }}>
                 <div style={{ fontSize: '20px', marginBottom: '8px' }}>🔒</div>
@@ -248,7 +247,6 @@ export default function PlanPage() {
             ) : (
               <button className="btn-start" onClick={startPlan}>Commencer mon plan ✦</button>
             )}
-
             <div style={{ background: '#fff', border: `0.5px solid ${isPro ? '#d1fae5' : '#e8e8e8'}`, borderRadius: '10px', padding: '12px 16px', marginBottom: '1.25rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
                 <div>
@@ -295,8 +293,6 @@ export default function PlanPage() {
         .dot { animation: pulse 1.2s ease-in-out infinite; }
         .dot:nth-child(2) { animation-delay: 0.2s; }
         .dot:nth-child(3) { animation-delay: 0.4s; }
-        .chat-input { flex: 1; background: transparent; border: none; color: #111; font-size: 14px; outline: none; font-family: inherit; padding: 6px 8px; }
-        .chat-input::placeholder { color: #aaa; }
       `}</style>
       {Sidebar}
       <main style={{ marginLeft: sidebarW, flex: 1, minWidth: 0, transition: 'margin-left 0.2s cubic-bezier(0.4,0,0.2,1)', display: 'flex', flexDirection: 'column' }}>
@@ -342,12 +338,27 @@ export default function PlanPage() {
             <div ref={messagesEndRef}/>
           </div>
         </div>
-        <div style={{ padding: '1rem 2rem', background: '#fff', borderTop: '0.5px solid #e8e8e8', flexShrink: 0 }}>
-          <div style={{ maxWidth: '620px', margin: '0 auto', display: 'flex', alignItems: 'center', background: '#f9f9f9', border: '0.5px solid #e8e8e8', borderRadius: '10px', padding: '4px 8px 4px 4px' }}>
-            <input className="chat-input" value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()} placeholder="Répondre ici..." disabled={loading}/>
-            <button onClick={sendMessage} disabled={loading || !input.trim()} style={{ background: loading || !input.trim() ? '#f0f0f0' : '#111', color: loading || !input.trim() ? '#bbb' : '#fff', border: 'none', borderRadius: '8px', padding: '8px 18px', fontSize: '13px', fontWeight: 600, cursor: loading || !input.trim() ? 'not-allowed' : 'pointer', transition: 'all 0.15s', fontFamily: 'inherit' }}>
-              Envoyer
-            </button>
+        <div style={{ padding: '1rem 2rem 1.5rem', background: '#fff', borderTop: '0.5px solid #e8e8e8', flexShrink: 0 }}>
+          <div style={{ maxWidth: '620px', margin: '0 auto', background: '#f9f9f9', border: '0.5px solid #e0e0e0', borderRadius: '14px', padding: '12px 14px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+            <textarea
+              className="chat-textarea"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }}
+              placeholder="Répondre ici..."
+              disabled={loading}
+              rows={3}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px', paddingTop: '8px', borderTop: '0.5px solid #e8e8e8' }}>
+              <span style={{ fontSize: '12px', color: '#bbb' }}>Shift + Entrée pour aller à la ligne</span>
+              <button
+                onClick={sendMessage}
+                disabled={loading || !input.trim()}
+                style={{ background: loading || !input.trim() ? '#f0f0f0' : '#111', color: loading || !input.trim() ? '#bbb' : '#fff', border: 'none', borderRadius: '8px', padding: '8px 20px', fontSize: '13px', fontWeight: 600, cursor: loading || !input.trim() ? 'not-allowed' : 'pointer', transition: 'all 0.15s', fontFamily: 'inherit' }}
+              >
+                Envoyer
+              </button>
+            </div>
           </div>
         </div>
       </main>
