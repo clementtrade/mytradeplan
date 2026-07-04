@@ -10,6 +10,50 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [ready, setReady] = useState(false)
+
+  // Au chargement : on récupère la session depuis le lien de l'email.
+  // Supabase renvoie soit un "code" (dans ?code=...), soit un token dans le #hash.
+  useEffect(() => {
+    async function initSession() {
+      try {
+        // Cas 1 : nouveau format — code dans l'URL (?code=xxx)
+        const params = new URLSearchParams(window.location.search)
+        const code = params.get('code')
+        if (code) {
+          await supabase.auth.exchangeCodeForSession(code)
+          setReady(true)
+          return
+        }
+
+        // Cas 2 : ancien format — tokens dans le hash (#access_token=...)
+        const hash = window.location.hash
+        if (hash && hash.includes('access_token')) {
+          const hashParams = new URLSearchParams(hash.substring(1))
+          const access_token = hashParams.get('access_token')
+          const refresh_token = hashParams.get('refresh_token')
+          if (access_token && refresh_token) {
+            await supabase.auth.setSession({ access_token, refresh_token })
+            setReady(true)
+            return
+          }
+        }
+
+        // Cas 3 : peut-être déjà une session active
+        const { data } = await supabase.auth.getSession()
+        if (data.session) {
+          setReady(true)
+          return
+        }
+
+        // Sinon : lien invalide ou expiré
+        setError("Ce lien est invalide ou a expiré. Merci de refaire une demande de réinitialisation.")
+      } catch {
+        setError("Ce lien est invalide ou a expiré. Merci de refaire une demande de réinitialisation.")
+      }
+    }
+    initSession()
+  }, [])
 
   async function handleReset() {
     if (password !== confirm) {
@@ -69,6 +113,7 @@ export default function ResetPasswordPage() {
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 className="input"
+                disabled={!ready}
               />
             </div>
 
@@ -81,11 +126,12 @@ export default function ResetPasswordPage() {
                 onChange={e => setConfirm(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleReset()}
                 className="input"
+                disabled={!ready}
               />
             </div>
 
-            <button onClick={handleReset} disabled={loading || !password || !confirm} className="btn">
-              {loading ? 'Mise à jour...' : 'Mettre à jour →'}
+            <button onClick={handleReset} disabled={loading || !password || !confirm || !ready} className="btn">
+              {loading ? 'Mise à jour...' : ready ? 'Mettre à jour →' : 'Vérification du lien...'}
             </button>
           </>
         ) : (
