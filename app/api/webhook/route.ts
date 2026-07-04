@@ -27,20 +27,9 @@ export async function POST(req: NextRequest) {
     const session = event.data.object as Stripe.Checkout.Session
     const customerId = session.customer as string
     const email = session.customer_details?.email
-    // L'ID Supabase transmis dans l'URL Stripe (étape 1 du flow register).
-    const userId = session.client_reference_id
 
-    // CAS 1 (normal) : on a l'ID Supabase → on active le Pro directement.
-    if (userId) {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ is_pro: true, stripe_customer_id: customerId, email: email })
-        .eq('id', userId)
-
-      console.log('activation Pro via client_reference_id:', userId, 'erreur:', error)
-    }
-    // CAS 2 (filet de sécurité) : pas d'ID mais on a un email.
-    else if (email) {
+    if (email) {
+      // Cherche par email directement
       const { data: existingUsers } = await supabase.auth.admin.listUsers({
         page: 1,
         perPage: 1000,
@@ -54,7 +43,7 @@ export async function POST(req: NextRequest) {
           .update({ is_pro: true, stripe_customer_id: customerId, email: email })
           .eq('id', existingUser.id)
       } else {
-        // Aucun compte trouvé → on le crée (cas très rare avec le nouveau flow)
+        // Nouvel utilisateur → crée le compte Auth
         const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
           email: email,
           email_confirm: true,
@@ -63,6 +52,7 @@ export async function POST(req: NextRequest) {
         console.log('createUser result:', newUser, createError)
 
         if (newUser?.user) {
+          // Crée le profil
           const { error: insertError } = await supabase
             .from('profiles')
             .insert({
@@ -74,7 +64,7 @@ export async function POST(req: NextRequest) {
 
           console.log('insert profile error:', insertError)
 
-          // Envoie un email pour définir le mot de passe
+          // Envoie email reset password
           await supabase.auth.admin.generateLink({
             type: 'recovery',
             email: email,
