@@ -3,6 +3,21 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useRouter } from 'next/navigation'
 
+// Options du profil trader — identiques à celles de l'onboarding
+const TRADER_OPTIONS = {
+  market: ['Futures US', 'Actions', 'Forex', 'Crypto', 'Options'],
+  tf: ['Scalping', 'Intraday court', 'Intraday classique', 'Swing', 'Position'],
+  approach: ['SMC / ICT', 'Price Action', 'Order Flow', 'Indicateurs', 'Macro'],
+  problem: [
+    'Je trade hors plan',
+    'Je coupe mes gains trop tôt',
+    'Je laisse courir mes pertes',
+    'Je revenge trade',
+    'Pas de plan clair',
+  ],
+  risk: ['Moins de 0.5%', '0.5% à 1%', '1% à 2%', '2% à 5%', 'Plus de 5%'],
+}
+
 export default function AccountPage() {
   const router = useRouter()
   const [profile, setProfile] = useState<any>(null)
@@ -19,6 +34,15 @@ export default function AccountPage() {
   const [passwordSaved, setPasswordSaved] = useState(false)
   const [passwordError, setPasswordError] = useState('')
 
+  // Champs du profil trader
+  const [market, setMarket] = useState('')
+  const [tf, setTf] = useState('')
+  const [approach, setApproach] = useState('')
+  const [tools, setTools] = useState('')
+  const [frameworkMatin, setFrameworkMatin] = useState('')
+  const [problem, setProblem] = useState('')
+  const [risk, setRisk] = useState('')
+
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
@@ -28,6 +52,13 @@ export default function AccountPage() {
       if (profileData) {
         setProfile(profileData)
         setFullName(profileData.full_name || '')
+        setMarket(profileData.market || '')
+        setTf(profileData.tf || '')
+        setApproach(profileData.approach || '')
+        setTools(profileData.tools || '')
+        setFrameworkMatin(profileData.framework_matin || '')
+        setProblem(profileData.problem || '')
+        setRisk(profileData.risk || '')
       }
       setLoading(false)
     }
@@ -36,7 +67,16 @@ export default function AccountPage() {
 
   async function saveProfile() {
     setSavingProfile(true)
-    await supabase.from('profiles').update({ full_name: fullName }).eq('id', user.id)
+    await supabase.from('profiles').update({
+      full_name: fullName,
+      market,
+      tf,
+      approach,
+      tools,
+      framework_matin: frameworkMatin,
+      problem,
+      risk,
+    }).eq('id', user.id)
     setProfileSaved(true)
     setSavingProfile(false)
     setTimeout(() => setProfileSaved(false), 3000)
@@ -98,6 +138,10 @@ export default function AccountPage() {
         .acc-input { width: 100%; height: 36px; border: 0.5px solid #e0e0e0; border-radius: 8px; padding: 0 12px; font-size: 13px; color: #111; background: #fff; font-family: inherit; outline: none; transition: border-color 0.15s; }
         .acc-input:focus { border-color: #111; }
         .acc-input:disabled { background: #f9f9f9; color: #bbb; cursor: not-allowed; }
+        .acc-select { width: 100%; height: 36px; border: 0.5px solid #e0e0e0; border-radius: 8px; padding: 0 12px; font-size: 13px; color: #111; background: #fff; font-family: inherit; outline: none; cursor: pointer; transition: border-color 0.15s; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23bbbbbb' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
+        .acc-select:focus { border-color: #111; }
+        .acc-textarea { width: 100%; min-height: 64px; border: 0.5px solid #e0e0e0; border-radius: 8px; padding: 10px 12px; font-size: 13px; color: #111; background: #fff; font-family: inherit; outline: none; resize: vertical; line-height: 1.5; transition: border-color 0.15s; }
+        .acc-textarea:focus { border-color: #111; }
         .acc-hint { font-size: 11px; color: #bbb; margin-top: 4px; }
         .acc-tab { font-size: 13px; color: #888; padding: 8px 0; cursor: pointer; border-bottom: 1.5px solid transparent; margin-right: 1.5rem; margin-bottom: -0.5px; background: none; border-top: none; border-left: none; border-right: none; font-family: inherit; transition: color 0.15s, border-color 0.15s; }
         .acc-tab.active { color: #111; border-bottom-color: #111; font-weight: 600; }
@@ -114,6 +158,7 @@ export default function AccountPage() {
         .acc-section-desc { font-size: 12px; color: #aaa; margin-bottom: 1rem; }
         .field-row { display: flex; align-items: flex-start; gap: 1.5rem; margin-bottom: 0.875rem; }
         .field-row-label { width: 130px; flex-shrink: 0; font-size: 13px; color: #666; line-height: 36px; }
+        .field-row-label-top { width: 130px; flex-shrink: 0; font-size: 13px; color: #666; line-height: 1.4; padding-top: 9px; }
         .field-row-input { flex: 1; }
       `}</style>
 
@@ -196,6 +241,7 @@ export default function AccountPage() {
                     <div style={{ fontSize: '12px', color: '#aaa', marginTop: '2px' }}>{user?.email}</div>
                   </div>
                 </div>
+
                 <div className="acc-section">
                   <div className="acc-section-title">Informations personnelles</div>
                   <div className="acc-section-desc">Votre nom est affiché dans l'application.</div>
@@ -212,7 +258,77 @@ export default function AccountPage() {
                       <div className="acc-hint">L'adresse email ne peut pas être modifiée.</div>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '1.25rem', paddingLeft: '145px' }}>
+                </div>
+
+                <div className="acc-section">
+                  <div className="acc-section-title">Profil de trader</div>
+                  <div className="acc-section-desc">Ces infos personnalisent votre plan du matin et l'analyse IA. Mettez-les à jour si votre trading évolue.</div>
+
+                  <div className="field-row">
+                    <div className="field-row-label">Marché</div>
+                    <div className="field-row-input">
+                      <select className="acc-select" value={market} onChange={e => setMarket(e.target.value)}>
+                        <option value="">— Choisir —</option>
+                        {TRADER_OPTIONS.market.map(o => <option key={o} value={o}>{o}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="field-row">
+                    <div className="field-row-label">Timeframe</div>
+                    <div className="field-row-input">
+                      <select className="acc-select" value={tf} onChange={e => setTf(e.target.value)}>
+                        <option value="">— Choisir —</option>
+                        {TRADER_OPTIONS.tf.map(o => <option key={o} value={o}>{o}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="field-row">
+                    <div className="field-row-label">Approche</div>
+                    <div className="field-row-input">
+                      <select className="acc-select" value={approach} onChange={e => setApproach(e.target.value)}>
+                        <option value="">— Choisir —</option>
+                        {TRADER_OPTIONS.approach.map(o => <option key={o} value={o}>{o}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="field-row">
+                    <div className="field-row-label-top">Outils du matin</div>
+                    <div className="field-row-input">
+                      <textarea className="acc-textarea" value={tools} onChange={e => setTools(e.target.value)} placeholder="Les outils et données que tu regardes chaque matin..." />
+                    </div>
+                  </div>
+
+                  <div className="field-row">
+                    <div className="field-row-label-top">Process du matin</div>
+                    <div className="field-row-input">
+                      <textarea className="acc-textarea" value={frameworkMatin} onChange={e => setFrameworkMatin(e.target.value)} placeholder="Dans quel ordre tu analyses tes données..." />
+                    </div>
+                  </div>
+
+                  <div className="field-row">
+                    <div className="field-row-label">Problème n°1</div>
+                    <div className="field-row-input">
+                      <select className="acc-select" value={problem} onChange={e => setProblem(e.target.value)}>
+                        <option value="">— Choisir —</option>
+                        {TRADER_OPTIONS.problem.map(o => <option key={o} value={o}>{o}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="field-row">
+                    <div className="field-row-label">Risque / trade</div>
+                    <div className="field-row-input">
+                      <select className="acc-select" value={risk} onChange={e => setRisk(e.target.value)}>
+                        <option value="">— Choisir —</option>
+                        {TRADER_OPTIONS.risk.map(o => <option key={o} value={o}>{o}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '1.25rem', paddingLeft: '154px' }}>
                     <button className="btn-save" onClick={saveProfile} disabled={savingProfile}>
                       {savingProfile ? 'Enregistrement...' : 'Enregistrer'}
                     </button>
