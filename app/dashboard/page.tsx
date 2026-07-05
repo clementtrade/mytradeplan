@@ -383,7 +383,7 @@ export default function DashboardPage() {
   const rrMessages = getRRMessages(winRatePnl, currentRR, distanceBE, beAtCurrentRR)
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#fff', fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f8f4', fontFamily: 'Inter, sans-serif' }}>
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
