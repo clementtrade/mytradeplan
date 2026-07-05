@@ -38,6 +38,7 @@ const QUESTIONS = [
       { icon: '🌊', label: 'Order Flow', sub: 'Footprint, DOM, institutionnels' },
       { icon: '📉', label: 'Indicateurs', sub: 'RSI, MACD, EMA...' },
       { icon: '🌐', label: 'Macro', sub: 'Données économiques' },
+      { icon: '🤷', label: 'Je ne sais pas encore', sub: 'Je débute, je découvre' },
     ]
   },
   {
@@ -45,14 +46,16 @@ const QUESTIONS = [
     type: 'text',
     question: 'Quels outils et données tu regardes chaque matin avant de trader ?',
     placeholder: 'Note tes outils ici...',
-    hint: 'Sois précis — c\'est ce que l\'IA utilisera pour te poser les bonnes questions chaque matin.'
+    hint: 'Sois précis — c\'est ce que l\'IA utilisera pour te poser les bonnes questions chaque matin.',
+    allowUnsure: true
   },
   {
     id: 'framework_matin',
     type: 'text',
     question: 'Dans quel ordre tu analyses ces données ?',
     placeholder: 'Note ton process ici...',
-    hint: 'Décris ton processus du début à la fin, même en quelques mots.'
+    hint: 'Décris ton processus du début à la fin, même en quelques mots.',
+    allowUnsure: true
   },
   {
     id: 'problem',
@@ -284,6 +287,13 @@ export default function OnboardingPage() {
           box-sizing: border-box; background: #fff;
         }
         .textarea-input:focus { border-color: #111 !important; box-shadow: 0 0 0 3px rgba(0,0,0,0.06); }
+        .btn-unsure {
+          background: transparent; border: 0.5px solid #e0e0e0; border-radius: 8px;
+          padding: 8px 14px; font-size: 13px; color: #888; cursor: pointer;
+          font-family: inherit; transition: border-color 0.15s, color 0.15s;
+          margin-top: 10px;
+        }
+        .btn-unsure:hover { border-color: #111; color: #111; }
       `}</style>
 
       {/* Navbar */}
@@ -349,6 +359,14 @@ export default function OnboardingPage() {
               <div style={{ fontSize: '11px', color: '#ccc', marginTop: '6px', textAlign: 'right' }}>
                 {textValue.trim().length} caractères
               </div>
+              {(q as any).allowUnsure && (
+                <button
+                  className="btn-unsure"
+                  onClick={() => setTextValue('Je ne sais pas encore')}
+                >
+                  🤷 Je ne sais pas encore
+                </button>
+              )}
             </div>
           )}
 
