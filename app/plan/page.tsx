@@ -206,7 +206,7 @@ export default function PlanPage() {
 
   if (!started) {
     return (
-      <div style={{ display: 'flex', minHeight: '100vh', background: '#f9f9f9', fontFamily: 'Inter, sans-serif' }}>
+      <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f8f4', fontFamily: 'Inter, sans-serif' }}>
         <style>{`
           ${sidebarCSS}
           @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }

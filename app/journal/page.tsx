@@ -19,7 +19,7 @@ type Trade = {
 
 export default function JournalPage() {
   return (
-    <Suspense fallback={<div style={{ minHeight: '100vh', background: '#f9f9f9' }} />}>
+    <Suspense fallback={<div style={{ minHeight: '100vh', background: '#f1f8f4' }} />}>
       <JournalContent />
     </Suspense>
   )

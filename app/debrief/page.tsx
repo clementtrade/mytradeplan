@@ -75,7 +75,7 @@ export default function DebriefPage() {
   const dateFormatted = dateStr.charAt(0).toUpperCase() + dateStr.slice(1)
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#fff', fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f8f4', fontFamily: 'Inter, sans-serif' }}>
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
         .sidebar { position: fixed; left: 0; top: 0; height: 100vh; background: #fff; border-right: 0.5px solid #e8e8e8; display: flex; flex-direction: column; transition: width 0.2s cubic-bezier(0.4,0,0.2,1); overflow: hidden; z-index: 100; }
