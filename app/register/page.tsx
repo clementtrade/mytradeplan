@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import AnimatedBackground from '../components/AnimatedBackground'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -87,6 +88,9 @@ export default function RegisterPage() {
         .register-btn:disabled { opacity: 0.5; cursor: not-allowed; }
       `}</style>
 
+      <AnimatedBackground />
+      <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+
       <a href="/" style={{ textDecoration: 'none', marginBottom: '2rem' }}>
         <span style={{ fontWeight: 700, fontSize: '1rem', color: '#111', letterSpacing: '-0.3px' }}>MyTradePlan</span>
       </a>
@@ -138,6 +142,7 @@ export default function RegisterPage() {
       <p style={{ color: '#ccc', fontSize: '12px', marginTop: '2rem' }}>
         © 2026 MyTradePlan · Tous droits réservés
       </p>
+      </div>
     </main>
   )
 }

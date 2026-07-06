@@ -1,6 +1,9 @@
+import AnimatedBackground from '../components/AnimatedBackground'
+
 export default function FeaturesPage() {
   return (
     <main style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Inter, sans-serif', color: '#111' }}>
+      <AnimatedBackground />
       <style>{`
         @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
@@ -41,6 +44,7 @@ export default function FeaturesPage() {
         .macro-divider { height: 0.5px; background: #f0f0f0; margin: 10px 0; }
       `}</style>
 
+      <div style={{ position: 'relative', zIndex: 1 }}>
       <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 2.5rem', borderBottom: '0.5px solid #e8e8e8', position: 'sticky', top: 0, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)', zIndex: 10 }}>
         <a href="/" style={{ fontWeight: 700, fontSize: '1rem', color: '#111', textDecoration: 'none', letterSpacing: '-0.3px' }}>MyTradePlan</a>
         <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
@@ -338,6 +342,7 @@ export default function FeaturesPage() {
         <span style={{ fontWeight: 700, fontSize: '0.875rem', color: '#111' }}>MyTradePlan</span>
         <span style={{ fontSize: '0.8rem', color: '#aaa' }}>2026 MyTradePlan · Tous droits réservés</span>
       </footer>
+      </div>
     </main>
   )
 }

@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import AnimatedBackground from './components/AnimatedBackground'
 
 export default function Home() {
   const [annual, setAnnual] = useState(false)
@@ -7,6 +8,7 @@ export default function Home() {
 
   return (
     <main style={{ minHeight: '100vh', background: '#fff', color: '#111', fontFamily: 'Inter, sans-serif' }}>
+      <AnimatedBackground />
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -68,6 +70,7 @@ export default function Home() {
         .macro-divider { height: 0.5px; background: #e8e8e8; margin: 8px 0; }
       `}</style>
 
+      <div style={{ position: 'relative', zIndex: 1 }}>
       <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 2.5rem', borderBottom: '0.5px solid #e8e8e8', position: 'sticky', top: 0, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)', zIndex: 10 }}>
         <span style={{ fontWeight: 700, fontSize: '1rem', letterSpacing: '-0.3px' }}>MyTradePlan</span>
         <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
@@ -512,6 +515,7 @@ export default function Home() {
         <span style={{ fontWeight: 700, fontSize: '0.875rem', color: '#111' }}>MyTradePlan</span>
         <span style={{ fontSize: '0.8rem', color: '#aaa' }}>2026 MyTradePlan · Tous droits réservés</span>
       </footer>
+      </div>
     </main>
   )
 }

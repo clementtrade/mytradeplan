@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import AnimatedBackground from '../components/AnimatedBackground'
 
 export default function PricingPage() {
   const [annual, setAnnual] = useState(false)
@@ -19,6 +20,9 @@ export default function PricingPage() {
         .plan-card { background: #fff; border-radius: 16px; padding: 2rem; transition: transform 0.2s, box-shadow 0.2s; }
         .plan-card:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
       `}</style>
+
+      <AnimatedBackground />
+      <div style={{ position: 'relative', zIndex: 1 }}>
 
       {/* Header */}
       <div style={{ background: '#fff', borderBottom: '0.5px solid #e8e8e8', padding: '1rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -135,6 +139,7 @@ export default function PricingPage() {
             </div>
           ))}
         </div>
+      </div>
       </div>
     </main>
   )
