@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import AnimatedBackground from './components/AnimatedBackground'
+import BrokerMarquee from './components/BrokerMarquee'
 
 export default function Home() {
   const [annual, setAnnual] = useState(false)
@@ -116,6 +117,7 @@ export default function Home() {
             <div style={{ width: '1px', height: '14px', background: '#e8e8e8' }}></div>
             <span style={{ fontSize: '12px', color: '#888' }}>Sans carte bancaire</span>
           </div>
+          <BrokerMarquee />
         </div>
 
         <div style={{ display: 'flex', gap: '14px', alignItems: 'stretch', padding: '2.5rem 0.5rem', minHeight: '480px' }}>
