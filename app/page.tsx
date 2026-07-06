@@ -117,7 +117,6 @@ export default function Home() {
             <div style={{ width: '1px', height: '14px', background: '#e8e8e8' }}></div>
             <span style={{ fontSize: '12px', color: '#888' }}>Sans carte bancaire</span>
           </div>
-          <BrokerMarquee />
         </div>
 
         <div style={{ display: 'flex', gap: '14px', alignItems: 'stretch', padding: '2.5rem 0.5rem', minHeight: '480px' }}>
@@ -176,6 +175,10 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 2.5rem' }}>
+        <BrokerMarquee />
+      </div>
 
       {/* BANDE STATS */}
       <div style={{ background: '#f9f9f9', borderTop: '0.5px solid #e8e8e8', borderBottom: '0.5px solid #e8e8e8', padding: '1.5rem 2rem' }}>

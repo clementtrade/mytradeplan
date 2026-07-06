@@ -15,7 +15,7 @@ export default function BrokerMarquee() {
   const track = [...BROKERS, ...BROKERS]
 
   return (
-    <div style={{ width: '100%', marginTop: '1.5rem', borderTop: '0.5px solid #eceef0', paddingTop: '1.25rem' }}>
+    <div style={{ width: '100%', minWidth: 0, overflow: 'hidden', marginTop: '1.5rem', borderTop: '0.5px solid #eceef0', paddingTop: '1.25rem' }}>
       <style>{`
         @keyframes broker-marquee-scroll {
           from { transform: translateX(0); }
