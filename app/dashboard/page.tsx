@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import Papa from 'papaparse'
+import AppBackground from '../components/AppBackground'
 
 type Trade = {
   id: string
@@ -665,7 +666,9 @@ export default function DashboardPage() {
         </nav>
       </div>
 
-      <main style={{ marginLeft: sidebarW, flex: 1, minWidth: 0, transition: 'margin-left 0.2s cubic-bezier(0.4,0,0.2,1)', padding: '0 2rem 3rem' }}>
+      <main style={{ marginLeft: sidebarW, flex: 1, minWidth: 0, position: 'relative', transition: 'margin-left 0.2s cubic-bezier(0.4,0,0.2,1)', padding: '0 2rem 3rem' }}>
+        <AppBackground />
+        <div style={{ position: 'relative', zIndex: 1 }}>
         {loading ? (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh', color: '#ccc', fontSize: '13px' }}>Chargement...</div>
         ) : (
@@ -1005,6 +1008,7 @@ export default function DashboardPage() {
 
           </div>
         )}
+        </div>
       </main>
     </div>
   )

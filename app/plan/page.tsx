@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
+import AppBackground from '../components/AppBackground'
 
 export default function PlanPage() {
   const [messages, setMessages] = useState<{role: string, text: string}[]>([])
@@ -212,8 +213,9 @@ export default function PlanPage() {
           @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
         `}</style>
         {Sidebar}
-        <main style={{ marginLeft: sidebarW, flex: 1, minWidth: 0, transition: 'margin-left 0.2s cubic-bezier(0.4,0,0.2,1)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
-          <div className="plan-anim" style={{ maxWidth: '440px', width: '100%' }}>
+        <main style={{ marginLeft: sidebarW, flex: 1, minWidth: 0, position: 'relative', transition: 'margin-left 0.2s cubic-bezier(0.4,0,0.2,1)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+          <AppBackground />
+          <div className="plan-anim" style={{ position: 'relative', zIndex: 1, maxWidth: '440px', width: '100%' }}>
             <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
               <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#111', letterSpacing: '-0.5px', marginBottom: '0.5rem' }}>Plan du matin</h1>
               <p style={{ fontSize: '14px', color: '#888', lineHeight: 1.6 }}>L'IA va te poser quelques questions sur le contexte du jour pour construire ton plan.</p>
@@ -295,8 +297,9 @@ export default function PlanPage() {
         .dot:nth-child(3) { animation-delay: 0.4s; }
       `}</style>
       {Sidebar}
-      <main style={{ marginLeft: sidebarW, flex: 1, minWidth: 0, transition: 'margin-left 0.2s cubic-bezier(0.4,0,0.2,1)', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2rem', borderBottom: '0.5px solid #e8e8e8', background: '#fff', flexShrink: 0 }}>
+      <main style={{ marginLeft: sidebarW, flex: 1, minWidth: 0, position: 'relative', transition: 'margin-left 0.2s cubic-bezier(0.4,0,0.2,1)', display: 'flex', flexDirection: 'column' }}>
+        <AppBackground />
+        <div style={{ position: 'relative', zIndex: 1, height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2rem', borderBottom: '0.5px solid #e8e8e8', background: '#fff', flexShrink: 0 }}>
           <span style={{ fontSize: '15px', fontWeight: 700, color: '#111', letterSpacing: '-0.3px' }}>Plan du matin</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {messages.some(m => m.role === 'ai') && !loading && (
@@ -315,7 +318,7 @@ export default function PlanPage() {
             )}
           </div>
         </div>
-        <div style={{ flex: 1, overflowY: 'auto', padding: '2rem 1rem' }}>
+        <div style={{ position: 'relative', zIndex: 1, flex: 1, overflowY: 'auto', padding: '2rem 1rem' }}>
           <div style={{ maxWidth: '620px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '14px' }}>
             {messages.map((m, i) => (
               <div key={i} className="msg-anim" style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
@@ -338,7 +341,7 @@ export default function PlanPage() {
             <div ref={messagesEndRef}/>
           </div>
         </div>
-        <div style={{ padding: '1rem 2rem 1.5rem', background: '#fff', borderTop: '0.5px solid #e8e8e8', flexShrink: 0 }}>
+        <div style={{ position: 'relative', zIndex: 1, padding: '1rem 2rem 1.5rem', background: '#fff', borderTop: '0.5px solid #e8e8e8', flexShrink: 0 }}>
           <div style={{ maxWidth: '620px', margin: '0 auto', background: '#f9f9f9', border: '0.5px solid #e0e0e0', borderRadius: '14px', padding: '12px 14px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
             <textarea
               className="chat-textarea"
