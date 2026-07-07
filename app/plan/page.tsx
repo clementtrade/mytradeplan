@@ -4,8 +4,11 @@ import { supabase } from '../lib/supabase'
 import AppBackground from '../components/AppBackground'
 import TradingViewChart from '../components/TradingViewChart'
 
+type ChatImage = { dataUrl: string; mediaType: string; base64: string }
+type ChatMessage = { role: string; text: string; image?: ChatImage }
+
 export default function PlanPage() {
-  const [messages, setMessages] = useState<{role: string, text: string}[]>([])
+  const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [started, setStarted] = useState(false)
@@ -18,7 +21,10 @@ export default function PlanPage() {
   const [macroLoading, setMacroLoading] = useState(false)
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [speaking, setSpeaking] = useState(false)
+  const [pendingImage, setPendingImage] = useState<ChatImage | null>(null)
+  const [imageError, setImageError] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     async function loadProfile() {
@@ -116,11 +122,60 @@ export default function PlanPage() {
     setLoading(false)
   }
 
+  const MAX_IMAGE_BYTES = 4 * 1024 * 1024
+  const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif']
+
+  function readFileAsImage(file: File): Promise<ChatImage> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => {
+        const dataUrl = reader.result as string
+        const base64 = dataUrl.split(',')[1] || ''
+        const mediaType = dataUrl.match(/^data:(.*?);base64/)?.[1] || file.type || 'image/png'
+        resolve({ dataUrl, mediaType, base64 })
+      }
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    })
+  }
+
+  async function attachImageFile(file: File) {
+    setImageError('')
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      setImageError('Format non supporté. Utilise PNG, JPEG, WEBP ou GIF.')
+      return
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      setImageError('Image trop lourde (max 4 Mo). Réessaie avec une capture plus légère.')
+      return
+    }
+    const img = await readFileAsImage(file)
+    setPendingImage(img)
+  }
+
+  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (file) await attachImageFile(file)
+  }
+
+  async function handlePaste(e: React.ClipboardEvent<HTMLTextAreaElement>) {
+    const items = e.clipboardData?.items
+    if (!items) return
+    for (const item of Array.from(items)) {
+      if (item.type.startsWith('image/')) {
+        const file = item.getAsFile()
+        if (file) { e.preventDefault(); await attachImageFile(file) }
+        break
+      }
+    }
+  }
+
   async function sendMessage() {
-    if (!input.trim() || loading) return
+    if ((!input.trim() && !pendingImage) || loading) return
     stopSpeech()
-    const newMessages = [...messages, { role: 'user', text: input }]
-    setMessages(newMessages); setInput(''); setLoading(true)
+    const newMessages = [...messages, { role: 'user', text: input, image: pendingImage || undefined }]
+    setMessages(newMessages); setInput(''); setPendingImage(null); setLoading(true)
     try {
       const res = await fetch('/api/morning-plan', {
         method: 'POST',
@@ -339,7 +394,12 @@ export default function PlanPage() {
                     {m.role === 'ai' ? (
                       <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '3px 12px 12px 12px', padding: '12px 16px', maxWidth: '88%', fontSize: '14px', color: '#333', lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: formatText(m.text) }}/>
                     ) : (
-                      <div style={{ background: '#111', borderRadius: '12px 3px 12px 12px', padding: '10px 16px', maxWidth: '78%', fontSize: '14px', color: '#fff', lineHeight: 1.6 }}>{m.text}</div>
+                      <div style={{ background: '#111', borderRadius: '12px 3px 12px 12px', padding: '10px 16px', maxWidth: '78%', fontSize: '14px', color: '#fff', lineHeight: 1.6 }}>
+                        {m.image && (
+                          <img src={m.image.dataUrl} alt="Capture du chart" style={{ display: 'block', maxWidth: '100%', maxHeight: 220, borderRadius: 8, marginBottom: m.text ? 8 : 0 }} />
+                        )}
+                        {m.text}
+                      </div>
                     )}
                   </div>
                 ))}
@@ -357,21 +417,51 @@ export default function PlanPage() {
             </div>
             <div style={{ padding: '1rem 1.25rem 1.25rem', background: '#fff', borderTop: '0.5px solid #e8e8e8', flexShrink: 0 }}>
               <div style={{ background: '#f9f9f9', border: '0.5px solid #e0e0e0', borderRadius: '14px', padding: '12px 14px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                {pendingImage && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <img src={pendingImage.dataUrl} alt="Capture jointe" style={{ height: 44, borderRadius: 6, border: '0.5px solid #e0e0e0' }} />
+                    <span style={{ fontSize: '12px', color: '#888' }}>Capture jointe</span>
+                    <button
+                      onClick={() => setPendingImage(null)}
+                      style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#aaa', fontSize: '16px', cursor: 'pointer', lineHeight: 1, padding: '4px' }}
+                      aria-label="Retirer l'image"
+                    >×</button>
+                  </div>
+                )}
+                {imageError && (
+                  <div style={{ fontSize: '12px', color: '#dc2626', marginBottom: '8px' }}>{imageError}</div>
+                )}
                 <textarea
                   className="chat-textarea"
                   value={input}
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }}
-                  placeholder="Répondre ici..."
+                  onPaste={handlePaste}
+                  placeholder="Réponds ici, ou colle/joins une capture de ton chart..."
                   disabled={loading}
                   rows={3}
                 />
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/gif"
+                  onChange={handleFileSelect}
+                  style={{ display: 'none' }}
+                />
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px', paddingTop: '8px', borderTop: '0.5px solid #e8e8e8' }}>
-                  <span style={{ fontSize: '12px', color: '#bbb' }}>Shift + Entrée pour aller à la ligne</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={loading}
+                      title="Joindre une capture du chart"
+                      style={{ background: 'none', border: '0.5px solid #e0e0e0', borderRadius: '7px', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: loading ? 'not-allowed' : 'pointer', color: '#666', fontSize: '14px', flexShrink: 0 }}
+                    >📎</button>
+                    <span style={{ fontSize: '12px', color: '#bbb' }}>Shift + Entrée pour aller à la ligne</span>
+                  </div>
                   <button
                     onClick={sendMessage}
-                    disabled={loading || !input.trim()}
-                    style={{ background: loading || !input.trim() ? '#f0f0f0' : '#111', color: loading || !input.trim() ? '#bbb' : '#fff', border: 'none', borderRadius: '8px', padding: '8px 20px', fontSize: '13px', fontWeight: 600, cursor: loading || !input.trim() ? 'not-allowed' : 'pointer', transition: 'all 0.15s', fontFamily: 'inherit' }}
+                    disabled={loading || (!input.trim() && !pendingImage)}
+                    style={{ background: loading || (!input.trim() && !pendingImage) ? '#f0f0f0' : '#111', color: loading || (!input.trim() && !pendingImage) ? '#bbb' : '#fff', border: 'none', borderRadius: '8px', padding: '8px 20px', fontSize: '13px', fontWeight: 600, cursor: loading || (!input.trim() && !pendingImage) ? 'not-allowed' : 'pointer', transition: 'all 0.15s', fontFamily: 'inherit' }}
                   >
                     Envoyer
                   </button>

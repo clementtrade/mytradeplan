@@ -134,6 +134,9 @@ RÈGLES GÉNÉRALES :
 - Tu suis le script de questions fourni pour l'approche du trader (ci-dessous), dans l'ordre technique → data → synthèse. Tu peux reformuler naturellement mais ne change jamais l'ordre des étapes.
 - Maximum 5-6 échanges puis tu génères le plan final.
 
+CAPTURES D'ÉCRAN DU CHART :
+Le trader peut répondre à une question technique en collant une capture de son chart au lieu d'écrire. Dans ce cas, tu interprètes directement ce que tu vois sur l'image et tu fais l'analyse à sa place — tu identifies toi-même la forme (D/P/b), les LVN/HVN, la structure, les niveaux, la position du prix, etc. selon ce qui est demandé par la question en cours. Le trader n'a pas besoin de décrire l'image, tu la lis et tu enchaînes directement sur l'étape suivante du script.
+
 FORMAT DU PLAN FINAL :
 ━━━━━━━━━━━━━━━━━━━━━
 PLAN DU JOUR
@@ -159,12 +162,23 @@ export async function POST(request: Request) {
     ? `${SYSTEM_BASE}\n\nPROFIL DU TRADER :\n- Marché : ${profile.market}\n- Timeframe : ${profile.tf}\n- Approche : ${profile.approach}\n- Outils : ${profile.tools}\n- Setup : ${profile.setup}\n- Point à travailler : ${profile.problem}\n- Fuseau horaire : ${profile.timezone || 'Europe/Paris'}\n\nSCRIPT DE QUESTIONS POUR CE PROFIL :\n${buildScriptBlock(profile)}`
     : SYSTEM_BASE
 
+  const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif']
+
   const formattedMessages = start
     ? [{ role: 'user' as const, content: 'START_PLAN' }]
-    : messages.map((m: any) => ({
-        role: m.role === 'user' ? 'user' as const : 'assistant' as const,
-        content: m.text,
-      }))
+    : messages.map((m: any) => {
+        const role = m.role === 'user' ? 'user' as const : 'assistant' as const
+        if (m.image?.base64 && ALLOWED_IMAGE_TYPES.includes(m.image.mediaType)) {
+          return {
+            role,
+            content: [
+              { type: 'image' as const, source: { type: 'base64' as const, media_type: m.image.mediaType, data: m.image.base64 } },
+              { type: 'text' as const, text: m.text || 'Voici une capture de mon chart.' },
+            ],
+          }
+        }
+        return { role, content: m.text }
+      })
 
   if (start && user_id) {
     const today = new Date().toISOString().split('T')[0]
