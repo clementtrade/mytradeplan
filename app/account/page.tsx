@@ -154,7 +154,7 @@ export default function AccountPage() {
         .btn-danger { height: 32px; padding: 0 16px; background: transparent; color: #dc2626; border: 0.5px solid #fca5a5; border-radius: 8px; font-size: 13px; cursor: pointer; font-family: inherit; }
         .acc-section { padding-bottom: 1.5rem; margin-bottom: 1.5rem; border-bottom: 0.5px solid #f0f0f0; }
         .acc-section:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
-        .acc-section-title { font-size: 13px; font-weight: 600; color: #111; margin-bottom: 3px; }
+        .acc-section-title { font-size: 13px; font-weight: 600; color: #111; margin-bottom: 3px; font-family: var(--font-serif); }
         .acc-section-desc { font-size: 12px; color: #aaa; margin-bottom: 1rem; }
         .field-row { display: flex; align-items: flex-start; gap: 1.5rem; margin-bottom: 0.875rem; }
         .field-row-label { width: 130px; flex-shrink: 0; font-size: 13px; color: #666; line-height: 36px; }
@@ -215,7 +215,7 @@ export default function AccountPage() {
         ) : (
           <>
             <div style={{ height: '52px', display: 'flex', alignItems: 'center', borderBottom: '0.5px solid #e8e8e8', marginBottom: '1.75rem' }}>
-              <div style={{ fontSize: '17px', fontWeight: 700, color: '#111', letterSpacing: '-0.3px' }}>Mon compte</div>
+              <div style={{ fontSize: '17px', fontWeight: 600, color: '#111', letterSpacing: '-0.3px', fontFamily: 'var(--font-serif)' }}>Mon compte</div>
             </div>
 
             <div style={{ display: 'flex', borderBottom: '0.5px solid #e8e8e8', marginBottom: '1.75rem' }}>
@@ -349,7 +349,8 @@ export default function AccountPage() {
                       padding: '3px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 600,
                       background: profile?.is_pro ? '#f0fdf4' : '#f5f5f5',
                       color: profile?.is_pro ? '#16a34a' : '#888',
-                      border: `0.5px solid ${profile?.is_pro ? '#bbf7d0' : '#e8e8e8'}`
+                      border: `0.5px solid ${profile?.is_pro ? '#bbf7d0' : '#e8e8e8'}`,
+                      fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px'
                     }}>
                       {profile?.is_pro ? '✓ Pro' : 'Gratuit'}
                     </span>

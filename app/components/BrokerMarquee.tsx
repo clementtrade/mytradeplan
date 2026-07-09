@@ -45,7 +45,7 @@ export default function BrokerMarquee() {
         <div className="broker-marquee-track" style={{ display: 'flex', alignItems: 'center', width: 'max-content' }}>
           {track.map((name, i) => (
             <span key={i} style={{ display: 'flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
-              <span style={{ fontSize: '13px', color: '#374151', fontWeight: 500, marginRight: '10px' }}>{name}</span>
+              <span style={{ fontSize: '13px', color: '#374151', fontWeight: 500, marginRight: '10px', fontFamily: 'var(--font-mono)' }}>{name}</span>
               <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#22c55e', marginRight: '10px', flexShrink: 0 }}></span>
             </span>
           ))}

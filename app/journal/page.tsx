@@ -305,7 +305,7 @@ function JournalContent() {
         <div style={{ position: 'relative', zIndex: 1, maxWidth: '960px', margin: '0 auto' }}>
 
           <div className="journal-anim" style={{ height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '0.5px solid #e8e8e8', marginBottom: '2rem' }}>
-            <span style={{ fontSize: '20px', fontWeight: 700, color: '#111', letterSpacing: '-0.5px' }}>Journal de trades</span>
+            <span style={{ fontSize: '20px', fontWeight: 600, color: '#111', letterSpacing: '-0.5px', fontFamily: 'var(--font-serif)' }}>Journal de trades</span>
             <button
               className="btn-primary"
               onClick={() => { if (!tradeLimitReached) { setShowForm(!showForm); if (!showForm) startNewTrade() } }}
@@ -327,28 +327,28 @@ function JournalContent() {
 
           {!tradeLimitReached && !isPro && (
             <div className="journal-anim" style={{ background: '#f9f9f9', border: '0.5px solid #e8e8e8', borderRadius: '10px', padding: '10px 1.25rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ fontSize: '12px', color: '#888' }}>{tradesThisMonth} / 5 trades utilisés ce mois-ci</div>
+              <div style={{ fontSize: '12px', color: '#888', fontFamily: 'var(--font-mono)' }}>{tradesThisMonth} / 5 trades utilisés ce mois-ci</div>
               <a href="/account" style={{ fontSize: '12px', color: '#2a78d6', textDecoration: 'none', fontWeight: 500 }}>Passer au Pro pour des trades illimités</a>
             </div>
           )}
 
           <div className="journal-anim" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '1.5rem' }}>
             <div className="stat-card">
-              <div style={{ color: '#888', fontSize: '12px', marginBottom: '4px' }}>Trades journalisés</div>
-              <div style={{ fontSize: '22px', fontWeight: 700, color: '#111', fontFamily: 'monospace' }}>{trades.length}</div>
+              <div style={{ color: '#888', fontSize: '12px', marginBottom: '4px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Trades journalisés</div>
+              <div style={{ fontSize: '22px', fontWeight: 700, color: '#111', fontFamily: 'var(--font-mono)' }}>{trades.length}</div>
             </div>
             <div className="stat-card">
-              <div style={{ color: '#888', fontSize: '12px', marginBottom: '4px' }}>Discipline (plan suivi)</div>
-              <div style={{ fontSize: '22px', fontWeight: 700, color: disciplineRate >= 70 ? '#16a34a' : '#d97706', fontFamily: 'monospace' }}>{trades.length === 0 ? '—' : `${disciplineRate}%`}</div>
+              <div style={{ color: '#888', fontSize: '12px', marginBottom: '4px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Discipline (plan suivi)</div>
+              <div style={{ fontSize: '22px', fontWeight: 700, color: disciplineRate >= 70 ? '#16a34a' : '#d97706', fontFamily: 'var(--font-mono)' }}>{trades.length === 0 ? '—' : `${disciplineRate}%`}</div>
             </div>
           </div>
 
           {showForm && !tradeLimitReached && (
             <div className="journal-anim" style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '1.5rem', marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.25rem' }}>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: '#111' }}>{editingId ? 'Modifier le trade' : 'Nouveau trade'}</div>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: '#111', fontFamily: 'var(--font-serif)' }}>{editingId ? 'Modifier le trade' : 'Nouveau trade'}</div>
                 {!editingId && form.trade_date && (
-                  <span style={{ fontSize: '11px', fontWeight: 600, padding: '3px 10px', borderRadius: '20px', background: '#f0fdf4', color: '#16a34a', border: '0.5px solid #bbf7d0' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 600, padding: '3px 10px', borderRadius: '20px', background: '#f0fdf4', color: '#16a34a', border: '0.5px solid #bbf7d0', fontFamily: 'var(--font-mono)' }}>
                     {new Date(form.trade_date + 'T12:00:00').toLocaleDateString('fr-FR')}
                   </span>
                 )}
@@ -421,9 +421,9 @@ function JournalContent() {
               {trades.map(trade => (
                 <div key={trade.id} className="trade-card">
                   <div style={{ padding: '1rem 1.25rem', display: 'grid', gridTemplateColumns: '90px 70px 80px 130px 1fr 110px 36px', alignItems: 'center', gap: '12px' }}>
-                    <div onClick={() => setExpanded(expanded === trade.id ? null : trade.id)} style={{ color: '#aaa', fontSize: '12px', cursor: 'pointer' }}>{new Date(trade.created_at).toLocaleDateString('fr-FR')}</div>
+                    <div onClick={() => setExpanded(expanded === trade.id ? null : trade.id)} style={{ color: '#aaa', fontSize: '12px', cursor: 'pointer', fontFamily: 'var(--font-mono)' }}>{new Date(trade.created_at).toLocaleDateString('fr-FR')}</div>
                     <div onClick={() => setExpanded(expanded === trade.id ? null : trade.id)} style={{ color: '#111', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>{trade.instrument}</div>
-                    <div onClick={() => setExpanded(expanded === trade.id ? null : trade.id)} style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', background: trade.direction === 'long' ? '#dcfce7' : '#fee2e2', color: trade.direction === 'long' ? '#16a34a' : '#dc2626', fontWeight: 600, textAlign: 'center', cursor: 'pointer' }}>
+                    <div onClick={() => setExpanded(expanded === trade.id ? null : trade.id)} style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', background: trade.direction === 'long' ? '#dcfce7' : '#fee2e2', color: trade.direction === 'long' ? '#16a34a' : '#dc2626', fontWeight: 600, textAlign: 'center', cursor: 'pointer', fontFamily: 'var(--font-mono)', letterSpacing: '1.5px' }}>
                       {trade.direction.toUpperCase()}
                     </div>
                     <div onClick={() => setExpanded(expanded === trade.id ? null : trade.id)} style={{ fontSize: '12px', color: '#555', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer' }}>{trade.setup_type || '—'}</div>
@@ -442,11 +442,11 @@ function JournalContent() {
                   {expanded === trade.id && (
                     <div style={{ padding: '0 1.25rem 1.25rem', borderTop: '0.5px solid #f5f5f5' }}>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginTop: '1rem' }}>
-                        {trade.zone && <div><div style={{ fontSize: '11px', color: '#aaa', marginBottom: '3px' }}>Zone</div><div style={{ fontSize: '13px', color: '#333' }}>{trade.zone}</div></div>}
-                        {trade.cible && <div><div style={{ fontSize: '11px', color: '#aaa', marginBottom: '3px' }}>Cible</div><div style={{ fontSize: '13px', color: '#333' }}>{trade.cible}</div></div>}
-                        {trade.confirmation && <div><div style={{ fontSize: '11px', color: '#aaa', marginBottom: '3px' }}>Confirmation</div><div style={{ fontSize: '13px', color: '#333' }}>{trade.confirmation}</div></div>}
-                        {trade.contexte && <div style={{ gridColumn: '1 / -1' }}><div style={{ fontSize: '11px', color: '#aaa', marginBottom: '3px' }}>Contexte</div><div style={{ fontSize: '13px', color: '#333' }}>{trade.contexte}</div></div>}
-                        {trade.notes && <div style={{ gridColumn: '1 / -1' }}><div style={{ fontSize: '11px', color: '#aaa', marginBottom: '3px' }}>Notes</div><div style={{ fontSize: '13px', color: '#333' }}>{trade.notes}</div></div>}
+                        {trade.zone && <div><div style={{ fontSize: '11px', color: '#aaa', marginBottom: '3px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Zone</div><div style={{ fontSize: '13px', color: '#333' }}>{trade.zone}</div></div>}
+                        {trade.cible && <div><div style={{ fontSize: '11px', color: '#aaa', marginBottom: '3px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Cible</div><div style={{ fontSize: '13px', color: '#333' }}>{trade.cible}</div></div>}
+                        {trade.confirmation && <div><div style={{ fontSize: '11px', color: '#aaa', marginBottom: '3px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Confirmation</div><div style={{ fontSize: '13px', color: '#333' }}>{trade.confirmation}</div></div>}
+                        {trade.contexte && <div style={{ gridColumn: '1 / -1' }}><div style={{ fontSize: '11px', color: '#aaa', marginBottom: '3px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Contexte</div><div style={{ fontSize: '13px', color: '#333' }}>{trade.contexte}</div></div>}
+                        {trade.notes && <div style={{ gridColumn: '1 / -1' }}><div style={{ fontSize: '11px', color: '#aaa', marginBottom: '3px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Notes</div><div style={{ fontSize: '13px', color: '#333' }}>{trade.notes}</div></div>}
                       </div>
                     </div>
                   )}

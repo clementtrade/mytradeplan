@@ -164,7 +164,7 @@ export default function DebriefPage() {
           {/* HEADER */}
           <div style={{ height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '0.5px solid #e8e8e8', marginBottom: '2rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-              <span style={{ fontSize: '20px', fontWeight: 700, color: '#111', letterSpacing: '-0.5px' }}>Débrief Macro IA</span>
+              <span style={{ fontSize: '20px', fontWeight: 600, color: '#111', letterSpacing: '-0.5px', fontFamily: 'var(--font-serif)' }}>Débrief Macro IA</span>
               <span style={{ fontSize: '13px', color: '#aaa' }}>{dateFormatted}</span>
             </div>
             {profile?.is_pro && (
@@ -193,7 +193,7 @@ export default function DebriefPage() {
           {!profile?.is_pro ? (
             <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '14px', padding: '3rem', textAlign: 'center' }}>
               <div style={{ fontSize: '32px', marginBottom: '12px' }}>🔒</div>
-              <div style={{ fontSize: '16px', fontWeight: 700, color: '#111', marginBottom: '8px' }}>Fonctionnalité Pro</div>
+              <div style={{ fontSize: '16px', fontWeight: 600, color: '#111', marginBottom: '8px', fontFamily: 'var(--font-serif)' }}>Fonctionnalité Pro</div>
               <div style={{ fontSize: '13px', color: '#888', marginBottom: '24px', lineHeight: 1.6 }}>
                 Le Débrief Macro IA est réservé aux membres Pro.<br/>
                 Accède au briefing quotidien personnalisé selon ton profil trader.
@@ -206,7 +206,7 @@ export default function DebriefPage() {
             <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '14px', padding: '1.5rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
                 <div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#111' }}>Briefing du jour</div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#111', fontFamily: 'var(--font-serif)' }}>Briefing du jour</div>
                   <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>Généré par IA selon ton profil trader</div>
                 </div>
                 {speaking && (

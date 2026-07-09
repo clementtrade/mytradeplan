@@ -79,7 +79,7 @@ export default function LoginPage() {
 
       <div className="login-card" style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '14px', padding: '2.25rem', width: '100%', maxWidth: '400px', boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
 
-        <h1 style={{ color: '#111', fontSize: '22px', fontWeight: 700, marginBottom: '0.4rem', letterSpacing: '-0.5px' }}>Connexion</h1>
+        <h1 style={{ color: '#111', fontSize: '22px', fontWeight: 600, marginBottom: '0.4rem', letterSpacing: '-0.5px', fontFamily: 'var(--font-serif)' }}>Connexion</h1>
         <p style={{ color: '#888', fontSize: '14px', marginBottom: '1.75rem', lineHeight: 1.5 }}>Content de te revoir sur MyTradePlan.</p>
 
         {error && (

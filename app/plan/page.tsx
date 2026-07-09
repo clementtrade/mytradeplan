@@ -272,25 +272,25 @@ export default function PlanPage() {
           <AppBackground />
           <div className="plan-anim" style={{ position: 'relative', zIndex: 1, maxWidth: '440px', width: '100%' }}>
             <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
-              <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#111', letterSpacing: '-0.5px', marginBottom: '0.5rem' }}>Plan du matin</h1>
+              <h1 style={{ fontSize: '1.75rem', fontWeight: 600, color: '#111', letterSpacing: '-0.5px', marginBottom: '0.5rem', fontFamily: 'var(--font-serif)' }}>Plan du matin</h1>
               <p style={{ fontSize: '14px', color: '#888', lineHeight: 1.6 }}>L'IA va te poser quelques questions sur le contexte du jour pour construire ton plan.</p>
             </div>
             {profile && (
               <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '10px', padding: '12px 16px', marginBottom: '1.25rem' }}>
-                <div style={{ color: '#aaa', fontSize: '11px', fontWeight: 500, marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Ton profil</div>
+                <div style={{ color: '#aaa', fontSize: '11px', fontWeight: 500, marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '1.5px', fontFamily: 'var(--font-mono)' }}>Ton profil</div>
                 <div style={{ color: '#111', fontSize: '13px', fontWeight: 500 }}>{profile.market} · {profile.tf} · {profile.approach}</div>
               </div>
             )}
             {!isPro && (
               <div style={{ background: '#f9f9f9', border: `0.5px solid ${planLimitReached ? '#fca5a5' : '#e8e8e8'}`, borderRadius: '10px', padding: '10px 16px', marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ fontSize: '12px', color: '#888' }}>Plans du matin utilisés ce mois</div>
+                <div style={{ fontSize: '12px', color: '#888', fontFamily: 'var(--font-mono)' }}>Plans du matin utilisés ce mois</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <div style={{ display: 'flex', gap: '4px' }}>
                     {[1,2,3,4,5].map(i => (
                       <div key={i} style={{ width: '10px', height: '10px', borderRadius: '50%', background: i <= planCount ? (planLimitReached ? '#dc2626' : '#111') : '#e8e8e8' }}></div>
                     ))}
                   </div>
-                  <div style={{ fontSize: '12px', fontWeight: 600, color: planLimitReached ? '#dc2626' : '#111' }}>{planCount} / 5</div>
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: planLimitReached ? '#dc2626' : '#111', fontFamily: 'var(--font-mono)' }}>{planCount} / 5</div>
                 </div>
               </div>
             )}
@@ -307,10 +307,10 @@ export default function PlanPage() {
             <div style={{ background: '#fff', border: `0.5px solid ${isPro ? '#d1fae5' : '#e8e8e8'}`, borderRadius: '10px', padding: '12px 16px', marginBottom: '1.25rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
                 <div>
-                  <div style={{ fontSize: '12px', fontWeight: 600, color: '#111', marginBottom: '2px' }}>Daily Briefing Macro</div>
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: '#111', marginBottom: '2px', fontFamily: 'var(--font-serif)' }}>Daily Briefing Macro</div>
                   <div style={{ fontSize: '12px', color: '#888' }}>Personnalisé à ton profil</div>
                 </div>
-                {!isPro && <div style={{ background: '#f5f5f5', border: '0.5px solid #e0e0e0', borderRadius: '6px', padding: '3px 10px', fontSize: '11px', color: '#888' }}>Pro</div>}
+                {!isPro && <div style={{ background: '#f5f5f5', border: '0.5px solid #e0e0e0', borderRadius: '6px', padding: '3px 10px', fontSize: '11px', color: '#888', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Pro</div>}
               </div>
               {isPro ? (
                 <div>
@@ -355,7 +355,7 @@ export default function PlanPage() {
       <main style={{ marginLeft: sidebarW, flex: 1, minWidth: 0, position: 'relative', transition: 'margin-left 0.2s cubic-bezier(0.4,0,0.2,1)', display: 'flex', flexDirection: 'column' }}>
         <AppBackground />
         <div style={{ position: 'relative', zIndex: 1, height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2rem', borderBottom: '0.5px solid #e8e8e8', background: '#fff', flexShrink: 0 }}>
-          <span style={{ fontSize: '15px', fontWeight: 700, color: '#111', letterSpacing: '-0.3px' }}>Plan du matin</span>
+          <span style={{ fontSize: '15px', fontWeight: 600, color: '#111', letterSpacing: '-0.3px', fontFamily: 'var(--font-serif)' }}>Plan du matin</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {messages.some(m => m.role === 'ai') && !loading && (
               speaking ? (
@@ -369,7 +369,7 @@ export default function PlanPage() {
               )
             )}
             {profile && (
-              <div style={{ background: '#f0fdf4', color: '#16a34a', fontSize: '11px', padding: '3px 10px', borderRadius: '20px', fontWeight: 600, border: '0.5px solid #86efac' }}>En session</div>
+              <div style={{ background: '#f0fdf4', color: '#16a34a', fontSize: '11px', padding: '3px 10px', borderRadius: '20px', fontWeight: 600, border: '0.5px solid #86efac', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>En session</div>
             )}
           </div>
         </div>

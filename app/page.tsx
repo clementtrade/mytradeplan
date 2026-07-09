@@ -32,12 +32,12 @@ export default function Home() {
         .plan-card { padding: 2rem; border-radius: 12px; transition: box-shadow 0.2s, transform 0.2s; box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
         .plan-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.1); transform: translateY(-2px); }
         .feat-section { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; max-width: 960px; margin: 0 auto; }
-        .feat-tag { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 0.75rem; }
-        .feat-title { font-size: 1.4rem; font-weight: 700; color: #111; letter-spacing: -0.3px; margin-bottom: 0.75rem; line-height: 1.25; }
+        .feat-tag { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 0.75rem; font-family: var(--font-mono); }
+        .feat-title { font-size: 1.4rem; font-weight: 600; color: #111; letter-spacing: -0.3px; margin-bottom: 0.75rem; line-height: 1.25; font-family: var(--font-serif); }
         .feat-desc { font-size: 0.875rem; color: #666; line-height: 1.7; margin-bottom: 1rem; }
         .feat-point { font-size: 0.875rem; color: #444; margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
         .feat-chk { width: 16px; height: 16px; border-radius: 50%; background: #111; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 700; flex-shrink: 0; }
-        .step-num { width: 28px; height: 28px; border-radius: 50%; background: #111; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+        .step-num { width: 28px; height: 28px; border-radius: 50%; background: #111; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; font-family: var(--font-mono); }
         .plan-feature-on { font-size: 13px; color: #444; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
         .plan-feature-off { font-size: 13px; color: #ccc; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; text-decoration: line-through; }
         .plan-check { width: 16px; height: 16px; border-radius: 50%; background: #111; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 9px; flex-shrink: 0; }
@@ -49,16 +49,16 @@ export default function Home() {
         .toggle-btn.on .toggle-knob { left: 23px; }
         .toggle-label { font-size: 13px; color: #666; }
         .toggle-label.active { color: #111; font-weight: 600; }
-        .save-badge { background: #f0fdf4; color: #16a34a; border: 0.5px solid #86efac; border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 600; }
+        .save-badge { background: #f0fdf4; color: #16a34a; border: 0.5px solid #86efac; border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 600; font-family: var(--font-mono); }
         .dash-kpi { background: #111; border-radius: 8px; padding: 8px 10px; }
-        .dash-kpi-l { font-size: 8px; color: #888; margin-bottom: 3px; }
-        .dash-kpi-v { font-size: 13px; font-weight: 700; font-family: monospace; }
-        .dash-cal { aspect-ratio: 1; border-radius: 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 8px; font-weight: 600; }
+        .dash-kpi-l { font-size: 8px; color: #888; margin-bottom: 3px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 1.5px; }
+        .dash-kpi-v { font-size: 13px; font-weight: 700; font-family: var(--font-mono); }
+        .dash-cal { aspect-ratio: 1; border-radius: 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 8px; font-weight: 600; font-family: var(--font-mono); }
         .cal-win { background: #c8f0d8; color: #15803d; }
         .cal-loss { background: #fdd0d0; color: #dc2626; }
         .cal-neu { background: #f5f5f5; color: #ccc; }
         .cal-we { background: #f5f5f5; color: #ddd; opacity: 0.35; }
-        .cal-r { font-size: 6px; opacity: 0.8; margin-top: 1px; }
+        .cal-r { font-size: 6px; opacity: 0.8; margin-top: 1px; font-family: var(--font-mono); }
         .mockup-float { animation: float 5s ease-in-out infinite; }
         .mockup-float-2 { animation: float 5s 0.5s ease-in-out infinite; }
         .mockup-float-3 { animation: float 5s 1s ease-in-out infinite; }
@@ -67,7 +67,7 @@ export default function Home() {
         .macro-line { font-size: 10px; color: #555; line-height: 1.6; margin-bottom: 3px; }
         .macro-bold { font-weight: 700; color: #111; }
         .macro-blue { color: #2a78d6; }
-        .macro-section { font-size: 10px; font-weight: 700; margin-bottom: 5px; }
+        .macro-section { font-size: 10px; font-weight: 600; margin-bottom: 5px; font-family: var(--font-serif); }
         .macro-divider { height: 0.5px; background: #e8e8e8; margin: 8px 0; }
       `}</style>
 
@@ -90,7 +90,7 @@ export default function Home() {
             <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#16a34a', animation: 'glow 2s ease-in-out infinite' }}></div>
             <span style={{ fontSize: '12px', color: '#16a34a', fontWeight: 500 }}>Plan IA pré-marché · Tous marchés</span>
           </div>
-          <h1 className="anim-2" style={{ fontSize: '2.75rem', fontWeight: 700, lineHeight: 1.1, letterSpacing: '-1.5px', marginBottom: '1.25rem' }}>
+          <h1 className="anim-2" style={{ fontSize: '2.75rem', fontWeight: 600, lineHeight: 1.1, letterSpacing: '-1.5px', marginBottom: '1.25rem', fontFamily: 'var(--font-serif)' }}>
             Tradez avec un plan.<br />
             <span style={{ color: '#666' }}>Performez avec les données.</span>
           </h1>
@@ -124,10 +124,10 @@ export default function Home() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', paddingBottom: '10px', borderBottom: '0.5px solid #f0f0f0' }}>
               <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: '#fff', fontWeight: 600, flexShrink: 0 }}>M</div>
               <div>
-                <div style={{ fontSize: '12px', fontWeight: 600, color: '#111' }}>MyTradePlan IA</div>
+                <div style={{ fontSize: '12px', fontWeight: 600, color: '#111', fontFamily: 'var(--font-serif)' }}>MyTradePlan IA</div>
                 <div style={{ fontSize: '10px', color: '#aaa' }}>Plan du matin · Aujourd'hui</div>
               </div>
-              <div style={{ marginLeft: 'auto', background: '#f0fdf4', color: '#16a34a', fontSize: '10px', padding: '3px 8px', borderRadius: '4px', fontWeight: 500 }}>En direct</div>
+              <div style={{ marginLeft: 'auto', background: '#f0fdf4', color: '#16a34a', fontSize: '10px', padding: '3px 8px', borderRadius: '4px', fontWeight: 500, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>En direct</div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '10px', flex: 1 }}>
               <div style={{ background: '#f5f5f5', borderRadius: '3px 10px 10px 10px', padding: '9px 12px', fontSize: '12px', color: '#333', maxWidth: '88%' }}>
@@ -156,12 +156,12 @@ export default function Home() {
           </div>
 
           <div style={{ flex: 1, background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '20px', padding: '1.25rem', boxShadow: '0 20px 60px rgba(0,0,0,0.1)', animation: 'floatR 5s 0.6s ease-in-out infinite', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ fontSize: '13px', fontWeight: 600, color: '#111', marginBottom: '12px', paddingBottom: '10px', borderBottom: '0.5px solid #f0f0f0' }}>Stats & Performance</div>
+            <div style={{ fontSize: '13px', fontWeight: 600, color: '#111', marginBottom: '12px', paddingBottom: '10px', borderBottom: '0.5px solid #f0f0f0', fontFamily: 'var(--font-serif)' }}>Stats & Performance</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
-              <div style={{ background: '#f9f9f9', borderRadius: '10px', padding: '12px', textAlign: 'center' }}><div style={{ fontSize: '20px', fontWeight: 700, color: '#16a34a', fontFamily: 'monospace' }}>71%</div><div style={{ fontSize: '10px', color: '#aaa', marginTop: '2px' }}>Win rate</div></div>
-              <div style={{ background: '#f9f9f9', borderRadius: '10px', padding: '12px', textAlign: 'center' }}><div style={{ fontSize: '20px', fontWeight: 700, color: '#16a34a', fontFamily: 'monospace' }}>+283$</div><div style={{ fontSize: '10px', color: '#aaa', marginTop: '2px' }}>Gain moy/jour</div></div>
-              <div style={{ background: '#f9f9f9', borderRadius: '10px', padding: '12px', textAlign: 'center' }}><div style={{ fontSize: '20px', fontWeight: 700, color: '#111', fontFamily: 'monospace' }}>2.4</div><div style={{ fontSize: '10px', color: '#aaa', marginTop: '2px' }}>Profit factor</div></div>
-              <div style={{ background: '#f9f9f9', borderRadius: '10px', padding: '12px', textAlign: 'center' }}><div style={{ fontSize: '20px', fontWeight: 700, color: '#16a34a', fontFamily: 'monospace' }}>84%</div><div style={{ fontSize: '10px', color: '#aaa', marginTop: '2px' }}>Discipline</div></div>
+              <div style={{ background: '#f9f9f9', borderRadius: '10px', padding: '12px', textAlign: 'center' }}><div style={{ fontSize: '20px', fontWeight: 700, color: '#16a34a', fontFamily: 'var(--font-mono)' }}>71%</div><div style={{ fontSize: '10px', color: '#aaa', marginTop: '2px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Win rate</div></div>
+              <div style={{ background: '#f9f9f9', borderRadius: '10px', padding: '12px', textAlign: 'center' }}><div style={{ fontSize: '20px', fontWeight: 700, color: '#16a34a', fontFamily: 'var(--font-mono)' }}>+283$</div><div style={{ fontSize: '10px', color: '#aaa', marginTop: '2px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Gain moy/jour</div></div>
+              <div style={{ background: '#f9f9f9', borderRadius: '10px', padding: '12px', textAlign: 'center' }}><div style={{ fontSize: '20px', fontWeight: 700, color: '#111', fontFamily: 'var(--font-mono)' }}>2.4</div><div style={{ fontSize: '10px', color: '#aaa', marginTop: '2px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Profit factor</div></div>
+              <div style={{ background: '#f9f9f9', borderRadius: '10px', padding: '12px', textAlign: 'center' }}><div style={{ fontSize: '20px', fontWeight: 700, color: '#16a34a', fontFamily: 'var(--font-mono)' }}>84%</div><div style={{ fontSize: '10px', color: '#aaa', marginTop: '2px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Discipline</div></div>
             </div>
             <svg viewBox="0 0 220 65" style={{ width: '100%', height: '65px', marginBottom: '12px' }}>
               <defs><linearGradient id="gSt" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#16a34a" stopOpacity="0.15"/><stop offset="100%" stopColor="#16a34a" stopOpacity="0"/></linearGradient></defs>
@@ -183,18 +183,18 @@ export default function Home() {
       {/* BANDE STATS */}
       <div style={{ background: '#f9f9f9', borderTop: '0.5px solid #e8e8e8', borderBottom: '0.5px solid #e8e8e8', padding: '1.5rem 2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '4rem', alignItems: 'center', maxWidth: '700px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#111', letterSpacing: '-0.5px' }}>5 min</div><div style={{ fontSize: '12px', color: '#888', marginTop: '2px' }}>pour préparer votre session</div></div>
+          <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#111', letterSpacing: '-0.5px', fontFamily: 'var(--font-mono)' }}>5 min</div><div style={{ fontSize: '12px', color: '#888', marginTop: '2px' }}>pour préparer votre session</div></div>
           <div style={{ width: '0.5px', height: '32px', background: '#e8e8e8' }}></div>
-          <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#111', letterSpacing: '-0.5px' }}>100%</div><div style={{ fontSize: '12px', color: '#888', marginTop: '2px' }}>personnalisé à votre profil</div></div>
+          <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#111', letterSpacing: '-0.5px', fontFamily: 'var(--font-mono)' }}>100%</div><div style={{ fontSize: '12px', color: '#888', marginTop: '2px' }}>personnalisé à votre profil</div></div>
           <div style={{ width: '0.5px', height: '32px', background: '#e8e8e8' }}></div>
-          <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#111', letterSpacing: '-0.5px' }}>Tous marchés</div><div style={{ fontSize: '12px', color: '#888', marginTop: '2px' }}>Futures, Forex, Crypto...</div></div>
+          <div style={{ textAlign: 'center' }}><div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#111', letterSpacing: '-0.5px', fontFamily: 'var(--font-mono)' }}>Tous marchés</div><div style={{ fontSize: '12px', color: '#888', marginTop: '2px' }}>Futures, Forex, Crypto...</div></div>
         </div>
       </div>
 
       {/* How it works */}
       <section style={{ background: '#fff', padding: '4rem 2rem', borderBottom: '0.5px solid #f0f0f0' }}>
-        <div style={{ fontSize: '0.7rem', color: '#888', textTransform: 'uppercase', letterSpacing: '1.5px', textAlign: 'center', marginBottom: '0.5rem' }}>Processus</div>
-        <h2 style={{ fontSize: '1.75rem', fontWeight: 700, textAlign: 'center', letterSpacing: '-0.5px', marginBottom: '0.5rem' }}>Comment ça marche</h2>
+        <div style={{ fontSize: '0.7rem', color: '#888', textTransform: 'uppercase', letterSpacing: '1.5px', textAlign: 'center', marginBottom: '0.5rem', fontFamily: 'var(--font-mono)' }}>Processus</div>
+        <h2 style={{ fontSize: '1.75rem', fontWeight: 600, textAlign: 'center', letterSpacing: '-0.5px', marginBottom: '0.5rem', fontFamily: 'var(--font-serif)' }}>Comment ça marche</h2>
         <p style={{ fontSize: '0.875rem', color: '#888', textAlign: 'center', marginBottom: '2.5rem' }}>3 étapes pour trader avec méthode</p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', maxWidth: '760px', margin: '0 auto' }}>
           {[
@@ -206,7 +206,7 @@ export default function Home() {
               <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
                 <div className="step-num">{s.n}</div>
                 <div>
-                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#111', marginBottom: '4px' }}>{s.title}</div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#111', marginBottom: '4px', fontFamily: 'var(--font-serif)' }}>{s.title}</div>
                   <div style={{ fontSize: '12px', color: '#666', lineHeight: 1.6 }}>{s.desc}</div>
                 </div>
               </div>
@@ -230,10 +230,10 @@ export default function Home() {
             <div style={{ background: '#111', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 700, color: '#111' }}>M</div>
               <div>
-                <div style={{ fontSize: '11px', fontWeight: 600, color: '#fff' }}>MyTradePlan IA</div>
+                <div style={{ fontSize: '11px', fontWeight: 600, color: '#fff', fontFamily: 'var(--font-serif)' }}>MyTradePlan IA</div>
                 <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)' }}>Plan du matin · 08h14</div>
               </div>
-              <div style={{ marginLeft: 'auto', background: '#22c55e', color: '#fff', fontSize: '8px', fontWeight: 600, padding: '2px 8px', borderRadius: '4px' }}>En direct</div>
+              <div style={{ marginLeft: 'auto', background: '#22c55e', color: '#fff', fontSize: '8px', fontWeight: 600, padding: '2px 8px', borderRadius: '4px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>En direct</div>
             </div>
             <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <div style={{ background: '#f5f5f5', borderRadius: '3px 8px 8px 8px', padding: '7px 9px', fontSize: '10px', color: '#333', maxWidth: '88%' }}>
@@ -269,7 +269,7 @@ export default function Home() {
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ height: '36px', borderBottom: '0.5px solid #e8e8e8', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 10px' }}>
-                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#111' }}>Dashboard</span>
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: '#111', fontFamily: 'var(--font-serif)' }}>Dashboard</span>
                   <span style={{ background: '#f0fdf4', color: '#16a34a', fontSize: '8px', padding: '2px 7px', borderRadius: '4px', border: '0.5px solid #bbf7d0', fontWeight: 500 }}>Plan prêt</span>
                 </div>
                 <div style={{ padding: '8px 10px' }}>
@@ -280,9 +280,9 @@ export default function Home() {
                     <div className="dash-kpi"><div className="dash-kpi-l">Perte moy.</div><div className="dash-kpi-v" style={{ color: '#f87171' }}>-254$</div></div>
                   </div>
                   <div style={{ background: '#f9f9f9', border: '0.5px solid #e8e8e8', borderRadius: '7px', padding: '7px' }}>
-                    <div style={{ fontSize: '8px', fontWeight: 700, color: '#111', marginBottom: '5px' }}>Calendrier · Juin 2026</div>
+                    <div style={{ fontSize: '8px', fontWeight: 600, color: '#111', marginBottom: '5px', fontFamily: 'var(--font-serif)' }}>Calendrier · Juin 2026</div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '1px', marginBottom: '1px' }}>
-                      {['L','M','M','J','V','S','D'].map((d, i) => <div key={i} style={{ textAlign: 'center', fontSize: '6px', color: i >= 5 ? '#ddd' : '#bbb', fontWeight: 600 }}>{d}</div>)}
+                      {['L','M','M','J','V','S','D'].map((d, i) => <div key={i} style={{ textAlign: 'center', fontSize: '6px', color: i >= 5 ? '#ddd' : '#bbb', fontWeight: 600, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>{d}</div>)}
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '1px' }}>
                       <div className="dash-cal cal-neu"></div>
@@ -321,7 +321,7 @@ export default function Home() {
         <div className="feat-section">
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#f5f3ff', border: '0.5px solid #ddd6fe', borderRadius: '20px', padding: '3px 10px', marginBottom: '0.75rem' }}>
-              <span style={{ fontSize: '10px', color: '#7c3aed', fontWeight: 600 }}>PRO</span>
+              <span style={{ fontSize: '10px', color: '#7c3aed', fontWeight: 600, fontFamily: 'var(--font-mono)', letterSpacing: '1.5px' }}>PRO</span>
             </div>
             <div className="feat-tag" style={{ marginTop: '4px' }}>Stats avancées</div>
             <div className="feat-title">Allez au-delà<br />du win rate.</div>
@@ -336,20 +336,20 @@ export default function Home() {
           </div>
           <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '1rem', boxShadow: '0 4px 20px rgba(0,0,0,0.06)', overflow: 'hidden' }} className="mockup-float-3">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-              <span style={{ fontSize: '11px', fontWeight: 600, color: '#111' }}>Stats avancées</span>
+              <span style={{ fontSize: '11px', fontWeight: 600, color: '#111', fontFamily: 'var(--font-serif)' }}>Stats avancées</span>
               <span style={{ fontSize: '9px', color: '#aaa' }}>toutes périodes</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '5px', marginBottom: '5px' }}>
               <div className="adv-mini">
-                <div style={{ fontSize: '8px', color: '#aaa', marginBottom: '2px' }}>Expectancy</div>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: '#16a34a', fontFamily: 'monospace' }}>+87$</div>
-                <div style={{ fontSize: '7px', color: '#aaa', margin: '2px 0 4px' }}>gain espéré / trade</div>
+                <div style={{ fontSize: '8px', color: '#aaa', marginBottom: '2px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Expectancy</div>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#16a34a', fontFamily: 'var(--font-mono)' }}>+87$</div>
+                <div style={{ fontSize: '7px', color: '#aaa', margin: '2px 0 4px', fontFamily: 'var(--font-mono)' }}>gain espéré / trade</div>
                 <div style={{ height: '2px', background: '#e8e8e8', borderRadius: '1px' }}><div style={{ width: '65%', height: '100%', background: '#16a34a', borderRadius: '1px' }}></div></div>
               </div>
               <div className="adv-mini">
-                <div style={{ fontSize: '8px', color: '#aaa', marginBottom: '2px' }}>Sharpe ratio</div>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: '#111', fontFamily: 'monospace' }}>1.42</div>
-                <div style={{ fontSize: '7px', color: '#aaa', margin: '2px 0 4px' }}>rendement / risque</div>
+                <div style={{ fontSize: '8px', color: '#aaa', marginBottom: '2px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Sharpe ratio</div>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#111', fontFamily: 'var(--font-mono)' }}>1.42</div>
+                <div style={{ fontSize: '7px', color: '#aaa', margin: '2px 0 4px', fontFamily: 'var(--font-mono)' }}>rendement / risque</div>
                 <div style={{ display: 'flex', gap: '2px' }}>
                   <div style={{ flex: 1, height: '2px', background: '#16a34a', borderRadius: '1px' }}></div>
                   <div style={{ flex: 1, height: '2px', background: '#16a34a', borderRadius: '1px' }}></div>
@@ -359,27 +359,27 @@ export default function Home() {
                 <div style={{ fontSize: '7px', color: '#16a34a', marginTop: '2px' }}>Bon</div>
               </div>
               <div className="adv-mini">
-                <div style={{ fontSize: '8px', color: '#aaa', marginBottom: '2px' }}>Max drawdown</div>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: '#dc2626', fontFamily: 'monospace' }}>-842$</div>
-                <div style={{ fontSize: '7px', color: '#aaa', margin: '2px 0 4px' }}>pire série</div>
+                <div style={{ fontSize: '8px', color: '#aaa', marginBottom: '2px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Max drawdown</div>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#dc2626', fontFamily: 'var(--font-mono)' }}>-842$</div>
+                <div style={{ fontSize: '7px', color: '#aaa', margin: '2px 0 4px', fontFamily: 'var(--font-mono)' }}>pire série</div>
                 <div style={{ height: '2px', background: '#e8e8e8', borderRadius: '1px' }}><div style={{ width: '28%', height: '100%', background: '#dc2626', borderRadius: '1px' }}></div></div>
               </div>
               <div className="adv-mini">
-                <div style={{ fontSize: '8px', color: '#aaa', marginBottom: '2px' }}>Consistency</div>
+                <div style={{ fontSize: '8px', color: '#aaa', marginBottom: '2px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Consistency</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                   <svg width="28" height="28" viewBox="0 0 52 52">
                     <circle cx="26" cy="26" r="22" fill="none" stroke="#e8e8e8" strokeWidth="6"/>
                     <circle cx="26" cy="26" r="22" fill="none" stroke="#16a34a" strokeWidth="6" strokeLinecap="round" strokeDasharray="138" strokeDashoffset="48" transform="rotate(-90 26 26)"/>
                   </svg>
                   <div>
-                    <div style={{ fontSize: '13px', fontWeight: 700, color: '#111', fontFamily: 'monospace' }}>65%</div>
-                    <div style={{ fontSize: '7px', color: '#aaa' }}>plan suivi</div>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: '#111', fontFamily: 'var(--font-mono)' }}>65%</div>
+                    <div style={{ fontSize: '7px', color: '#aaa', fontFamily: 'var(--font-mono)' }}>plan suivi</div>
                   </div>
                 </div>
               </div>
             </div>
             <div className="adv-mini" style={{ marginBottom: '5px' }}>
-              <div style={{ fontSize: '8px', fontWeight: 600, color: '#111', marginBottom: '5px' }}>RR vs Win rate · Break even</div>
+              <div style={{ fontSize: '8px', fontWeight: 600, color: '#111', marginBottom: '5px', fontFamily: 'var(--font-serif)' }}>RR vs Win rate · Break even</div>
               <div style={{ display: 'flex', alignItems: 'flex-end', height: '44px', gap: '1px', marginBottom: '4px' }}>
                 <svg viewBox="0 0 140 40" style={{ width: '100%', height: '44px' }} preserveAspectRatio="none">
                   <defs><linearGradient id="bg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#2a78d6" stopOpacity="0.1"/><stop offset="100%" stopColor="#2a78d6" stopOpacity="0"/></linearGradient></defs>
@@ -388,7 +388,7 @@ export default function Home() {
                   <circle cx="16" cy="15" r="3" fill="#16a34a" stroke="#fff" strokeWidth="1.2"/>
                 </svg>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '7px', color: '#bbb', marginBottom: '4px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '7px', color: '#bbb', marginBottom: '4px', fontFamily: 'var(--font-mono)' }}>
                 <span>RR 1:1</span><span>RR 1:5</span><span>RR 1:10</span>
               </div>
               <div style={{ background: '#ecfeff', border: '0.5px solid #a5f3fc', borderRadius: '4px', padding: '4px 6px', fontSize: '8px', color: '#0891b2', lineHeight: 1.4 }}>
@@ -397,16 +397,16 @@ export default function Home() {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '5px' }}>
               <div className="adv-mini" style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '11px', fontWeight: 700, color: '#16a34a', fontFamily: 'monospace' }}>+29%</div>
-                <div style={{ fontSize: '7px', color: '#aaa', marginTop: '2px' }}>Distance BE</div>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: '#16a34a', fontFamily: 'var(--font-mono)' }}>+29%</div>
+                <div style={{ fontSize: '7px', color: '#aaa', marginTop: '2px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Distance BE</div>
               </div>
               <div className="adv-mini" style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '11px', fontWeight: 700, color: '#16a34a', fontFamily: 'monospace' }}>+3W</div>
-                <div style={{ fontSize: '7px', color: '#aaa', marginTop: '2px' }}>Streak</div>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: '#16a34a', fontFamily: 'var(--font-mono)' }}>+3W</div>
+                <div style={{ fontSize: '7px', color: '#aaa', marginTop: '2px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Streak</div>
               </div>
               <div className="adv-mini" style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '11px', fontWeight: 700, color: '#16a34a', fontFamily: 'monospace' }}>+910$</div>
-                <div style={{ fontSize: '7px', color: '#aaa', marginTop: '2px' }}>Meilleur jour</div>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: '#16a34a', fontFamily: 'var(--font-mono)' }}>+910$</div>
+                <div style={{ fontSize: '7px', color: '#aaa', marginTop: '2px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Meilleur jour</div>
               </div>
             </div>
           </div>
@@ -419,12 +419,12 @@ export default function Home() {
           <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '1rem 1.25rem', boxShadow: '0 4px 20px rgba(0,0,0,0.06)', overflow: 'hidden' }} className="mockup-float-4">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
               <div>
-                <div style={{ fontSize: '11px', fontWeight: 600, color: '#111' }}>Débrief Macro IA</div>
+                <div style={{ fontSize: '11px', fontWeight: 600, color: '#111', fontFamily: 'var(--font-serif)' }}>Débrief Macro IA</div>
                 <div style={{ fontSize: '9px', color: '#aaa', marginTop: '1px' }}>Briefing du jour généré par IA selon ton profil</div>
               </div>
               <div style={{ background: '#f5f5f5', border: '0.5px solid #e8e8e8', borderRadius: '5px', padding: '3px 8px', fontSize: '9px', color: '#666' }}>Rafraîchir</div>
             </div>
-            <div style={{ fontSize: '10px', fontWeight: 600, color: '#111', marginBottom: '6px' }}>Briefing Macro — Jeudi 2 juillet 2026</div>
+            <div style={{ fontSize: '10px', fontWeight: 600, color: '#111', marginBottom: '6px', fontFamily: 'var(--font-serif)' }}>Briefing Macro — Jeudi 2 juillet 2026</div>
             <div className="macro-divider"></div>
             <div className="macro-section" style={{ color: '#2a78d6' }}>Contexte macro global</div>
             <div className="macro-line"><span className="macro-bold">Fed en mode attente prolongée</span> : <span className="macro-blue">Posture "higher for longer" confirmée</span>, le marché digère l'absence de signal clair de pivot.</div>
@@ -456,8 +456,8 @@ export default function Home() {
 
       {/* PRICING */}
       <section id="pricing" style={{ maxWidth: '760px', margin: '0 auto', padding: '4rem 2rem', textAlign: 'center' }}>
-        <div style={{ fontSize: '0.7rem', color: '#888', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '0.5rem' }}>Tarifs</div>
-        <h2 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.75rem', letterSpacing: '-0.5px' }}>Simple et transparent</h2>
+        <div style={{ fontSize: '0.7rem', color: '#888', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '0.5rem', fontFamily: 'var(--font-mono)' }}>Tarifs</div>
+        <h2 style={{ fontSize: '1.75rem', fontWeight: 600, marginBottom: '0.75rem', letterSpacing: '-0.5px', fontFamily: 'var(--font-serif)' }}>Simple et transparent</h2>
         <p style={{ color: '#666', marginBottom: '2rem' }}>Démarrez gratuitement, passez au Pro quand vous êtes prêt.</p>
         <div className="toggle-wrap">
           <span className={`toggle-label${!annual ? ' active' : ''}`}>Mensuel</span>
@@ -467,9 +467,9 @@ export default function Home() {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', textAlign: 'left' }}>
           <div className="plan-card" style={{ border: '0.5px solid #e8e8e8' }}>
-            <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '4px' }}>Gratuit</div>
+            <div style={{ fontWeight: 600, fontSize: '1rem', marginBottom: '4px', fontFamily: 'var(--font-serif)' }}>Gratuit</div>
             <div style={{ fontSize: '12px', color: '#888', marginBottom: '1rem' }}>Pour découvrir MyTradePlan</div>
-            <div style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.25rem' }}>0€</div>
+            <div style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.25rem', fontFamily: 'var(--font-mono)' }}>0€</div>
             <div style={{ fontSize: '12px', color: '#aaa', marginBottom: '1.25rem' }}>Pour toujours</div>
             <div style={{ borderTop: '0.5px solid #f0f0f0', paddingTop: '1rem', marginBottom: '1rem' }}>
               <div className="plan-feature-on"><div className="plan-check">✓</div>5 trades / mois</div>
@@ -483,16 +483,16 @@ export default function Home() {
           </div>
           <div className="plan-card" style={{ border: '2px solid #111', position: 'relative' }}>
             <div style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', background: '#111', color: '#fff', fontSize: '11px', fontWeight: 600, padding: '4px 14px', borderRadius: '20px', whiteSpace: 'nowrap' }}>Le plus populaire</div>
-            <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '4px' }}>Pro</div>
+            <div style={{ fontWeight: 600, fontSize: '1rem', marginBottom: '4px', fontFamily: 'var(--font-serif)' }}>Pro</div>
             <div style={{ fontSize: '12px', color: '#888', marginBottom: '1rem' }}>Pour le trader sérieux</div>
             <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', marginBottom: '4px' }}>
-              <div style={{ fontSize: '2rem', fontWeight: 700, lineHeight: 1 }}>{annual ? '14,99€' : '19,99€'}</div>
+              <div style={{ fontSize: '2rem', fontWeight: 700, lineHeight: 1, fontFamily: 'var(--font-mono)' }}>{annual ? '14,99€' : '19,99€'}</div>
               <div style={{ fontSize: '1rem', color: '#888', marginBottom: '2px' }}>/mois</div>
             </div>
             {annual ? (
-              <div style={{ fontSize: '11px', color: '#16a34a', fontWeight: 600, marginBottom: '4px' }}>179,99€/an · économisez 60€</div>
+              <div style={{ fontSize: '11px', color: '#16a34a', fontWeight: 600, marginBottom: '4px', fontFamily: 'var(--font-mono)' }}>179,99€/an · économisez 60€</div>
             ) : (
-              <div style={{ fontSize: '11px', color: '#aaa', marginBottom: '4px' }}>ou 14,99€/mois facturé annuellement</div>
+              <div style={{ fontSize: '11px', color: '#aaa', marginBottom: '4px', fontFamily: 'var(--font-mono)' }}>ou 14,99€/mois facturé annuellement</div>
             )}
             <div style={{ fontSize: '12px', color: '#aaa', marginBottom: '1.25rem' }}>7 jours gratuits · sans CB</div>
             <div style={{ borderTop: '0.5px solid #f0f0f0', paddingTop: '1rem', marginBottom: '1rem' }}>
@@ -511,7 +511,7 @@ export default function Home() {
 
       {/* CTA Final */}
       <section style={{ padding: '4rem 2rem', textAlign: 'center', background: '#f9f9f9', borderTop: '0.5px solid #e8e8e8' }}>
-        <h2 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#111', letterSpacing: '-0.5px', marginBottom: '0.75rem' }}>Prêt à trader avec un plan ?</h2>
+        <h2 style={{ fontSize: '1.75rem', fontWeight: 600, color: '#111', letterSpacing: '-0.5px', marginBottom: '0.75rem', fontFamily: 'var(--font-serif)' }}>Prêt à trader avec un plan ?</h2>
         <p style={{ fontSize: '0.875rem', color: '#888', marginBottom: '2rem' }}>Rejoignez les traders qui progressent chaque jour.</p>
         <a href="/register" className="btn-main">Commencer gratuitement</a>
       </section>
