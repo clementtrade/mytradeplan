@@ -437,7 +437,7 @@ export default function DashboardPage() {
         .cal-empty { background: transparent; cursor: default; }
         .cal-future { background: #f5f5f5; color: #ddd; }
         .cal-today { outline: 2px solid #888; outline-offset: -2px; }
-        .cal-pnl { font-size: 12px; margin-top: 3px; font-family: monospace; font-weight: 700; }
+        .cal-pnl { font-size: 12px; margin-top: 3px; font-family: var(--font-mono); font-weight: 700; }
         .cal-weekend { opacity: 0.3; }
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 2rem; }
         .modal-box { background: #fff; border: 0.5px solid #e8e8e8; border-radius: 16px; padding: 1.5rem; width: 520px; max-width: 92vw; max-height: 85vh; overflow-y: auto; }
@@ -556,7 +556,7 @@ export default function DashboardPage() {
               {previewTotals.slice(0, 8).map((t, i) => (
                 <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 100px', padding: '8px 12px', fontSize: '13px', borderTop: '0.5px solid #f2f2f2' }}>
                   <div style={{ color: '#111' }}>{new Date(t.date + 'T12:00:00').toLocaleDateString('fr-FR')}</div>
-                  <div style={{ textAlign: 'right', fontFamily: 'monospace', color: t.pnl >= 0 ? '#16a34a' : '#dc2626' }}>{t.pnl >= 0 ? '+' : ''}{t.pnl}$</div>
+                  <div style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', color: t.pnl >= 0 ? '#16a34a' : '#dc2626' }}>{t.pnl >= 0 ? '+' : ''}{t.pnl}$</div>
                 </div>
               ))}
               {previewTotals.length > 8 && <div style={{ padding: '8px 12px', fontSize: '12px', color: '#aaa', borderTop: '0.5px solid #f2f2f2' }}>et {previewTotals.length - 8} autres jours...</div>}
@@ -676,7 +676,7 @@ export default function DashboardPage() {
 
             <div className="sa sa1" style={{ height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '0.5px solid #e8e8e8', marginBottom: '2rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-                <span style={{ fontSize: '20px', fontWeight: 700, color: '#111', letterSpacing: '-0.5px' }}>Dashboard</span>
+                <span style={{ fontSize: '20px', fontWeight: 600, color: '#111', letterSpacing: '-0.5px', fontFamily: 'var(--font-serif)' }}>Dashboard</span>
                 <span style={{ fontSize: '13px', color: '#aaa' }}>{dateFormatted}</span>
               </div>
               <a href="/plan" style={{ display: 'flex', alignItems: 'center', gap: '7px', background: planReady ? '#f0fdf4' : '#fff', border: `0.5px solid ${planReady ? '#86efac' : '#e8e8e8'}`, color: planReady ? '#15803d' : '#888', padding: '7px 16px', borderRadius: '20px', fontSize: '13px', fontWeight: 600, textDecoration: 'none' }}>
@@ -694,34 +694,34 @@ export default function DashboardPage() {
             {/* 1. KPI CARDS */}
             <div className="sa sa2" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '12px', marginBottom: '1.5rem' }}>
               <div className="kpi-card">
-                <div style={{ fontSize: '11px', color: '#999', marginBottom: '10px' }}>Win rate</div>
+                <div style={{ fontSize: '11px', color: '#999', marginBottom: '10px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Win rate</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <svg width="50" height="32" viewBox="0 0 64 40">
                     <path d="M 4 36 A 28 28 0 0 1 60 36" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="6" strokeLinecap="round"/>
                     <path d="M 4 36 A 28 28 0 0 1 60 36" fill="none" stroke="#4ade80" strokeWidth="6" strokeLinecap="round" strokeDasharray="88" strokeDashoffset={tradedDaysCount === 0 ? 88 : winGaugeOffset}/>
                   </svg>
-                  <div style={{ fontSize: '22px', fontWeight: 700, color: '#fff', fontFamily: 'monospace' }}>{tradedDaysCount === 0 ? '—' : `${winRatePnl}%`}</div>
+                  <div style={{ fontSize: '22px', fontWeight: 700, color: '#fff', fontFamily: 'var(--font-mono)' }}>{tradedDaysCount === 0 ? '—' : `${winRatePnl}%`}</div>
                 </div>
               </div>
               <div className="kpi-card">
-                <div style={{ fontSize: '11px', color: '#999', marginBottom: '10px' }}>Gain moyen / jour</div>
-                <div style={{ fontSize: '22px', fontWeight: 700, color: '#4ade80', fontFamily: 'monospace' }}>{winningDays.length === 0 ? '—' : `+${avgWinDay}$`}</div>
-                <div style={{ fontSize: '11px', color: '#777', marginTop: '6px' }}>jours gagnants</div>
+                <div style={{ fontSize: '11px', color: '#999', marginBottom: '10px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Gain moyen / jour</div>
+                <div style={{ fontSize: '22px', fontWeight: 700, color: '#4ade80', fontFamily: 'var(--font-mono)' }}>{winningDays.length === 0 ? '—' : `+${avgWinDay}$`}</div>
+                <div style={{ fontSize: '11px', color: '#777', marginTop: '6px', fontFamily: 'var(--font-mono)' }}>jours gagnants</div>
               </div>
               <div className="kpi-card">
-                <div style={{ fontSize: '11px', color: '#999', marginBottom: '10px' }}>Perte moyenne / jour</div>
-                <div style={{ fontSize: '22px', fontWeight: 700, color: '#f87171', fontFamily: 'monospace' }}>{losingDays.length === 0 ? '—' : `${avgLossDay}$`}</div>
-                <div style={{ fontSize: '11px', color: '#777', marginTop: '6px' }}>jours perdants</div>
+                <div style={{ fontSize: '11px', color: '#999', marginBottom: '10px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Perte moyenne / jour</div>
+                <div style={{ fontSize: '22px', fontWeight: 700, color: '#f87171', fontFamily: 'var(--font-mono)' }}>{losingDays.length === 0 ? '—' : `${avgLossDay}$`}</div>
+                <div style={{ fontSize: '11px', color: '#777', marginTop: '6px', fontFamily: 'var(--font-mono)' }}>jours perdants</div>
               </div>
               <div className="kpi-card">
-                <div style={{ fontSize: '11px', color: '#999', marginBottom: '10px' }}>Profit factor</div>
+                <div style={{ fontSize: '11px', color: '#999', marginBottom: '10px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Profit factor</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <svg width="42" height="42" viewBox="0 0 52 52">
                     <circle cx="26" cy="26" r="22" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="6"/>
                     <circle cx="26" cy="26" r="22" fill="none" stroke="#4ade80" strokeWidth="6" strokeLinecap="round" strokeDasharray="138" strokeDashoffset={tradedDaysCount === 0 ? 138 : profitFactorOffset} transform="rotate(-90 26 26)"/>
                   </svg>
                   <div>
-                    <div style={{ fontSize: '20px', fontWeight: 700, color: '#fff', fontFamily: 'monospace' }}>{tradedDaysCount === 0 ? '—' : profitFactorPnl}</div>
+                    <div style={{ fontSize: '20px', fontWeight: 700, color: '#fff', fontFamily: 'var(--font-mono)' }}>{tradedDaysCount === 0 ? '—' : profitFactorPnl}</div>
                     {tradedDaysCount > 0 && <div style={{ fontSize: '10px', color: '#4ade80' }}>{profitFactorLabel}</div>}
                   </div>
                 </div>
@@ -732,12 +732,12 @@ export default function DashboardPage() {
             <div className="sa sa3 mid-card" style={{ marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                 <div>
-                  <div style={{ fontSize: '12px', color: '#888', marginBottom: '4px' }}>PnL total · {monthNames[calMonthIdx]} {calYear}</div>
-                  <div style={{ fontSize: '26px', fontWeight: 700, color: calTotalPnl >= 0 ? '#16a34a' : '#dc2626', fontFamily: 'monospace' }}>
+                  <div style={{ fontSize: '12px', color: '#888', marginBottom: '4px', fontFamily: 'var(--font-serif)', fontWeight: 600 }}>PnL total · {monthNames[calMonthIdx]} {calYear}</div>
+                  <div style={{ fontSize: '26px', fontWeight: 700, color: calTotalPnl >= 0 ? '#16a34a' : '#dc2626', fontFamily: 'var(--font-mono)' }}>
                     {calTradedDays === 0 ? '—' : `${calTotalPnl >= 0 ? '+' : ''}${calTotalPnl}$`}
                   </div>
                 </div>
-                <div style={{ fontSize: '12px', color: '#aaa' }}>
+                <div style={{ fontSize: '12px', color: '#aaa', fontFamily: 'var(--font-mono)' }}>
                   {calTradedDays > 0 ? `sur ${calTradedDays} jour${calTradedDays > 1 ? 's' : ''} tradé${calTradedDays > 1 ? 's' : ''}` : 'aucune donnée importée'}
                 </div>
               </div>
@@ -746,7 +746,7 @@ export default function DashboardPage() {
             {/* 3. CALENDRIER */}
             <div className="sa sa4 mid-card" style={{ marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '10px' }}>
-                <span style={{ fontSize: '15px', fontWeight: 700, color: '#111', letterSpacing: '-0.3px' }}>Calendrier · {monthNames[calMonthIdx]} {calYear}</span>
+                <span style={{ fontSize: '15px', fontWeight: 600, color: '#111', letterSpacing: '-0.3px', fontFamily: 'var(--font-serif)' }}>Calendrier · {monthNames[calMonthIdx]} {calYear}</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <button className="btn-secondary" onClick={openImportModal} style={{ padding: '6px 14px', fontSize: '12px' }}>Importer CSV</button>
                   <div style={{ display: 'flex', gap: '5px' }}>
@@ -757,7 +757,7 @@ export default function DashboardPage() {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '6px', marginBottom: '6px' }}>
                 {['L','M','M','J','V','S','D'].map((d, i) => (
-                  <div key={`${d}${i}`} style={{ textAlign: 'center', fontSize: '12px', fontWeight: 600, color: i >= 5 ? '#ddd' : '#aaa', paddingBottom: '4px' }}>{d}</div>
+                  <div key={`${d}${i}`} style={{ textAlign: 'center', fontSize: '12px', fontWeight: 600, color: i >= 5 ? '#ddd' : '#aaa', paddingBottom: '4px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>{d}</div>
                 ))}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '6px' }}>
@@ -787,16 +787,16 @@ export default function DashboardPage() {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '10px', marginTop: '1.25rem', paddingTop: '1rem', borderTop: '0.5px solid #f0f0f0' }}>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: calTotalPnl >= 0 ? '#16a34a' : '#dc2626' }}>{calTradedDays === 0 ? '—' : `${calTotalPnl >= 0 ? '+' : ''}${calTotalPnl}$`}</div>
-                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '3px' }}>Total PnL</div>
+                  <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'var(--font-mono)', color: calTotalPnl >= 0 ? '#16a34a' : '#dc2626' }}>{calTradedDays === 0 ? '—' : `${calTotalPnl >= 0 ? '+' : ''}${calTotalPnl}$`}</div>
+                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '3px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Total PnL</div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: '#111' }}>{calTradedDays}</div>
-                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '3px' }}>Jours tradés</div>
+                  <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'var(--font-mono)', color: '#111' }}>{calTradedDays}</div>
+                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '3px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Jours tradés</div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'monospace', color: calWinRate >= 50 ? '#16a34a' : '#dc2626' }}>{calTradedDays === 0 ? '—' : `${calWinRate}%`}</div>
-                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '3px' }}>Win rate mensuel</div>
+                  <div style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'var(--font-mono)', color: calWinRate >= 50 ? '#16a34a' : '#dc2626' }}>{calTradedDays === 0 ? '—' : `${calWinRate}%`}</div>
+                  <div style={{ fontSize: '11px', color: '#bbb', marginTop: '3px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Win rate mensuel</div>
                 </div>
               </div>
             </div>
@@ -804,7 +804,7 @@ export default function DashboardPage() {
             {/* 4. STATS AVANCEES */}
             <div className="sa sa5 mid-card" style={{ marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                <span style={{ fontSize: '14px', fontWeight: 700, color: '#111' }}>Stats avancées</span>
+                <span style={{ fontSize: '14px', fontWeight: 600, color: '#111', fontFamily: 'var(--font-serif)' }}>Stats avancées</span>
                 <span style={{ fontSize: '11px', color: '#bbb' }}>toutes périodes confondues</span>
               </div>
               {!profile?.is_pro ? (
@@ -820,17 +820,17 @@ export default function DashboardPage() {
                 <>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '8px', marginBottom: '8px' }}>
                     <div className="adv-card">
-                      <div style={{ fontSize: '11px', color: '#888', marginBottom: '5px' }}>Expectancy</div>
-                      <div style={{ fontSize: '20px', fontWeight: 700, color: expectancy >= 0 ? '#16a34a' : '#dc2626', fontFamily: 'monospace' }}>{expectancy >= 0 ? '+' : ''}{expectancy}$</div>
-                      <div style={{ fontSize: '11px', color: '#aaa', margin: '4px 0 7px' }}>gain espéré / trade</div>
+                      <div style={{ fontSize: '11px', color: '#888', marginBottom: '5px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Expectancy</div>
+                      <div style={{ fontSize: '20px', fontWeight: 700, color: expectancy >= 0 ? '#16a34a' : '#dc2626', fontFamily: 'var(--font-mono)' }}>{expectancy >= 0 ? '+' : ''}{expectancy}$</div>
+                      <div style={{ fontSize: '11px', color: '#aaa', margin: '4px 0 7px', fontFamily: 'var(--font-mono)' }}>gain espéré / trade</div>
                       <div style={{ height: '3px', background: '#e8e8e8', borderRadius: '2px' }}>
                         <div style={{ width: `${Math.min(Math.max((expectancy / 200) * 100, 0), 100)}%`, height: '100%', background: expectancy >= 0 ? '#16a34a' : '#dc2626', borderRadius: '2px' }}></div>
                       </div>
                     </div>
                     <div className="adv-card">
-                      <div style={{ fontSize: '11px', color: '#888', marginBottom: '5px' }}>Sharpe ratio</div>
-                      <div style={{ fontSize: '20px', fontWeight: 700, color: '#111', fontFamily: 'monospace' }}>{tradedDaysCount > 1 ? sharpeRatio : '—'}</div>
-                      <div style={{ fontSize: '11px', color: '#aaa', margin: '4px 0 7px' }}>rendement / risque</div>
+                      <div style={{ fontSize: '11px', color: '#888', marginBottom: '5px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Sharpe ratio</div>
+                      <div style={{ fontSize: '20px', fontWeight: 700, color: '#111', fontFamily: 'var(--font-mono)' }}>{tradedDaysCount > 1 ? sharpeRatio : '—'}</div>
+                      <div style={{ fontSize: '11px', color: '#aaa', margin: '4px 0 7px', fontFamily: 'var(--font-mono)' }}>rendement / risque</div>
                       {tradedDaysCount > 1 && (
                         <>
                           <div style={{ display: 'flex', gap: '3px', marginBottom: '3px' }}>
@@ -841,18 +841,18 @@ export default function DashboardPage() {
                       )}
                     </div>
                     <div className="adv-card">
-                      <div style={{ fontSize: '11px', color: '#888', marginBottom: '5px' }}>Max drawdown</div>
-                      <div style={{ fontSize: '20px', fontWeight: 700, color: '#dc2626', fontFamily: 'monospace' }}>{maxDrawdown > 0 ? `-${maxDrawdown}$` : '—'}</div>
-                      <div style={{ fontSize: '11px', color: '#aaa', margin: '4px 0 7px' }}>pire série de pertes</div>
+                      <div style={{ fontSize: '11px', color: '#888', marginBottom: '5px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Max drawdown</div>
+                      <div style={{ fontSize: '20px', fontWeight: 700, color: '#dc2626', fontFamily: 'var(--font-mono)' }}>{maxDrawdown > 0 ? `-${maxDrawdown}$` : '—'}</div>
+                      <div style={{ fontSize: '11px', color: '#aaa', margin: '4px 0 7px', fontFamily: 'var(--font-mono)' }}>pire série de pertes</div>
                       <div style={{ height: '3px', background: '#e8e8e8', borderRadius: '2px' }}>
                         <div style={{ width: `${Math.min((maxDrawdown / (Math.abs(calTotalPnl) + maxDrawdown + 1)) * 100, 100)}%`, height: '100%', background: '#dc2626', borderRadius: '2px' }}></div>
                       </div>
                     </div>
                     <div className="adv-card">
-                      <div style={{ fontSize: '11px', color: '#888', marginBottom: '5px' }}>Streak actuel</div>
+                      <div style={{ fontSize: '11px', color: '#888', marginBottom: '5px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Streak actuel</div>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '8px' }}>
-                        <span style={{ fontSize: '20px', fontWeight: 700, color: streakType === 'win' ? '#16a34a' : '#dc2626', fontFamily: 'monospace' }}>{streak > 0 ? (streakType === 'win' ? `+${streak}` : `-${streak}`) : '—'}</span>
-                        {streak > 0 && <span style={{ fontSize: '11px', color: streakType === 'win' ? '#16a34a' : '#dc2626' }}>{streakType === 'win' ? 'gagnants' : 'perdants'}</span>}
+                        <span style={{ fontSize: '20px', fontWeight: 700, color: streakType === 'win' ? '#16a34a' : '#dc2626', fontFamily: 'var(--font-mono)' }}>{streak > 0 ? (streakType === 'win' ? `+${streak}` : `-${streak}`) : '—'}</span>
+                        {streak > 0 && <span style={{ fontSize: '11px', color: streakType === 'win' ? '#16a34a' : '#dc2626', fontFamily: 'var(--font-mono)' }}>{streakType === 'win' ? 'gagnants' : 'perdants'}</span>}
                       </div>
                       <div style={{ display: 'flex', gap: '3px' }}>
                         {streakBoxes.map((t, i) => (
@@ -865,34 +865,34 @@ export default function DashboardPage() {
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px', marginBottom: '8px' }}>
                     <div className="adv-card">
-                      <div style={{ fontSize: '11px', color: '#888', marginBottom: '8px' }}>Meilleur / pire jour</div>
+                      <div style={{ fontSize: '11px', color: '#888', marginBottom: '8px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Meilleur / pire jour</div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                        <span style={{ fontSize: '11px', color: '#aaa' }}>Meilleur</span>
-                        <span style={{ fontSize: '15px', fontWeight: 700, color: '#16a34a', fontFamily: 'monospace' }}>{bestDay > 0 ? `+${bestDay}$` : '—'}</span>
+                        <span style={{ fontSize: '11px', color: '#aaa', fontFamily: 'var(--font-mono)' }}>Meilleur</span>
+                        <span style={{ fontSize: '15px', fontWeight: 700, color: '#16a34a', fontFamily: 'var(--font-mono)' }}>{bestDay > 0 ? `+${bestDay}$` : '—'}</span>
                       </div>
                       <div style={{ height: '0.5px', background: '#e8e8e8', marginBottom: '6px' }}></div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: '11px', color: '#aaa' }}>Pire</span>
-                        <span style={{ fontSize: '15px', fontWeight: 700, color: '#dc2626', fontFamily: 'monospace' }}>{worstDay < 0 ? `${worstDay}$` : '—'}</span>
+                        <span style={{ fontSize: '11px', color: '#aaa', fontFamily: 'var(--font-mono)' }}>Pire</span>
+                        <span style={{ fontSize: '15px', fontWeight: 700, color: '#dc2626', fontFamily: 'var(--font-mono)' }}>{worstDay < 0 ? `${worstDay}$` : '—'}</span>
                       </div>
                     </div>
                     <div className="adv-card">
-                      <div style={{ fontSize: '11px', color: '#888', marginBottom: '6px' }}>Consistency score</div>
+                      <div style={{ fontSize: '11px', color: '#888', marginBottom: '6px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Consistency score</div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <svg width="48" height="48" viewBox="0 0 52 52">
                           <circle cx="26" cy="26" r="22" fill="none" stroke="#e8e8e8" strokeWidth="6"/>
                           <circle cx="26" cy="26" r="22" fill="none" stroke={consistencyScore >= 70 ? '#16a34a' : consistencyScore >= 50 ? '#d97706' : '#dc2626'} strokeWidth="6" strokeLinecap="round" strokeDasharray="138" strokeDashoffset={consistencyOffset} transform="rotate(-90 26 26)"/>
                         </svg>
                         <div>
-                          <div style={{ fontSize: '20px', fontWeight: 700, color: '#111', fontFamily: 'monospace' }}>{totalTrades > 0 ? `${consistencyScore}%` : '—'}</div>
-                          <div style={{ fontSize: '11px', color: '#aaa', marginTop: '2px' }}>jours plan suivi</div>
+                          <div style={{ fontSize: '20px', fontWeight: 700, color: '#111', fontFamily: 'var(--font-mono)' }}>{totalTrades > 0 ? `${consistencyScore}%` : '—'}</div>
+                          <div style={{ fontSize: '11px', color: '#aaa', marginTop: '2px', fontFamily: 'var(--font-mono)' }}>jours plan suivi</div>
                         </div>
                       </div>
                     </div>
                     <div className="adv-card">
-                      <div style={{ fontSize: '11px', color: '#888', marginBottom: '5px' }}>Distance au BE</div>
-                      <div style={{ fontSize: '20px', fontWeight: 700, color: distanceBE >= 0 ? '#16a34a' : '#dc2626', fontFamily: 'monospace' }}>{tradedDaysCount > 0 ? `${distanceBE >= 0 ? '+' : ''}${distanceBE}%` : '—'}</div>
-                      <div style={{ fontSize: '11px', color: '#aaa', margin: '4px 0 7px' }}>marge au-dessus du BE</div>
+                      <div style={{ fontSize: '11px', color: '#888', marginBottom: '5px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Distance au BE</div>
+                      <div style={{ fontSize: '20px', fontWeight: 700, color: distanceBE >= 0 ? '#16a34a' : '#dc2626', fontFamily: 'var(--font-mono)' }}>{tradedDaysCount > 0 ? `${distanceBE >= 0 ? '+' : ''}${distanceBE}%` : '—'}</div>
+                      <div style={{ fontSize: '11px', color: '#aaa', margin: '4px 0 7px', fontFamily: 'var(--font-mono)' }}>marge au-dessus du BE</div>
                       {tradedDaysCount > 0 && (
                         <div style={{ position: 'relative', height: '6px', background: '#e8e8e8', borderRadius: '3px' }}>
                           <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: '1.5px', background: '#aaa' }}></div>
@@ -913,7 +913,7 @@ export default function DashboardPage() {
               <div className="sa sa6 mid-card" style={{ marginBottom: '1.5rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                   <div>
-                    <div style={{ fontSize: '14px', fontWeight: 700, color: '#111' }}>RR vs Win rate · Break even</div>
+                    <div style={{ fontSize: '14px', fontWeight: 600, color: '#111', fontFamily: 'var(--font-serif)' }}>RR vs Win rate · Break even</div>
                     <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>Win rate minimum pour être rentable selon ton RR</div>
                   </div>
                   <div style={{ display: 'flex', gap: '12px', fontSize: '11px', alignItems: 'center' }}>
@@ -926,16 +926,16 @@ export default function DashboardPage() {
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px', marginTop: '1rem', paddingTop: '1rem', borderTop: '0.5px solid #f0f0f0' }}>
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '16px', fontWeight: 700, color: '#111', fontFamily: 'monospace' }}>{tradedDaysCount > 0 ? `${winRatePnl}%` : '—'}</div>
-                    <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>Win rate actuel</div>
+                    <div style={{ fontSize: '16px', fontWeight: 700, color: '#111', fontFamily: 'var(--font-mono)' }}>{tradedDaysCount > 0 ? `${winRatePnl}%` : '—'}</div>
+                    <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Win rate actuel</div>
                   </div>
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '16px', fontWeight: 700, color: '#111', fontFamily: 'monospace' }}>{tradedDaysCount > 0 ? `1:${currentRR}` : '—'}</div>
-                    <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>RR moyen estimé</div>
+                    <div style={{ fontSize: '16px', fontWeight: 700, color: '#111', fontFamily: 'var(--font-mono)' }}>{tradedDaysCount > 0 ? `1:${currentRR}` : '—'}</div>
+                    <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>RR moyen estimé</div>
                   </div>
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '16px', fontWeight: 700, color: distanceBE >= 0 ? '#16a34a' : '#dc2626', fontFamily: 'monospace' }}>{tradedDaysCount > 0 ? `${distanceBE >= 0 ? '+' : ''}${distanceBE}%` : '—'}</div>
-                    <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>Marge au-dessus du BE</div>
+                    <div style={{ fontSize: '16px', fontWeight: 700, color: distanceBE >= 0 ? '#16a34a' : '#dc2626', fontFamily: 'var(--font-mono)' }}>{tradedDaysCount > 0 ? `${distanceBE >= 0 ? '+' : ''}${distanceBE}%` : '—'}</div>
+                    <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Marge au-dessus du BE</div>
                   </div>
                 </div>
                 {tradedDaysCount > 0 && (
@@ -955,7 +955,7 @@ export default function DashboardPage() {
             {trades.length > 0 && (
               <div className="sa sa7 mid-card" style={{ marginBottom: '1.5rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1rem' }}>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#888' }}>Journal récent</span>
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: '#888', fontFamily: 'var(--font-serif)' }}>Journal récent</span>
                   <a href="/journal" style={{ fontSize: '12px', color: '#aaa', textDecoration: 'none', fontWeight: 500 }}>Voir tout</a>
                 </div>
                 {recentTrades.map(t => {
@@ -967,7 +967,7 @@ export default function DashboardPage() {
                         <span className={`badge badge-${t.direction === 'long' ? 'long' : 'short'}`}>{t.direction}</span>
                         <div style={{ minWidth: 0 }}>
                           <div style={{ fontSize: '13px', fontWeight: 600, color: '#111' }}>{t.setup_type || t.instrument}</div>
-                          <div style={{ fontSize: '11px', color: '#bbb' }}>{ds}</div>
+                          <div style={{ fontSize: '11px', color: '#bbb', fontFamily: 'var(--font-mono)' }}>{ds}</div>
                         </div>
                       </div>
                       <span style={{ fontSize: '12px', color: t.followed_plan ? '#16a34a' : '#d97706' }}>{t.followed_plan ? '✓ Plan suivi' : '⚠ Hors plan'}</span>
@@ -981,7 +981,7 @@ export default function DashboardPage() {
             <div className="sa sa8 mid-card">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                 <div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#111' }}>Débrief Macro IA</div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#111', fontFamily: 'var(--font-serif)' }}>Débrief Macro IA</div>
                   <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>Briefing du jour généré par IA selon ton profil</div>
                 </div>
                 {macroLoaded && profile?.is_pro && (
