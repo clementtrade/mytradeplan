@@ -16,6 +16,33 @@ type Trade = {
   confirmation: string
   followed_plan: boolean
   notes: string
+  rr_initial: number | null
+  rr_realise: number | null
+}
+
+type RRCategoryKey = 'sous' | 'tenue' | 'audela' | 'nr'
+
+const RR_FILTERS: { key: 'all' | RRCategoryKey; label: string }[] = [
+  { key: 'all', label: 'Tous' },
+  { key: 'sous', label: 'Sous la cible' },
+  { key: 'tenue', label: 'Cible tenue' },
+  { key: 'audela', label: 'Au-delà' },
+  { key: 'nr', label: 'Non renseigné' },
+]
+
+function getRRCategory(trade: Trade): { key: RRCategoryKey; label: string; color: string; bg: string; border: string } {
+  const { rr_initial, rr_realise } = trade
+  if (rr_initial == null || rr_realise == null || rr_initial <= 0) {
+    return { key: 'nr', label: 'Non renseigné', color: '#888', bg: '#f5f5f5', border: '#e8e8e8' }
+  }
+  // Un trade perdant tombe toujours "sous la cible", quel que soit le signe de rr_initial.
+  if (rr_realise < 0) {
+    return { key: 'sous', label: 'Sous la cible', color: '#d97706', bg: '#fffbeb', border: '#fde68a' }
+  }
+  const ratio = rr_realise / rr_initial
+  if (ratio < 0.9) return { key: 'sous', label: 'Sous la cible', color: '#d97706', bg: '#fffbeb', border: '#fde68a' }
+  if (ratio <= 1.1) return { key: 'tenue', label: 'Cible tenue', color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0' }
+  return { key: 'audela', label: 'Au-delà', color: '#2a78d6', bg: '#eff6ff', border: '#bfdbfe' }
 }
 
 export default function JournalPage() {
@@ -44,6 +71,7 @@ function JournalContent() {
   const [isPro, setIsPro] = useState(false)
   const [tradeLimitReached, setTradeLimitReached] = useState(false)
   const [tradesThisMonth, setTradesThisMonth] = useState(0)
+  const [rrFilter, setRrFilter] = useState<'all' | RRCategoryKey>('all')
   const [form, setForm] = useState({
     instrument: '',
     direction: 'long',
@@ -52,6 +80,8 @@ function JournalContent() {
     zone: '',
     cible: '',
     confirmation: '',
+    rr_initial: '',
+    rr_realise: '',
     followed_plan: true,
     notes: '',
     trade_date: '',
@@ -112,7 +142,7 @@ function JournalContent() {
   }
 
   function resetForm() {
-    setForm({ instrument: '', direction: 'long', setup_type: '', contexte: '', zone: '', cible: '', confirmation: '', followed_plan: true, notes: '', trade_date: '' })
+    setForm({ instrument: '', direction: 'long', setup_type: '', contexte: '', zone: '', cible: '', confirmation: '', rr_initial: '', rr_realise: '', followed_plan: true, notes: '', trade_date: '' })
   }
 
   function startNewTrade() {
@@ -130,6 +160,8 @@ function JournalContent() {
       zone: trade.zone || '',
       cible: trade.cible || '',
       confirmation: trade.confirmation || '',
+      rr_initial: trade.rr_initial != null ? String(trade.rr_initial) : '',
+      rr_realise: trade.rr_realise != null ? String(trade.rr_realise) : '',
       followed_plan: trade.followed_plan,
       notes: trade.notes || '',
       trade_date: '',
@@ -145,6 +177,9 @@ function JournalContent() {
     setSaving(true)
     const { data: { user } } = await supabase.auth.getUser()
 
+    const rrInitialNum = form.rr_initial.trim() === '' ? null : parseFloat(form.rr_initial)
+    const rrRealiseNum = form.rr_realise.trim() === '' ? null : parseFloat(form.rr_realise)
+
     const payload: any = {
       instrument: form.instrument,
       direction: form.direction,
@@ -153,6 +188,8 @@ function JournalContent() {
       zone: form.zone,
       cible: form.cible,
       confirmation: form.confirmation,
+      rr_initial: rrInitialNum != null && !isNaN(rrInitialNum) ? rrInitialNum : null,
+      rr_realise: rrRealiseNum != null && !isNaN(rrRealiseNum) ? rrRealiseNum : null,
       followed_plan: form.followed_plan,
       notes: form.notes,
     }
@@ -190,6 +227,7 @@ function JournalContent() {
 
   const followedCount = trades.filter(t => t.followed_plan).length
   const disciplineRate = trades.length > 0 ? Math.round((followedCount / trades.length) * 100) : 0
+  const visibleTrades = rrFilter === 'all' ? trades : trades.filter(t => getRRCategory(t).key === rrFilter)
 
   const sidebarW = sidebarExpanded ? 200 : 52
   const initials = profile?.full_name
@@ -251,6 +289,9 @@ function JournalContent() {
         .menu-item.danger:hover { background: #fff5f5; }
         .confirm-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; z-index: 300; }
         .confirm-box { background: #fff; border-radius: 14px; padding: 1.5rem; width: 360px; max-width: 90vw; }
+        .rr-filter-btn { background: #f9f9f9; border: 0.5px solid #e8e8e8; border-radius: 20px; padding: 5px 12px; font-size: 12px; color: #666; cursor: pointer; font-family: var(--font-mono); transition: background 0.15s, border-color 0.15s, color 0.15s; }
+        .rr-filter-btn:hover { border-color: #ccc; }
+        .rr-filter-btn.active { background: #111; border-color: #111; color: #fff; }
       `}</style>
 
       {deleteConfirmId && (
@@ -343,6 +384,18 @@ function JournalContent() {
             </div>
           </div>
 
+          <div className="journal-anim" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '1.25rem' }}>
+            {RR_FILTERS.map(f => (
+              <button
+                key={f.key}
+                className={`rr-filter-btn${rrFilter === f.key ? ' active' : ''}`}
+                onClick={() => setRrFilter(f.key)}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+
           {showForm && !tradeLimitReached && (
             <div className="journal-anim" style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '1.5rem', marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.25rem' }}>
@@ -391,6 +444,16 @@ function JournalContent() {
                   <textarea className="form-input" placeholder="Cible visée..." value={form.cible} onChange={e => setForm({ ...form, cible: e.target.value })} rows={2} style={inputStyle}/>
                 </div>
               </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                <div>
+                  <div style={labelStyle}>RR initial</div>
+                  <input className="form-input" type="number" step="0.1" placeholder="ex. 2.0" value={form.rr_initial} onChange={e => setForm({ ...form, rr_initial: e.target.value })} style={{ ...inputStyle, fontFamily: 'var(--font-mono)' }}/>
+                </div>
+                <div>
+                  <div style={labelStyle}>RR réalisé</div>
+                  <input className="form-input" type="number" step="0.1" placeholder="ex. 1.4" value={form.rr_realise} onChange={e => setForm({ ...form, rr_realise: e.target.value })} style={{ ...inputStyle, fontFamily: 'var(--font-mono)' }}/>
+                </div>
+              </div>
               <div style={{ marginBottom: '12px' }}>
                 <div style={labelStyle}>Confirmation</div>
                 <textarea className="form-input" placeholder="Tes critères de confirmation..." value={form.confirmation} onChange={e => setForm({ ...form, confirmation: e.target.value })} rows={3} style={inputStyle}/>
@@ -416,15 +479,22 @@ function JournalContent() {
             <div style={{ textAlign: 'center', padding: '4rem 0', color: '#aaa', fontSize: '14px' }}>Chargement...</div>
           ) : trades.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '4rem 0', color: '#aaa', fontSize: '14px' }}>Aucun trade encore. Clique sur "+ Nouveau trade" pour commencer.</div>
+          ) : visibleTrades.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '4rem 0', color: '#aaa', fontSize: '14px' }}>Aucun trade dans cette catégorie.</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {trades.map(trade => (
+              {visibleTrades.map(trade => {
+                const rrCat = getRRCategory(trade)
+                return (
                 <div key={trade.id} className="trade-card">
-                  <div style={{ padding: '1rem 1.25rem', display: 'grid', gridTemplateColumns: '90px 70px 80px 130px 1fr 110px 36px', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ padding: '1rem 1.25rem', display: 'grid', gridTemplateColumns: '90px 70px 80px 120px 130px 1fr 110px 36px', alignItems: 'center', gap: '12px' }}>
                     <div onClick={() => setExpanded(expanded === trade.id ? null : trade.id)} style={{ color: '#aaa', fontSize: '12px', cursor: 'pointer', fontFamily: 'var(--font-mono)' }}>{new Date(trade.created_at).toLocaleDateString('fr-FR')}</div>
                     <div onClick={() => setExpanded(expanded === trade.id ? null : trade.id)} style={{ color: '#111', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}>{trade.instrument}</div>
                     <div onClick={() => setExpanded(expanded === trade.id ? null : trade.id)} style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', background: trade.direction === 'long' ? '#dcfce7' : '#fee2e2', color: trade.direction === 'long' ? '#16a34a' : '#dc2626', fontWeight: 600, textAlign: 'center', cursor: 'pointer', fontFamily: 'var(--font-mono)', letterSpacing: '1.5px' }}>
                       {trade.direction.toUpperCase()}
+                    </div>
+                    <div onClick={() => setExpanded(expanded === trade.id ? null : trade.id)} style={{ cursor: 'pointer', textAlign: 'center' }}>
+                      <span style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '4px', fontWeight: 600, fontFamily: 'var(--font-mono)', whiteSpace: 'nowrap', background: rrCat.bg, color: rrCat.color, border: `0.5px solid ${rrCat.border}` }}>{rrCat.label}</span>
                     </div>
                     <div onClick={() => setExpanded(expanded === trade.id ? null : trade.id)} style={{ fontSize: '12px', color: '#555', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer' }}>{trade.setup_type || '—'}</div>
                     <div onClick={() => setExpanded(expanded === trade.id ? null : trade.id)} style={{ color: '#666', fontSize: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer' }}>{trade.contexte}</div>
@@ -442,6 +512,8 @@ function JournalContent() {
                   {expanded === trade.id && (
                     <div style={{ padding: '0 1.25rem 1.25rem', borderTop: '0.5px solid #f5f5f5' }}>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginTop: '1rem' }}>
+                        {trade.rr_initial != null && <div><div style={{ fontSize: '11px', color: '#aaa', marginBottom: '3px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>RR initial</div><div style={{ fontSize: '13px', color: '#333', fontFamily: 'var(--font-mono)' }}>{trade.rr_initial}</div></div>}
+                        {trade.rr_realise != null && <div><div style={{ fontSize: '11px', color: '#aaa', marginBottom: '3px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>RR réalisé</div><div style={{ fontSize: '13px', color: '#333', fontFamily: 'var(--font-mono)' }}>{trade.rr_realise}</div></div>}
                         {trade.zone && <div><div style={{ fontSize: '11px', color: '#aaa', marginBottom: '3px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Zone</div><div style={{ fontSize: '13px', color: '#333' }}>{trade.zone}</div></div>}
                         {trade.cible && <div><div style={{ fontSize: '11px', color: '#aaa', marginBottom: '3px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Cible</div><div style={{ fontSize: '13px', color: '#333' }}>{trade.cible}</div></div>}
                         {trade.confirmation && <div><div style={{ fontSize: '11px', color: '#aaa', marginBottom: '3px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Confirmation</div><div style={{ fontSize: '13px', color: '#333' }}>{trade.confirmation}</div></div>}
@@ -451,7 +523,8 @@ function JournalContent() {
                     </div>
                   )}
                 </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>
