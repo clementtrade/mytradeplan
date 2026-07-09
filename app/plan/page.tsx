@@ -2,7 +2,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import AppBackground from '../components/AppBackground'
-import TradingViewChart from '../components/TradingViewChart'
 
 type ChatImage = { dataUrl: string; mediaType: string; base64: string }
 type ChatMessage = { role: string; text: string; image?: ChatImage }
@@ -351,14 +350,6 @@ export default function PlanPage() {
         .dot { animation: pulse 1.2s ease-in-out infinite; }
         .dot:nth-child(2) { animation-delay: 0.2s; }
         .dot:nth-child(3) { animation-delay: 0.4s; }
-        .plan-grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 14px; height: calc(100vh - 90px); min-height: 0; padding: 1rem 1.5rem 1.5rem; box-sizing: border-box; }
-        .plan-chart-col { background: #131722; border-radius: 16px; padding: 10px; min-width: 0; }
-        .plan-chat-col { display: flex; flex-direction: column; min-width: 0; min-height: 0; background: #fff; border: 0.5px solid #e8e8e8; border-radius: 14px; overflow: hidden; }
-        @media (max-width: 900px) {
-          .plan-grid { grid-template-columns: 1fr; height: auto; }
-          .plan-chart-col { height: 440px; }
-          .plan-chat-col { min-height: 480px; }
-        }
       `}</style>
       {Sidebar}
       <main style={{ marginLeft: sidebarW, flex: 1, minWidth: 0, position: 'relative', transition: 'margin-left 0.2s cubic-bezier(0.4,0,0.2,1)', display: 'flex', flexDirection: 'column' }}>
@@ -382,91 +373,84 @@ export default function PlanPage() {
             )}
           </div>
         </div>
-        <div className="plan-grid" style={{ position: 'relative', zIndex: 1 }}>
-          <div className="plan-chart-col">
-            <TradingViewChart />
-          </div>
-          <div className="plan-chat-col">
-            <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '1.5rem 1.25rem' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                {messages.map((m, i) => (
-                  <div key={i} className="msg-anim" style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
-                    {m.role === 'ai' ? (
-                      <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '3px 12px 12px 12px', padding: '12px 16px', maxWidth: '88%', fontSize: '14px', color: '#333', lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: formatText(m.text) }}/>
-                    ) : (
-                      <div style={{ background: '#111', borderRadius: '12px 3px 12px 12px', padding: '10px 16px', maxWidth: '78%', fontSize: '14px', color: '#fff', lineHeight: 1.6 }}>
-                        {m.image && (
-                          <img src={m.image.dataUrl} alt="Capture du chart" style={{ display: 'block', maxWidth: '100%', maxHeight: 220, borderRadius: 8, marginBottom: m.text ? 8 : 0 }} />
-                        )}
-                        {m.text}
-                      </div>
+        <div style={{ position: 'relative', zIndex: 1, flex: 1, overflowY: 'auto', padding: '2rem 1rem' }}>
+          <div style={{ maxWidth: '620px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            {messages.map((m, i) => (
+              <div key={i} className="msg-anim" style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                {m.role === 'ai' ? (
+                  <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '3px 12px 12px 12px', padding: '12px 16px', maxWidth: '88%', fontSize: '14px', color: '#333', lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: formatText(m.text) }}/>
+                ) : (
+                  <div style={{ background: '#111', borderRadius: '12px 3px 12px 12px', padding: '10px 16px', maxWidth: '78%', fontSize: '14px', color: '#fff', lineHeight: 1.6 }}>
+                    {m.image && (
+                      <img src={m.image.dataUrl} alt="Capture du chart" style={{ display: 'block', maxWidth: '100%', maxHeight: 220, borderRadius: 8, marginBottom: m.text ? 8 : 0 }} />
                     )}
-                  </div>
-                ))}
-                {loading && (
-                  <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                    <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '3px 12px 12px 12px', padding: '12px 16px' }}>
-                      <span className="dot" style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: '#ccc', margin: '0 2px' }}></span>
-                      <span className="dot" style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: '#ccc', margin: '0 2px' }}></span>
-                      <span className="dot" style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: '#ccc', margin: '0 2px' }}></span>
-                    </div>
+                    {m.text}
                   </div>
                 )}
-                <div ref={messagesEndRef}/>
               </div>
-            </div>
-            <div style={{ padding: '1rem 1.25rem 1.25rem', background: '#fff', borderTop: '0.5px solid #e8e8e8', flexShrink: 0 }}>
-              <div style={{ background: '#f9f9f9', border: '0.5px solid #e0e0e0', borderRadius: '14px', padding: '12px 14px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-                {pendingImage && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                    <img src={pendingImage.dataUrl} alt="Capture jointe" style={{ height: 44, borderRadius: 6, border: '0.5px solid #e0e0e0' }} />
-                    <span style={{ fontSize: '12px', color: '#888' }}>Capture jointe</span>
-                    <button
-                      onClick={() => setPendingImage(null)}
-                      style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#aaa', fontSize: '16px', cursor: 'pointer', lineHeight: 1, padding: '4px' }}
-                      aria-label="Retirer l'image"
-                    >×</button>
-                  </div>
-                )}
-                {imageError && (
-                  <div style={{ fontSize: '12px', color: '#dc2626', marginBottom: '8px' }}>{imageError}</div>
-                )}
-                <textarea
-                  className="chat-textarea"
-                  value={input}
-                  onChange={e => setInput(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }}
-                  onPaste={handlePaste}
-                  placeholder="Réponds ici, ou colle/joins une capture de ton chart..."
-                  disabled={loading}
-                  rows={3}
-                />
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp,image/gif"
-                  onChange={handleFileSelect}
-                  style={{ display: 'none' }}
-                />
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px', paddingTop: '8px', borderTop: '0.5px solid #e8e8e8' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={loading}
-                      title="Joindre une capture du chart"
-                      style={{ background: 'none', border: '0.5px solid #e0e0e0', borderRadius: '7px', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: loading ? 'not-allowed' : 'pointer', color: '#666', fontSize: '14px', flexShrink: 0 }}
-                    >📎</button>
-                    <span style={{ fontSize: '12px', color: '#bbb' }}>Shift + Entrée pour aller à la ligne</span>
-                  </div>
-                  <button
-                    onClick={sendMessage}
-                    disabled={loading || (!input.trim() && !pendingImage)}
-                    style={{ background: loading || (!input.trim() && !pendingImage) ? '#f0f0f0' : '#111', color: loading || (!input.trim() && !pendingImage) ? '#bbb' : '#fff', border: 'none', borderRadius: '8px', padding: '8px 20px', fontSize: '13px', fontWeight: 600, cursor: loading || (!input.trim() && !pendingImage) ? 'not-allowed' : 'pointer', transition: 'all 0.15s', fontFamily: 'inherit' }}
-                  >
-                    Envoyer
-                  </button>
+            ))}
+            {loading && (
+              <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                <div style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '3px 12px 12px 12px', padding: '12px 16px' }}>
+                  <span className="dot" style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: '#ccc', margin: '0 2px' }}></span>
+                  <span className="dot" style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: '#ccc', margin: '0 2px' }}></span>
+                  <span className="dot" style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: '#ccc', margin: '0 2px' }}></span>
                 </div>
               </div>
+            )}
+            <div ref={messagesEndRef}/>
+          </div>
+        </div>
+        <div style={{ position: 'relative', zIndex: 1, padding: '1rem 2rem 1.5rem', background: '#fff', borderTop: '0.5px solid #e8e8e8', flexShrink: 0 }}>
+          <div style={{ maxWidth: '620px', margin: '0 auto', background: '#f9f9f9', border: '0.5px solid #e0e0e0', borderRadius: '14px', padding: '12px 14px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+            {pendingImage && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <img src={pendingImage.dataUrl} alt="Capture jointe" style={{ height: 44, borderRadius: 6, border: '0.5px solid #e0e0e0' }} />
+                <span style={{ fontSize: '12px', color: '#888' }}>Capture jointe</span>
+                <button
+                  onClick={() => setPendingImage(null)}
+                  style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#aaa', fontSize: '16px', cursor: 'pointer', lineHeight: 1, padding: '4px' }}
+                  aria-label="Retirer l'image"
+                >×</button>
+              </div>
+            )}
+            {imageError && (
+              <div style={{ fontSize: '12px', color: '#dc2626', marginBottom: '8px' }}>{imageError}</div>
+            )}
+            <textarea
+              className="chat-textarea"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }}
+              onPaste={handlePaste}
+              placeholder="Réponds ici, ou colle/joins une capture de ton chart..."
+              disabled={loading}
+              rows={3}
+            />
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              onChange={handleFileSelect}
+              style={{ display: 'none' }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px', paddingTop: '8px', borderTop: '0.5px solid #e8e8e8' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={loading}
+                  title="Joindre une capture du chart"
+                  style={{ background: 'none', border: '0.5px solid #e0e0e0', borderRadius: '7px', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: loading ? 'not-allowed' : 'pointer', color: '#666', fontSize: '14px', flexShrink: 0 }}
+                >📎</button>
+                <span style={{ fontSize: '12px', color: '#bbb' }}>Shift + Entrée pour aller à la ligne</span>
+              </div>
+              <button
+                onClick={sendMessage}
+                disabled={loading || (!input.trim() && !pendingImage)}
+                style={{ background: loading || (!input.trim() && !pendingImage) ? '#f0f0f0' : '#111', color: loading || (!input.trim() && !pendingImage) ? '#bbb' : '#fff', border: 'none', borderRadius: '8px', padding: '8px 20px', fontSize: '13px', fontWeight: 600, cursor: loading || (!input.trim() && !pendingImage) ? 'not-allowed' : 'pointer', transition: 'all 0.15s', fontFamily: 'inherit' }}
+              >
+                Envoyer
+              </button>
             </div>
           </div>
         </div>
