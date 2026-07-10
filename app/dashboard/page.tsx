@@ -146,8 +146,6 @@ export default function DashboardPage() {
   const [deleting, setDeleting] = useState(false)
   const rrChartRef = useRef<any>(null)
   const rrCanvasRef = useRef<HTMLCanvasElement>(null)
-  const rrEquityChartRef = useRef<any>(null)
-  const rrEquityCanvasRef = useRef<HTMLCanvasElement>(null)
   const [setupFilter, setSetupFilter] = useState<string>('Tous')
   const setupEquityChartRef = useRef<any>(null)
   const setupEquityCanvasRef = useRef<HTMLCanvasElement>(null)
@@ -363,15 +361,7 @@ export default function DashboardPage() {
   const distanceBE = parseFloat((winRatePnl - beAtCurrentRR).toFixed(1))
   const distanceBEBarWidth = Math.min(Math.abs(distanceBE) / 30 * 50, 50)
 
-  // RR realise vs planifie (stats avancees Pro) - carte globale, tous les trades journalises
-  const {
-    rrTrades, rrCount, avgRRInitial, avgRRRealise, capturedPct, capturedCircumference, capturedOffset,
-    realiseCurve: rrRealiseCurve, initialCurve: rrInitialCurve, cumulativeGap: rrCumulativeGap, catCounts: rrCatCounts,
-    majority: rrMajority,
-  } = computeRRStats(trades)
-  const rrLecture = getRRLecture(rrCount, rrMajority, rrCumulativeGap)
-
-  // Analyse par setup - meme logique, restreinte aux trades du setup selectionne
+  // Stats RR realise vs planifie (Pro), filtrees par setup via le filtre global du dashboard
   const setupFilteredTrades = setupFilter === 'Tous' ? trades : trades.filter(t => t.setup_type === setupFilter)
   const setupStats = computeRRStats(setupFilteredTrades)
   const setupLecture = getRRLecture(setupStats.rrCount, setupStats.majority, setupStats.cumulativeGap)
@@ -455,54 +445,6 @@ export default function DashboardPage() {
     }
     return () => { if (rrChartRef.current) { rrChartRef.current.destroy(); rrChartRef.current = null } }
   }, [loading, tradedDaysCount, currentRR, winRatePnl, profile?.is_pro])
-
-  useEffect(() => {
-    if (loading || !profile?.is_pro || rrCount < 5) return
-    const initEquityChart = () => {
-      if (!rrEquityCanvasRef.current) return
-      if (rrEquityChartRef.current) { rrEquityChartRef.current.destroy(); rrEquityChartRef.current = null }
-      const Chart = (window as any).Chart
-      rrEquityChartRef.current = new Chart(rrEquityCanvasRef.current, {
-        type: 'line',
-        data: {
-          labels: rrRealiseCurve.map((_, i) => i + 1),
-          datasets: [
-            { label: 'Réalisé', data: rrRealiseCurve, borderColor: '#2563eb', borderWidth: 2, pointRadius: 0, tension: 0.3, fill: false },
-            { label: 'Planifié', data: rrInitialCurve, borderColor: '#9ca3af', borderWidth: 1.5, borderDash: [4, 4], pointRadius: 0, tension: 0.3, fill: false },
-          ]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              mode: 'index', intersect: false,
-              callbacks: { label: (i: any) => `${i.dataset.label} : ${i.raw}R` },
-              backgroundColor: '#111', titleColor: '#fff', bodyColor: '#aaa', padding: 10, cornerRadius: 8,
-            }
-          },
-          scales: {
-            x: { display: false },
-            y: { ticks: { color: '#aaa', font: { size: 10 }, callback: (v: any) => `${v}R` }, grid: { color: 'rgba(0,0,0,0.04)' } }
-          }
-        }
-      })
-    }
-    if ((window as any).Chart) {
-      initEquityChart()
-    } else {
-      const existing = document.querySelector('script[src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"]') as HTMLScriptElement | null
-      if (existing) {
-        existing.addEventListener('load', initEquityChart)
-      } else {
-        const script = document.createElement('script')
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js'
-        script.onload = initEquityChart
-        document.head.appendChild(script)
-      }
-    }
-    return () => { if (rrEquityChartRef.current) { rrEquityChartRef.current.destroy(); rrEquityChartRef.current = null } }
-  }, [loading, profile?.is_pro, rrCount, trades])
 
   useEffect(() => {
     if (loading || !profile?.is_pro || setupStats.rrCount < 5) return
@@ -865,6 +807,29 @@ export default function DashboardPage() {
               </a>
             </div>
 
+            {profile?.is_pro && trades.length > 0 && (
+              <div className="sa" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
+                <span style={{ fontSize: '11px', color: '#aaa', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Setup</span>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {SETUP_FILTER_OPTIONS.map(opt => (
+                    <button
+                      key={opt}
+                      onClick={() => setSetupFilter(opt)}
+                      style={{
+                        background: setupFilter === opt ? '#111' : '#f9f9f9',
+                        color: setupFilter === opt ? '#fff' : '#666',
+                        border: setupFilter === opt ? '0.5px solid #111' : '0.5px solid #e8e8e8',
+                        borderRadius: '20px', padding: '5px 12px', fontSize: '12px', cursor: 'pointer',
+                        fontFamily: 'var(--font-mono)', transition: 'background 0.15s, color 0.15s',
+                      }}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {importedCount !== null && (
               <div className="sa" style={{ background: '#f0fdf4', border: '0.5px solid #bbf7d0', borderRadius: '10px', padding: '10px 14px', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#15803d' }}>
                 ✓ PnL importé pour {importedCount} jour{importedCount > 1 ? 's' : ''}
@@ -1131,110 +1096,9 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* 5b. RR REALISE VS PLANIFIE */}
-            {profile?.is_pro && (
-              <div className="sa sa6" style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: '12px', marginBottom: '1.5rem', alignItems: 'stretch' }}>
-                <div className="mid-card">
-                  <div style={{ fontSize: '14px', fontWeight: 600, color: '#111', fontFamily: 'var(--font-serif)', marginBottom: rrCount < 5 ? 0 : '1.25rem' }}>RR réalisé vs planifié</div>
-                  {rrCount < 5 ? (
-                    <div style={{ textAlign: 'center', padding: '2.5rem 0', color: '#bbb', fontSize: '13px' }}>{rrLecture.text}</div>
-                  ) : (
-                    <>
-                      <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center', marginBottom: '1.25rem' }}>
-                        <svg width="88" height="88" viewBox="0 0 52 52" style={{ flexShrink: 0 }}>
-                          <circle cx="26" cy="26" r="22" fill="none" stroke="#e5e7eb" strokeWidth="7"/>
-                          <circle cx="26" cy="26" r="22" fill="none" stroke="#2563eb" strokeWidth="7" strokeLinecap="round" strokeDasharray={capturedCircumference} strokeDashoffset={capturedOffset} transform="rotate(-90 26 26)"/>
-                          <text x="26" y="30" textAnchor="middle" fontSize="12" fontWeight="700" fill="#111" style={{ fontFamily: 'var(--font-mono)' }}>{Math.round(capturedPct)}%</text>
-                        </svg>
-                        <div>
-                          <div style={{ fontSize: '13px', color: '#333', lineHeight: 1.6, marginBottom: '10px' }}>
-                            Tu captures <strong style={{ color: '#2563eb' }}>{Math.round(capturedPct)}%</strong> de ton potentiel planifié
-                          </div>
-                          <div style={{ display: 'flex', gap: '18px' }}>
-                            <div>
-                              <div style={{ fontSize: '13px', fontWeight: 700, color: '#111827', fontFamily: 'var(--font-mono)' }}>{avgRRRealise.toFixed(2)}R</div>
-                              <div style={{ fontSize: '10px', color: '#aaa', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '2px' }}>RR réalisé moy.</div>
-                            </div>
-                            <div>
-                              <div style={{ fontSize: '13px', fontWeight: 700, color: '#9ca3af', fontFamily: 'var(--font-mono)' }}>{avgRRInitial.toFixed(2)}R</div>
-                              <div style={{ fontSize: '10px', color: '#aaa', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '2px' }}>RR initial moy.</div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '6px' }}>
-                        <span style={{ fontSize: '10px', color: '#bbb', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '1.5px' }}>R cumulé — réalisé vs planifié</span>
-                        <span style={{ fontSize: '12px', fontWeight: 600, fontFamily: 'var(--font-mono)', color: rrCumulativeGap > 0 ? '#d97706' : rrCumulativeGap < 0 ? '#2563eb' : '#888' }}>
-                          Écart cumulé : {rrCumulativeGap >= 0 ? '+' : ''}{rrCumulativeGap}R
-                        </span>
-                      </div>
-                      <div style={{ position: 'relative', height: '120px', marginBottom: '1rem' }}>
-                        <canvas ref={rrEquityCanvasRef}></canvas>
-                      </div>
-                      <div style={{ background: rrLecture.bg, border: `0.5px solid ${rrLecture.border}`, borderRadius: '8px', padding: '10px 12px' }}>
-                        <span style={{ color: rrLecture.color, fontSize: '12px', lineHeight: 1.6 }}>{rrLecture.text}</span>
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                <div className="mid-card">
-                  <div style={{ fontSize: '14px', fontWeight: 600, color: '#111', fontFamily: 'var(--font-serif)', marginBottom: '4px' }}>Répartition des sorties</div>
-                  <div style={{ fontSize: '11px', color: '#bbb', marginBottom: '1.25rem', fontFamily: 'var(--font-mono)' }}>
-                    {rrCount > 0 ? `sur ${rrCount} trade${rrCount > 1 ? 's' : ''} avec RR renseigné` : 'aucun trade avec RR renseigné'}
-                  </div>
-                  {rrCount === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '2.5rem 0', color: '#bbb', fontSize: '13px' }}>Pas encore de données.</div>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                      {[
-                        { label: 'Sous la cible', count: rrCatCounts.sous, color: '#f0b429' },
-                        { label: 'Cible tenue', count: rrCatCounts.tenue, color: '#16a34a' },
-                        { label: 'Au-delà', count: rrCatCounts.audela, color: '#2563eb' },
-                      ].map(row => (
-                        <div key={row.label}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                            <span style={{ fontSize: '12px', color: '#555' }}>{row.label}</span>
-                            <span style={{ fontSize: '12px', fontWeight: 700, color: '#111', fontFamily: 'var(--font-mono)' }}>{row.count}</span>
-                          </div>
-                          <div style={{ height: '8px', background: '#f0f0f0', borderRadius: '4px', overflow: 'hidden' }}>
-                            <div style={{ width: `${(row.count / rrCount) * 100}%`, height: '100%', background: row.color, borderRadius: '4px' }}></div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* 5c. ANALYSE PAR SETUP */}
+            {/* 5b. STATS TRADES JOURNALISES (filtrees par setup) */}
             {profile?.is_pro && trades.length > 0 && (
               <div className="sa sa6 mid-card" style={{ marginBottom: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px', marginBottom: '1.25rem' }}>
-                  <div>
-                    <div style={{ fontSize: '14px', fontWeight: 600, color: '#111', fontFamily: 'var(--font-serif)' }}>Analyse par setup</div>
-                    <div style={{ fontSize: '11px', color: '#bbb', marginTop: '2px' }}>Basée sur tes trades journalisés</div>
-                  </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                    {SETUP_FILTER_OPTIONS.map(opt => (
-                      <button
-                        key={opt}
-                        onClick={() => setSetupFilter(opt)}
-                        style={{
-                          background: setupFilter === opt ? '#111' : '#f9f9f9',
-                          color: setupFilter === opt ? '#fff' : '#666',
-                          border: setupFilter === opt ? '0.5px solid #111' : '0.5px solid #e8e8e8',
-                          borderRadius: '20px', padding: '5px 12px', fontSize: '12px', cursor: 'pointer',
-                          fontFamily: 'var(--font-mono)', transition: 'background 0.15s, color 0.15s',
-                        }}
-                      >
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
                 {setupFilteredTrades.length === 0 ? (
                   <div style={{ textAlign: 'center', padding: '2.5rem 0', color: '#bbb', fontSize: '13px' }}>
                     Aucun trade journalisé avec le setup "{setupFilter}".
