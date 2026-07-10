@@ -6,9 +6,11 @@ const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 export async function POST(request: Request) {
   const { trades, profile, date } = await request.json()
 
-  const tradesDesc = trades.map((t: any) =>
-    `- ${t.direction.toUpperCase()} ${t.instrument} · Setup: ${t.setup_type || 'Non défini'} · Résultat: ${t.result_r > 0 ? '+' : ''}${t.result_r}R · Plan suivi: ${t.followed_plan ? 'Oui' : 'Non'}`
-  ).join('\n')
+  const tradesDesc = trades.map((t: any) => {
+    const rrPlanifie = t.rr_initial != null ? `${t.rr_initial}R` : 'non renseigné'
+    const rrRealise = t.rr_realise != null ? `${t.rr_realise > 0 ? '+' : ''}${t.rr_realise}R` : 'non renseigné'
+    return `- ${t.direction.toUpperCase()} ${t.instrument} · Setup: ${t.setup_type || 'Non défini'} · RR planifié: ${rrPlanifie} · RR réalisé: ${rrRealise} · Plan suivi: ${t.followed_plan ? 'Oui' : 'Non'}`
+  }).join('\n')
 
   const prompt = `Tu es un coach de trading expert. Analyse ces trades du ${date} pour ce trader :
 
