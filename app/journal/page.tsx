@@ -22,14 +22,6 @@ type Trade = {
 
 type RRCategoryKey = 'sous' | 'tenue' | 'audela' | 'nr'
 
-const RR_FILTERS: { key: 'all' | RRCategoryKey; label: string }[] = [
-  { key: 'all', label: 'Tous' },
-  { key: 'sous', label: 'Sous la cible' },
-  { key: 'tenue', label: 'Cible tenue' },
-  { key: 'audela', label: 'Au-delà' },
-  { key: 'nr', label: 'Non renseigné' },
-]
-
 function getRRCategory(trade: Trade): { key: RRCategoryKey; label: string; color: string; bg: string; border: string } {
   const { rr_initial, rr_realise } = trade
   if (rr_initial == null || rr_realise == null || rr_initial <= 0) {
@@ -71,7 +63,6 @@ function JournalContent() {
   const [isPro, setIsPro] = useState(false)
   const [tradeLimitReached, setTradeLimitReached] = useState(false)
   const [tradesThisMonth, setTradesThisMonth] = useState(0)
-  const [rrFilter, setRrFilter] = useState<'all' | RRCategoryKey>('all')
   const [form, setForm] = useState({
     instrument: '',
     direction: 'long',
@@ -227,7 +218,6 @@ function JournalContent() {
 
   const followedCount = trades.filter(t => t.followed_plan).length
   const disciplineRate = trades.length > 0 ? Math.round((followedCount / trades.length) * 100) : 0
-  const visibleTrades = rrFilter === 'all' ? trades : trades.filter(t => getRRCategory(t).key === rrFilter)
 
   const sidebarW = sidebarExpanded ? 200 : 52
   const initials = profile?.full_name
@@ -289,9 +279,6 @@ function JournalContent() {
         .menu-item.danger:hover { background: #fff5f5; }
         .confirm-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; z-index: 300; }
         .confirm-box { background: #fff; border-radius: 14px; padding: 1.5rem; width: 360px; max-width: 90vw; }
-        .rr-filter-btn { background: #f9f9f9; border: 0.5px solid #e8e8e8; border-radius: 20px; padding: 5px 12px; font-size: 12px; color: #666; cursor: pointer; font-family: var(--font-mono); transition: background 0.15s, border-color 0.15s, color 0.15s; }
-        .rr-filter-btn:hover { border-color: #ccc; }
-        .rr-filter-btn.active { background: #111; border-color: #111; color: #fff; }
       `}</style>
 
       {deleteConfirmId && (
@@ -384,18 +371,6 @@ function JournalContent() {
             </div>
           </div>
 
-          <div className="journal-anim" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '1.25rem' }}>
-            {RR_FILTERS.map(f => (
-              <button
-                key={f.key}
-                className={`rr-filter-btn${rrFilter === f.key ? ' active' : ''}`}
-                onClick={() => setRrFilter(f.key)}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
-
           {showForm && !tradeLimitReached && (
             <div className="journal-anim" style={{ background: '#fff', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '1.5rem', marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.25rem' }}>
@@ -479,11 +454,9 @@ function JournalContent() {
             <div style={{ textAlign: 'center', padding: '4rem 0', color: '#aaa', fontSize: '14px' }}>Chargement...</div>
           ) : trades.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '4rem 0', color: '#aaa', fontSize: '14px' }}>Aucun trade encore. Clique sur "+ Nouveau trade" pour commencer.</div>
-          ) : visibleTrades.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '4rem 0', color: '#aaa', fontSize: '14px' }}>Aucun trade dans cette catégorie.</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {visibleTrades.map(trade => {
+              {trades.map(trade => {
                 const rrCat = getRRCategory(trade)
                 return (
                 <div key={trade.id} className="trade-card">
