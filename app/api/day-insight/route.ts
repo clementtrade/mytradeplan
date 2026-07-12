@@ -1,10 +1,27 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
+const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
+  ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
+  : null
+
 export async function POST(request: Request) {
-  const { trades, profile, date } = await request.json()
+  const { trades, profile, date, user_id, dayKey, force } = await request.json()
+
+  if (supabase && user_id && dayKey && !force) {
+    const { data: cached } = await supabase
+      .from('day_insights')
+      .select('content')
+      .eq('user_id', user_id)
+      .eq('date', dayKey)
+      .maybeSingle()
+    if (cached) {
+      return NextResponse.json({ insight: cached.content })
+    }
+  }
 
   const tradesDesc = trades.map((t: any) => {
     const rrPlanifie = t.rr_initial != null ? `${t.rr_initial}R` : 'non renseigné'
@@ -38,5 +55,13 @@ Sois direct, précis, et personnalisé à son profil. Pas de formules génériqu
   })
 
   const insight = response.content[0].type === 'text' ? response.content[0].text : ''
+
+  if (supabase && user_id && dayKey) {
+    await supabase.from('day_insights').upsert(
+      { user_id, date: dayKey, content: insight },
+      { onConflict: 'user_id,date' }
+    )
+  }
+
   return NextResponse.json({ insight })
 }

@@ -37,6 +37,10 @@ function getRRCategory(trade: Trade): { key: RRCategoryKey; label: string; color
   return { key: 'audela', label: 'Au-delà', color: '#2a78d6', bg: '#eff6ff', border: '#bfdbfe' }
 }
 
+function toDateKey(d: Date): string {
+  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`
+}
+
 export default function JournalPage() {
   return (
     <Suspense fallback={<div style={{ minHeight: '100vh', background: '#f1f8f4' }} />}>
@@ -189,6 +193,10 @@ function JournalContent() {
       payload.created_at = new Date(form.trade_date + 'T12:00:00').toISOString()
     }
 
+    const affectedDateKey = editingId
+      ? toDateKey(new Date(trades.find(t => t.id === editingId)?.created_at || Date.now()))
+      : toDateKey(form.trade_date ? new Date(form.trade_date + 'T12:00:00') : new Date())
+
     if (editingId) {
       await supabase.from('trades').update(payload).eq('id', editingId)
     } else {
@@ -200,6 +208,10 @@ function JournalContent() {
       }
     }
 
+    if (user) {
+      await supabase.from('day_insights').delete().eq('user_id', user.id).eq('date', affectedDateKey)
+    }
+
     resetForm()
     setShowForm(false)
     setEditingId(null)
@@ -209,7 +221,14 @@ function JournalContent() {
 
   async function deleteTrade(id: string) {
     setDeleting(true)
+    const deletedTrade = trades.find(t => t.id === id)
     await supabase.from('trades').delete().eq('id', id)
+    if (deletedTrade) {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        await supabase.from('day_insights').delete().eq('user_id', user.id).eq('date', toDateKey(new Date(deletedTrade.created_at)))
+      }
+    }
     setDeleteConfirmId(null)
     setExpanded(null)
     loadTrades()

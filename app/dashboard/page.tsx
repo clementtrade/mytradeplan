@@ -177,6 +177,22 @@ export default function DashboardPage() {
     setLoading(false)
   }
 
+  async function fetchInsight(dayTrades: Trade[], dateStr: string, dateKey: string, force: boolean) {
+    setDayModal(prev => prev ? { ...prev, insightLoading: true } : null)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      const res = await fetch('/api/day-insight', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ trades: dayTrades, profile, date: dateStr, dayKey: dateKey, user_id: user?.id, force }),
+      })
+      const data = await res.json()
+      setDayModal(prev => prev ? { ...prev, insight: data.insight, insightLoading: false } : null)
+    } catch {
+      setDayModal(prev => prev ? { ...prev, insight: 'Erreur de génération. Réessaie.', insightLoading: false } : null)
+    }
+  }
+
   async function openDayModal(day: number, dayTrades: Trade[], dateKey: string, pnl: number | null) {
     const dateStr = `${day} ${monthNames[calMonthIdx]} ${calYear}`
     if (!profile?.is_pro) {
@@ -185,18 +201,19 @@ export default function DashboardPage() {
     }
     setDayModal({ day, date: dateStr, dateKey, trades: dayTrades, pnl, insight: '', insightLoading: dayTrades.length > 0 })
     if (dayTrades.length === 0) return
-    try {
-      const res = await fetch('/api/day-insight', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ trades: dayTrades, profile, date: dateStr }) })
-      const data = await res.json()
-      setDayModal(prev => prev ? { ...prev, insight: data.insight, insightLoading: false } : null)
-    } catch {
-      setDayModal(prev => prev ? { ...prev, insight: 'Erreur de génération. Réessaie.', insightLoading: false } : null)
-    }
+    fetchInsight(dayTrades, dateStr, dateKey, false)
   }
 
   async function deleteTrade(id: string) {
     setDeleting(true)
+    const deletedTrade = trades.find(t => t.id === id)
     await supabase.from('trades').delete().eq('id', id)
+    if (deletedTrade) {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        await supabase.from('day_insights').delete().eq('user_id', user.id).eq('date', parseDateToKey(deletedTrade.created_at))
+      }
+    }
     setDeleteConfirmId(null)
     if (dayModal) setDayModal({ ...dayModal, trades: dayModal.trades.filter(t => t.id !== id) })
     loadAll()
@@ -739,7 +756,17 @@ export default function DashboardPage() {
               <div style={{ background: '#f9f9f9', border: '0.5px solid #e8e8e8', borderRadius: '12px', padding: '1rem', marginBottom: '1rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                   <div className="section-lbl" style={{ marginBottom: 0 }}>IA Insight</div>
-                  <div style={{ fontSize: '10px', color: '#bbb' }}>{profile?.approach} · {profile?.market}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ fontSize: '10px', color: '#bbb' }}>{profile?.approach} · {profile?.market}</div>
+                    {!dayModal.insightLoading && (
+                      <button
+                        onClick={() => fetchInsight(dayModal.trades, dayModal.date, dayModal.dateKey, true)}
+                        style={{ background: 'none', border: 'none', color: '#888', fontSize: '11px', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+                      >
+                        Régénérer
+                      </button>
+                    )}
+                  </div>
                 </div>
                 {dayModal.insightLoading ? (
                   <div style={{ padding: '0.5rem 0' }}><span className="aidot"></span><span className="aidot"></span><span className="aidot"></span></div>
