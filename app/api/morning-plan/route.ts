@@ -11,6 +11,64 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+// Meme logique de categorisation que le dashboard (app/dashboard/page.tsx: getRRExitCategory),
+// dupliquee ici pour que les chiffres de la memoire du plan restent coherents avec ce que le trader voit sur son dashboard.
+type ExitCategoryKey = 'sous' | 'tenue' | 'audela'
+
+function getExitCategory(rrInitial: number, rrRealise: number): ExitCategoryKey {
+  if (rrRealise < 0) return 'sous'
+  const ratio = rrRealise / rrInitial
+  if (ratio < 0.9) return 'sous'
+  if (ratio <= 1.1) return 'tenue'
+  return 'audela'
+}
+
+function computeTraderStats(trades: { rr_initial: number | null; rr_realise: number | null }[]) {
+  const rrTrades = trades.filter(t => t.rr_initial != null && t.rr_realise != null && (t.rr_initial as number) > 0)
+  const rrCount = rrTrades.length
+  const avgRRInitial = rrCount > 0 ? rrTrades.reduce((s, t) => s + (t.rr_initial as number), 0) / rrCount : 0
+  const avgRRRealise = rrCount > 0 ? rrTrades.reduce((s, t) => s + (t.rr_realise as number), 0) / rrCount : 0
+  const catCounts = { sous: 0, tenue: 0, audela: 0 }
+  rrTrades.forEach(t => { catCounts[getExitCategory(t.rr_initial as number, t.rr_realise as number)]++ })
+
+  const realiseOnly = trades.filter(t => t.rr_realise != null)
+  const expectancy = realiseOnly.length > 0 ? realiseOnly.reduce((s, t) => s + (t.rr_realise as number), 0) / realiseOnly.length : null
+  const winRate = realiseOnly.length > 0 ? Math.round((realiseOnly.filter(t => (t.rr_realise as number) > 0).length / realiseOnly.length) * 100) : null
+
+  return { rrCount, avgRRInitial, avgRRRealise, catCounts, expectancy, winRate }
+}
+
+function buildMemoryBlock(stats: ReturnType<typeof computeTraderStats>, insights: { date: string; content: string }[]): string | null {
+  const hasStats = stats.rrCount > 0 || stats.winRate != null
+  const hasInsights = insights.length > 0
+  if (!hasStats && !hasInsights) return null
+
+  let block = 'MÉMOIRE DU TRADER (sessions récentes) :\n'
+
+  if (hasStats) {
+    block += `\nStats globales (trades journalisés) :\n`
+    if (stats.expectancy != null) block += `- Expectancy : ${stats.expectancy >= 0 ? '+' : ''}${stats.expectancy.toFixed(2)}R par trade\n`
+    if (stats.winRate != null) block += `- Win rate : ${stats.winRate}%\n`
+    if (stats.rrCount > 0) {
+      block += `- RR moyen : réalisé ${stats.avgRRRealise.toFixed(2)}R vs planifié ${stats.avgRRInitial.toFixed(2)}R\n`
+      block += `- Répartition des sorties : Sous la cible ${stats.catCounts.sous} · Cible tenue ${stats.catCounts.tenue} · Au-delà ${stats.catCounts.audela}\n`
+    }
+  }
+
+  if (hasInsights) {
+    block += `\nInsights des 30 derniers jours :\n`
+    insights.forEach(i => {
+      const d = new Date(i.date)
+      const label = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}`
+      block += `- ${label} : ${i.content}\n`
+    })
+  }
+
+  block += `\nUtilise cette mémoire pour personnaliser le plan : si un pattern revient (ex. sorties anticipées, confirmations sautées, un setup particulièrement fiable), rappelle-le au bon moment dans tes questions ou ta synthèse finale — sans que ce soit systématique ni forcé. Ne mentionne jamais que des données manquent ou sont incomplètes : si la mémoire est vide ou partielle, continue normalement, comme si elle n'existait pas.`
+
+  return block
+}
+
 // Heure de session (référence : réouverture Globex CME, 17h America/Chicago) exprimée dans le fuseau du trader.
 function getUtcOffsetMinutes(timeZone: string, date: Date): number {
   const parts = new Intl.DateTimeFormat('en-US', { timeZone, timeZoneName: 'longOffset', hour: '2-digit' }).formatToParts(date)
@@ -156,10 +214,29 @@ Risque max aujourd'hui : [règle de risque]
 IMPORTANT : Commence par te présenter brièvement et poser ta PREMIÈRE question — sur le CHART, jamais sur la data en premier.`
 
 export async function POST(request: Request) {
-  const { messages, start, profile, user_id } = await request.json()
+  const { messages, start, profile, user_id, memory: memoryFromClient } = await request.json()
+
+  // La memoire n'est calculee qu'au lancement du plan (start === true) : une seule requete DB par
+  // session. Le client renvoie ensuite ce bloc tel quel a chaque tour pour qu'il reste present dans
+  // le system prompt sans requeter Supabase a nouveau.
+  let memory: string | null = memoryFromClient || null
+  if (start && user_id) {
+    const { data: tradesData } = await supabase.from('trades').select('rr_initial, rr_realise').eq('user_id', user_id)
+    const stats = computeTraderStats(tradesData || [])
+
+    const oneMonthAgo = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0]
+    const { data: insightsData } = await supabase
+      .from('day_insights')
+      .select('date, content')
+      .eq('user_id', user_id)
+      .gte('date', oneMonthAgo)
+      .order('date', { ascending: true })
+
+    memory = buildMemoryBlock(stats, insightsData || [])
+  }
 
   const systemWithProfile = profile
-    ? `${SYSTEM_BASE}\n\nPROFIL DU TRADER :\n- Marché : ${profile.market}\n- Timeframe : ${profile.tf}\n- Approche : ${profile.approach}\n- Outils : ${profile.tools}\n- Setup : ${profile.setup}\n- Point à travailler : ${profile.problem}\n- Fuseau horaire : ${profile.timezone || 'Europe/Paris'}\n\nSCRIPT DE QUESTIONS POUR CE PROFIL :\n${buildScriptBlock(profile)}`
+    ? `${SYSTEM_BASE}\n\nPROFIL DU TRADER :\n- Marché : ${profile.market}\n- Timeframe : ${profile.tf}\n- Approche : ${profile.approach}\n- Outils : ${profile.tools}\n- Setup : ${profile.setup}\n- Point à travailler : ${profile.problem}\n- Fuseau horaire : ${profile.timezone || 'Europe/Paris'}\n\n${memory ? memory + '\n\n' : ''}SCRIPT DE QUESTIONS POUR CE PROFIL :\n${buildScriptBlock(profile)}`
     : SYSTEM_BASE
 
   const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif']
@@ -198,5 +275,5 @@ export async function POST(request: Request) {
 
   const reply = response.content[0].type === 'text' ? response.content[0].text : ''
 
-  return NextResponse.json({ reply })
+  return NextResponse.json({ reply, memory })
 }

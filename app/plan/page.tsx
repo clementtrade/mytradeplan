@@ -22,6 +22,7 @@ export default function PlanPage() {
   const [speaking, setSpeaking] = useState(false)
   const [pendingImage, setPendingImage] = useState<ChatImage | null>(null)
   const [imageError, setImageError] = useState('')
+  const [memory, setMemory] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -112,6 +113,7 @@ export default function PlanPage() {
       })
       const data = await res.json()
       setMessages([{ role: 'ai', text: data.reply }])
+      setMemory(data.memory || null)
       if (!isPro) {
         const newCount = planCount + 1
         setPlanCount(newCount)
@@ -179,7 +181,7 @@ export default function PlanPage() {
       const res = await fetch('/api/morning-plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages, start: false, profile, user_id: userId }),
+        body: JSON.stringify({ messages: newMessages, start: false, profile, user_id: userId, memory }),
       })
       const data = await res.json()
       setMessages([...newMessages, { role: 'ai', text: data.reply }])
